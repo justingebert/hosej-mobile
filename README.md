@@ -1,56 +1,81 @@
-# Welcome to your Expo app 👋
+# HoseJ Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+React Native (Expo) client for [HoseJ](https://github.com/) — the friend-group social hub
+(daily questions, rallies, jukebox, chats). It talks to the **existing hosej webapp API**;
+the backend is reused as-is, not rebuilt. This app is a new client on top of it.
 
-## Get started
+## Stack
 
-1. Install dependencies
+- **Expo SDK 55** + **expo-router** (file-based routing, typed routes)
+- **NativeWind v5** + **Tailwind v4** + **react-native-css** — styling via `className`
+- **TanStack Query** — server state / caching
+- Plain `fetch` wrapper for the API (`src/lib/api/client.ts`)
 
-   ```bash
-   npm install
-   ```
+## Running it in dev
 
-2. Start the app
+Two processes, two terminals:
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+**1. The API** — in the webapp repo (`hosej/`):
 
 ```bash
-npm run reset-project
+npm run dev        # serves the API + web on http://localhost:3000
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+**2. This app** — here:
 
-### Other setup steps
+```bash
+npm install
+npm run ios        # or: npm run android / npm run web
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+### How the app finds the API
 
-## Learn more
+`src/lib/config.ts` resolves `API_URL` automatically:
 
-To learn more about developing your project with Expo, look at the following resources:
+- It reuses the **Expo dev server host** and swaps to port **3000**, so it works on the
+  iOS simulator *and* on a physical device on the same Wi-Fi — no manual IP needed.
+- Override with `EXPO_PUBLIC_API_URL` (required for prod / a deployed API). Copy
+  `.env.example` → `.env.local` and uncomment.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+The home screen shows the resolved `API_URL` and a live connectivity check against the
+public `/api/auth/session` endpoint — green ✓ means the chain works end to end.
 
-## Join the community
+## Auth (current state)
 
-Join our community of developers creating universal apps.
+Auth is **stubbed for dev** (Phase 0). The webapp uses NextAuth cookie+CSRF, which is
+awkward from native. The plan (Phase 5) is to add a small **additive** bearer-token
+endpoint to the webapp (`deviceId → JWT`; API also accepts `Authorization: Bearer`).
+Until then, protected endpoints return 401 — only public routes work.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Set `EXPO_PUBLIC_DEV_TOKEN` to attach a stub `Authorization: Bearer` header now.
+
+## Layout
+
+```
+src/
+  app/            # expo-router screens (file = route)
+  lib/
+    config.ts     # API_URL resolution
+    query.ts      # TanStack Query client
+    api/client.ts # apiFetch() + ApiError
+  types/          # DTOs copied from the webapp (see types/README.md)
+  global.css      # Tailwind entry + platform font vars
+```
+
+### Styling
+
+NativeWind adds `className` directly to React Native components — no wrappers:
+
+```tsx
+import { View, Text } from "react-native";
+
+<View className="flex-1 items-center justify-center bg-white">
+  <Text className="text-xl font-bold text-gray-900">Hello</Text>
+</View>
+```
+
+`className` types come from the generated `nativewind-env.d.ts` (commit it). `global.css`
+must stay imported at the app root (`src/app/_layout.tsx`).
+
+See [`Roadmap.md`](./Roadmap.md) for the phased build plan. `example/` is the Expo
+starter sample (gitignored, excluded from typecheck) — reference only.
