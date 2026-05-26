@@ -1,13 +1,13 @@
 # HoseJ Mobile
 
-React Native (Expo) client for [HoseJ](https://github.com/) — the friend-group social hub
+React Native (Expo) client for [HoseJ](https://github.com/justingebert/hosej) — the friend-group social hub
 (daily questions, rallies, jukebox, chats). It talks to the **existing hosej webapp API**;
 the backend is reused as-is, not rebuilt. This app is a new client on top of it.
 
 ## Stack
 
 - **Expo SDK 55** + **expo-router** (file-based routing, typed routes)
-- **NativeWind v5** + **Tailwind v4** + **react-native-css** — styling via `className`
+- **Uniwind** + **Tailwind v4** — styling via `className`
 - **TanStack Query** — server state / caching
 - Plain `fetch` wrapper for the API (`src/lib/api/client.ts`)
 
@@ -15,10 +15,10 @@ the backend is reused as-is, not rebuilt. This app is a new client on top of it.
 
 Two processes, two terminals:
 
-**1. The API** — in the webapp repo (`hosej/`):
+**1. The API** — from here, targeting the real HoseJ webapp repo:
 
 ```bash
-npm run dev        # serves the API + web on http://localhost:3000
+npm run dev:api    # serves the API + web on http://localhost:3000
 ```
 
 **2. This app** — here:
@@ -61,21 +61,3 @@ src/
   types/          # DTOs copied from the webapp (see types/README.md)
   global.css      # Tailwind entry + platform font vars
 ```
-
-### Styling
-
-NativeWind adds `className` directly to React Native components — no wrappers:
-
-```tsx
-import { View, Text } from "react-native";
-
-<View className="flex-1 items-center justify-center bg-white">
-  <Text className="text-xl font-bold text-gray-900">Hello</Text>
-</View>
-```
-
-`className` types come from the generated `nativewind-env.d.ts` (commit it). `global.css`
-must stay imported at the app root (`src/app/_layout.tsx`).
-
-See [`Roadmap.md`](./Roadmap.md) for the phased build plan. `example/` is the Expo
-starter sample (gitignored, excluded from typecheck) — reference only.

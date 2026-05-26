@@ -1,7 +1,7 @@
 Roadmap
 
 #  Phase 0 — Foundation
-    Expo + expo-router + NativeWind + rnr + TanStack Query
+    Expo + expo-router + Uniwind + rnr + TanStack Query
     fetcher, API base URL, QueryClientProvider
     stub auth header for dev
 
