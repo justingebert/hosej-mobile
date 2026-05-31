@@ -12,18 +12,24 @@ export class ApiError extends Error {
 const DEV_TOKEN = process.env.EXPO_PUBLIC_DEV_TOKEN;
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      "x-hosej-client": "mobile",
-      ...(DEV_TOKEN ? { Authorization: `Bearer ${DEV_TOKEN}` } : {}),
-      ...options.headers,
-    },
-  });
+  let res: Response;
+
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        "x-hosej-client": "mobile",
+        ...(DEV_TOKEN ? { Authorization: `Bearer ${DEV_TOKEN}` } : {}),
+        ...options.headers,
+      },
+    });
+  } catch {
+    throw new ApiError(0, "Could not reach the HoseJ API.");
+  }
 
   const isJson = res.headers.get("content-type")?.includes("application/json");
-  const body = isJson ? await res.json() : await res.text();
+  const body = isJson ? await res.json().catch(() => null) : await res.text();
 
   if (!res.ok) {
     const message =

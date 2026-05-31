@@ -2,6 +2,8 @@
 
 Read the exact versioned docs at https://docs.expo.dev/versions/v55.0.0/ before writing any code.
 
+The exisitng Webapplication Hosej lives: ../../../../Personal/HoseJ/hosej
+
 # General Guidelines 
 
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
