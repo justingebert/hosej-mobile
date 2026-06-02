@@ -3,6 +3,7 @@
 ## ideas
 
 ## problems
+- api connection doesnt work  on android simulator
 
 ## questions
 
@@ -12,18 +13,29 @@
 - help write roadmap
 - add andrew kapathy skills and matt pocock skills
 - help with setup, works good with docs that have LLM with agents with websearch, not always thow with bleeding edge e.g. nativewind a bit sloppy
+- it really used a lot of the docu which was nice
 
 ## AI problems:
 - goood UI
 - resusing code
 - introducing unessarty compelxity
 - adding glued on fixes
+- too complex and too much safe guards
 
 ---
 
+# Worklog
+
+## 2026-06-02
+- read about native tabs vs custom tabs
+- simplify ai genereated skeleton
+
+## 2026-06-01
+- draft basic native tabs and pages
+- set up andoird studio for androiud simulator 
 
 ## 2026-05-31
-- start with group page 
+- start with basic group page 
 
 ## think about type handling
 - how do I handle type from my api?
@@ -31,7 +43,7 @@
 ## 2026-05-26 buildt base and adjust api for development bearer auth
 - start init and think about how to appraoch exisitng AI form webapp
 - buiildt foudnation with agent, was kind complex and sloppy so needed to simplify
-- add dev mobvile auth to hosej api 
+- add dev mobvile auth to hosej api - mobile dev token
 
 ## 2026-05-23
 - plan mini roadmap and 
