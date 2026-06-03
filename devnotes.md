@@ -1,6 +1,7 @@
 ## notes
 
 ## ideas
+- make one error compoennt or toaast for when api fetch fails
 
 ## problems
 - api connection doesnt work  on android simulator
@@ -27,15 +28,21 @@
 # Worklog
 
 ## 2026-06-02
+- think about auth strategy with claude
+- watch expo tutiral for auth flow within expo
+- get inspiratio nfro tabs compoentn on on mobbin
+
+## 2026-06-02
 - read about native tabs vs custom tabs
 - simplify ai genereated skeleton
+- generate quesitonpage skleton, was really bad
 
 ## 2026-06-01
 - draft basic native tabs and pages
-- set up andoird studio for androiud simulator 
+- set up andoird studio for androiud simulator
 
 ## 2026-05-31
-- start with basic group page 
+- start with basic group page
 
 ## think about type handling
 - how do I handle type from my api?
@@ -46,7 +53,7 @@
 - add dev mobvile auth to hosej api - mobile dev token
 
 ## 2026-05-23
-- plan mini roadmap and 
+- plan mini roadmap and
 
 ## 2026-05-22
 - get overview of mobile concepts
@@ -66,7 +73,7 @@
 - read expo docs and walk thorught get started
 - go for ios simulator and expo go first
 
-## before: 
+## before:
 - evaluate different app technolgies
   - react native, flutter, native (swift, kotlin),
 - look at expo and diffrencete between expo go and expo dev, and what eas is

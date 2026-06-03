@@ -1,3 +1,4 @@
+import { fetch } from "expo/fetch";
 import { API_URL } from "@/lib/config";
 
 export class ApiError extends Error {

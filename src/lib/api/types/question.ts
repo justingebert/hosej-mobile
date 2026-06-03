@@ -1,0 +1,77 @@
+export enum QuestionType {
+  Users = "users",
+  Custom = "custom",
+  Image = "image",
+  Text = "text",
+  Rating = "rating",
+  Pairing = "pairing",
+}
+
+export enum PairingKeySource {
+  Members = "members",
+  Custom = "custom",
+}
+
+export enum PairingMode {
+  Exclusive = "exclusive",
+  Open = "open",
+}
+
+export interface PairingConfigDTO {
+  keySource: PairingKeySource;
+  mode: PairingMode;
+  keys?: string[];
+  values: string[];
+}
+
+export interface QuestionAnswerDTO {
+  user: string;
+  response: string | string[] | Record<string, string>;
+  time: string;
+}
+
+export interface QuestionRatingDTO {
+  good: string[];
+  ok: string[];
+  bad: string[];
+}
+
+export type UserRating = "good" | "ok" | "bad" | null;
+
+export type SignedUrlDTO = {
+  key: string;
+  url: string;
+};
+
+export type QuestionOptionDTO = string | SignedUrlDTO;
+
+export interface QuestionWithUserStateDTO {
+  _id: string;
+  groupId: string;
+  category: string;
+  questionType: QuestionType;
+  question: string;
+  image?: string;
+  imageUrl?: string;
+  multiSelect: boolean;
+  options?: QuestionOptionDTO[];
+  answers: QuestionAnswerDTO[];
+  rating: QuestionRatingDTO;
+  pairing?: PairingConfigDTO;
+  used: boolean;
+  active: boolean;
+  usedAt?: string;
+  submittedBy?: string | null;
+  templateId?: string;
+  chat?: string;
+  createdAt: string;
+  userHasVoted: boolean;
+  userRating: UserRating;
+}
+
+export interface ActiveQuestionsResponseDTO {
+  questions: QuestionWithUserStateDTO[];
+  completionPercentage: number;
+}
+
+export type VoteResponseValue = string[] | Record<string, string>;
