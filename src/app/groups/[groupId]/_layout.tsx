@@ -1,7 +1,8 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable, Text } from "react-native";
 
 import { useGroup } from "@/lib/api/groups";
+import { Info, Users } from "lucide-react-native";
+import { Button } from "@/components/ui/button";
 
 export default function GroupLayout() {
   const router = useRouter();
@@ -18,18 +19,22 @@ export default function GroupLayout() {
           headerTitleAlign: "center",
           title: group?.name ?? "Group",
           headerLeft: () => (
-            <Pressable
+            <Button
               onPress={router.back}
+              size="icon"
+              variant="secondary"
             >
-              <Text>back</Text>
-            </Pressable>
+              <Users className="h-5 w-5" />
+            </Button>
           ),
           headerRight: () => (
-            <Pressable
+            <Button
               onPress={router.back}
+              size="icon"
+              variant="secondary"
             >
-              <Text>info</Text>
-            </Pressable>
+              <Info className="h-5 w-5" />
+            </Button>
           ),
         }}
       />

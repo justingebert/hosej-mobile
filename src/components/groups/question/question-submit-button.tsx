@@ -1,4 +1,6 @@
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 
 export function QuestionSubmitButton({
   canSubmit,
@@ -18,25 +20,9 @@ export function QuestionSubmitButton({
           {submitError}
         </Text>
       )}
-      <Pressable
-        className={`min-h-12 items-center justify-center rounded-xl px-4 py-3 ${
-          canSubmit && !isSubmitting ? "bg-primary" : "bg-muted"
-        }`}
-        disabled={!canSubmit || isSubmitting}
-        onPress={onSubmit}
-      >
-        {isSubmitting ? (
-          <ActivityIndicator />
-        ) : (
-          <Text
-            className={`text-base font-extrabold ${
-              canSubmit ? "text-primary-foreground" : "text-muted-foreground"
-            }`}
-          >
-            Submit
-          </Text>
-        )}
-      </Pressable>
+      <Button disabled={!canSubmit || isSubmitting} onPress={onSubmit}>
+        {isSubmitting ? <ActivityIndicator /> : <Text>Submit</Text>}
+      </Button>
     </View>
   );
 }

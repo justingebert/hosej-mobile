@@ -1,9 +1,11 @@
 import { useMemo } from "react";
 import { type Href, Link } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { useGroups } from "@/lib/api/groups";
 import type { GroupDTO } from "@/lib/api/types/group";
-import { CircleHelp, User } from "lucide-react-native";
+import { CircleHelp, Share, User } from "lucide-react-native";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorCard } from "@/components/ui/error-card";
 import { Screen } from "@/components/ui/screen";
@@ -35,17 +37,17 @@ export function GroupsRootScreen() {
       <View className="w-full flex-1 gap-6">
         <View className="flex-row items-center justify-between">
           <Link href="/help" asChild>
-            <Pressable>
+            <Button size={"icon"} variant="secondary">
               <CircleHelp className="h-5 w-5" />
-            </Pressable>
+            </Button>
           </Link>
 
           <Text className="text-4xl font-extrabold text-foreground">Groups</Text>
 
           <Link href="/settings" asChild>
-            <Pressable>
+            <Button size={"icon"} variant="secondary">
               <User className="h-5 w-5" />
-            </Pressable>
+            </Button>
           </Link>
         </View>
 
@@ -70,14 +72,14 @@ export function GroupsRootScreen() {
 
         <View className="flex-row gap-3">
           <Link href="/groups/create" asChild>
-            <Pressable className="flex-1 rounded-full bg-primary px-4 py-3">
-              <Text className="text-center font-bold text-primary-foreground">Create</Text>
-            </Pressable>
+            <Button className="flex-1">
+              <Text>Create</Text>
+            </Button>
           </Link>
           <Link href="/groups/join" asChild>
-            <Pressable className="flex-1 rounded-full border border-border bg-card px-4 py-3">
-              <Text className="text-center font-bold text-card-foreground">Join</Text>
-            </Pressable>
+            <Button variant="outline" className="flex-1">
+              <Text>Join</Text>
+            </Button>
           </Link>
         </View>
       </View>
@@ -106,7 +108,7 @@ function GroupCard({ group, vibe }: { group: GroupDTO; vibe: string }) {
           </View>
 
           <View className="items-end">
-            <Text>Share</Text>
+            <Share className="h-5 w-5"/>
           </View>
         </View>
       </Pressable>

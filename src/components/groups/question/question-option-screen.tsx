@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Image } from "expo-image";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { Text } from "@/components/ui/text";
 import type {
   QuestionOptionDTO,
   QuestionWithUserStateDTO,

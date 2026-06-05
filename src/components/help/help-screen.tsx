@@ -1,5 +1,8 @@
-import { Alert, Linking, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Linking, Pressable, View } from "react-native";
 import { useRouter } from "expo-router";
+import { Button } from "@/components/ui/button";
+import { Screen } from "@/components/ui/screen";
+import { Text } from "@/components/ui/text";
 
 const FEEDBACK_EMAIL = "pregame_acid_9o@icloud.com";
 
@@ -29,11 +32,7 @@ export function HelpScreen() {
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerClassName="grow gap-6 p-5"
-      contentInsetAdjustmentBehavior="automatic"
-    >
+    <Screen>
       <View className="flex-row items-center justify-between">
         <Pressable onPress={() => router.back()}>
           <Text className="text-foreground">Back</Text>
@@ -48,23 +47,23 @@ export function HelpScreen() {
         </Text>
 
         {/* Tutorial — placeholder until onboarding exists on mobile */}
-        <Pressable className="rounded-full border border-border bg-card px-4 py-3">
-          <Text className="text-center font-bold text-card-foreground">Show tutorial</Text>
-        </Pressable>
+        <Button variant="outline">
+          <Text>Show tutorial</Text>
+        </Button>
 
-        <Pressable onPress={handleBugReport} className="rounded-full bg-primary px-4 py-3">
-          <Text className="text-center font-bold text-primary-foreground">Report a bug</Text>
-        </Pressable>
+        <Button onPress={handleBugReport}>
+          <Text>Report a bug</Text>
+        </Button>
 
         <View className="flex-row gap-4">
-          <Pressable className="flex-1 rounded-full border border-border bg-card px-4 py-3">
-            <Text className="text-center font-bold text-card-foreground">Terms</Text>
-          </Pressable>
-          <Pressable className="flex-1 rounded-full border border-border bg-card px-4 py-3">
-            <Text className="text-center font-bold text-card-foreground">Privacy</Text>
-          </Pressable>
+          <Button variant="outline" className="flex-1">
+            <Text>Terms</Text>
+          </Button>
+          <Button variant="outline" className="flex-1">
+            <Text>Privacy</Text>
+          </Button>
         </View>
       </View>
-    </ScrollView>
+    </Screen>
   );
 }

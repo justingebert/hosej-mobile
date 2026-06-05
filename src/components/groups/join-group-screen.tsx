@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { TextInput, View } from "react-native";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { extractGroupId, useJoinGroup } from "@/lib/api/groups";
 
 export function JoinGroupScreen() {
@@ -31,15 +33,9 @@ export function JoinGroupScreen() {
         <Text className="text-sm text-destructive">{joinGroup.error.message}</Text>
       ) : null}
 
-      <Pressable
-        onPress={handleJoin}
-        disabled={!input.trim() || joinGroup.isPending}
-        className="rounded-full bg-primary px-4 py-3 disabled:opacity-60"
-      >
-        <Text className="text-center font-bold text-primary-foreground">
-          {joinGroup.isPending ? "Joining..." : "Join"}
-        </Text>
-      </Pressable>
+      <Button onPress={handleJoin} disabled={!input.trim() || joinGroup.isPending}>
+        <Text>{joinGroup.isPending ? "Joining..." : "Join"}</Text>
+      </Button>
     </View>
   );
 }

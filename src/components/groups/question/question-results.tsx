@@ -1,5 +1,6 @@
 import { Image } from "expo-image";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
+import { Text } from "@/components/ui/text";
 import { useQuestionResults } from "@/lib/api/questions";
 import { ErrorCard } from "@/components/ui/error-card";
 import {

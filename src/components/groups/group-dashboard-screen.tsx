@@ -1,6 +1,7 @@
 import { Link, type Href, useLocalSearchParams } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { Screen } from "@/components/ui/screen";
+import { Text } from "@/components/ui/text";
 
 export function GroupDashboardScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
@@ -22,14 +23,14 @@ export function GroupDashboardScreen() {
                 Daily Question
               </Text>
               <Text className="text-2xl font-extrabold text-card-foreground">
-                Answer the daily question
+                Answer today's question
               </Text>
               <Text className="text-sm text-muted-foreground">
                 Open the group question screen
               </Text>
             </View>
 
-            <Text className="pl-4 text-2xl font-bold text-muted-foreground">{">"}</Text>
+            <Text className="pl-4 text-2xl font-bold text-muted-foreground">{""}</Text>
           </Pressable>
         </Link>
       </View>

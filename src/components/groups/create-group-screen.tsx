@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, TextInput, View } from "react-native";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { useCreateGroup } from "@/lib/api/groups";
 import { GROUP_LANGUAGES, type GroupLanguage } from "@/lib/api/types/group";
 
@@ -50,15 +52,9 @@ export function CreateGroupScreen() {
         <Text className="text-sm text-destructive">{createGroup.error.message}</Text>
       ) : null}
 
-      <Pressable
-        onPress={handleCreate}
-        disabled={!name.trim() || createGroup.isPending}
-        className="rounded-full bg-primary px-4 py-3 disabled:opacity-60"
-      >
-        <Text className="text-center font-bold text-primary-foreground">
-          {createGroup.isPending ? "Creating..." : "Create"}
-        </Text>
-      </Pressable>
+      <Button onPress={handleCreate} disabled={!name.trim() || createGroup.isPending}>
+        <Text>{createGroup.isPending ? "Creating..." : "Create"}</Text>
+      </Button>
     </View>
   );
 }

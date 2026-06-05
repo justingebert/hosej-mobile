@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { Text } from "@/components/ui/text";
 import { useActiveQuestions, useVoteOnQuestion } from "@/lib/api/questions";
 import { ChatPlaceholder } from "@/components/groups/question/question-placeholders";
 import { QuestionCard } from "@/components/groups/question/question-card";

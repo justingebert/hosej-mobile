@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { Text } from "@/components/ui/text";
 import { PairingMode, type QuestionWithUserStateDTO } from "@/lib/api/types/question";
 import { FeaturePlaceholder } from "./question-placeholders";
 import { QuestionSubmitButton } from "./question-submit-button";

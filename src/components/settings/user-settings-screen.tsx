@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Image } from "expo-image";
-import { Pressable, Switch, Text, View } from "react-native";
+import { Pressable, Switch, View } from "react-native";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { useRouter } from "expo-router";
 import { useUpdateUser, useUser } from "@/lib/api/user";
 import { NOTIFICATION_LANGUAGES, NOTIFICATION_STYLES } from "@/lib/api/types/user";
@@ -99,9 +101,9 @@ export function UserSettingsScreen() {
           </View>
 
           {/* Logout — placeholder, auth not wired yet */}
-          <Pressable className="rounded-full border border-border px-4 py-3">
-            <Text className="text-center font-bold text-foreground">Log out</Text>
-          </Pressable>
+          <Button variant="outline">
+            <Text>Log out</Text>
+          </Button>
         </View>
       ) : null}
     </Screen>

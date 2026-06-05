@@ -52,6 +52,30 @@ Rules:
   error → transient feedback (toast), not a card — the screen content is still
   valid. (Toast lib not chosen yet; mutation forms show inline error text for now.)
 
+# UI Components
+
+Reusable primitives live in `src/components/ui/`, styled with uniwind
+(`className`). The base set (`Text`, `Button`, `Card`) is copied from React
+Native Reusables' **uniwind** registry (`packages/registry/src/uniwind/...`),
+re-pointed at the project's `@/lib/utils` `cn`. Do **not** run the RNR CLI — it
+misdetects this project's custom `dtsFile` path and would wire up NativeWind. Add
+new RNR components by copying the uniwind source manually.
+
+- `Text` (`@/components/ui/text`) — use instead of react-native `Text`. Themed by
+  default; supports `variant` (h1–h4, p, lead, large, small, muted, code) and
+  `asChild`. Inherits color from `TextClassContext` (set by `Button`/`Card`).
+- `Button` (`@/components/ui/button`) — real action buttons only. Variants:
+  default, destructive, outline, secondary, ghost, link; sizes: default, sm, lg,
+  icon. Put a `<Text>` child inside; it picks up the button's text color via
+  context automatically.
+- `Card` (`@/components/ui/card`) + `CardHeader/Title/Description/Content/Footer`.
+
+Conventions:
+- react-native `Text` → ui `Text` everywhere.
+- Action buttons → `<Button>`. Leave **tappable surfaces** (cards, tabs,
+  segmented toggles, icon-only header taps) as `Pressable` — Button imposes
+  button sizing/semantics that break those.
+
 # General Guidelines
 
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.

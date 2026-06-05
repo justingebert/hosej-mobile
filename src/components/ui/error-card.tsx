@@ -1,4 +1,6 @@
-import { Pressable, Text, View } from "react-native";
+import { View } from "react-native";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 import { getErrorMessage } from "@/lib/api/client";
 import { API_URL } from "@/lib/config";
 
@@ -44,15 +46,9 @@ export function ErrorCard({
       ) : null}
 
       {onRetry ? (
-        <Pressable
-          className="self-start rounded-full bg-primary px-4 py-2 disabled:opacity-60"
-          disabled={isRetrying}
-          onPress={onRetry}
-        >
-          <Text className="text-sm font-bold text-primary-foreground">
-            {isRetrying ? "Retrying…" : "Try again"}
-          </Text>
-        </Pressable>
+        <Button className="self-start" disabled={isRetrying} onPress={onRetry}>
+          <Text>{isRetrying ? "Retrying…" : "Try again"}</Text>
+        </Button>
       ) : null}
     </View>
   );

@@ -1,5 +1,6 @@
 import { Image } from "expo-image";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { Text } from "@/components/ui/text";
 import type { QuestionWithUserStateDTO } from "@/lib/api/types/question";
 import { QuestionResults } from "./question-results";
 import { QuestionTypeScreen } from "./question-type-screens";
