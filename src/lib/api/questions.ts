@@ -2,12 +2,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "./client";
 import type {
   ActiveQuestionsResponseDTO,
+  QuestionResultsResponseDTO,
   VoteResponseValue,
 } from "./types/question";
 
 export const questionKeys = {
   all: ["questions"] as const,
   active: (groupId: string) => ["groups", groupId, "questions", "active"] as const,
+  results: (groupId: string, questionId: string) =>
+    ["groups", groupId, "questions", questionId, "results"] as const,
 };
 
 export function useActiveQuestions(groupId: string) {
@@ -36,8 +39,24 @@ export function useVoteOnQuestion(groupId: string) {
           body: JSON.stringify({ response }),
         }
       ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: questionKeys.active(groupId) });
+    onSuccess: async (_data, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: questionKeys.active(groupId) }),
+        queryClient.invalidateQueries({
+          queryKey: questionKeys.results(groupId, variables.questionId),
+        }),
+      ]);
     },
+  });
+}
+
+export function useQuestionResults(groupId: string, questionId: string) {
+  return useQuery({
+    queryKey: questionKeys.results(groupId, questionId),
+    queryFn: () =>
+      apiFetch<QuestionResultsResponseDTO>(
+        `/api/groups/${groupId}/question/${questionId}/results`
+      ),
+    enabled: !!groupId && !!questionId,
   });
 }

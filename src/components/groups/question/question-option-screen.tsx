@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Image } from "expo-image";
 import { Pressable, Text, View } from "react-native";
 import type {
@@ -7,28 +8,39 @@ import type {
 import { FeaturePlaceholder } from "./question-placeholders";
 import { QuestionSubmitButton } from "./question-submit-button";
 import { optionDisplayLabel, optionResponseValue } from "./question-utils";
+import type { QuestionResponseSubmitHandler } from "./types";
 
 export type OptionQuestionScreenProps = {
   question: QuestionWithUserStateDTO;
-  selectedResponses: string[];
   isSubmitting: boolean;
-  canSubmit: boolean;
   submitError: string | null;
-  onToggleOption: (option: QuestionOptionDTO) => void;
-  onSubmit: () => void;
+  onSubmit: QuestionResponseSubmitHandler;
 };
 
 export function OptionQuestionScreen({
   question,
-  selectedResponses,
   isSubmitting,
-  canSubmit,
   submitError,
-  onToggleOption,
   onSubmit,
   isImage = false,
 }: OptionQuestionScreenProps & { isImage?: boolean }) {
   const options = question.options ?? [];
+  const [selectedResponses, setSelectedResponses] = useState<string[]>([]);
+  const canSubmit = selectedResponses.length > 0;
+
+  const toggleOption = (option: QuestionOptionDTO) => {
+    const value = optionResponseValue(option);
+
+    setSelectedResponses((current) => {
+      if (question.multiSelect) {
+        return current.includes(value)
+          ? current.filter((item) => item !== value)
+          : [...current, value];
+      }
+
+      return [value];
+    });
+  };
 
   if (options.length === 0) {
     return (
@@ -48,7 +60,7 @@ export function OptionQuestionScreen({
             isImage={isImage}
             isSelected={selectedResponses.includes(optionResponseValue(option))}
             option={option}
-            onPress={() => onToggleOption(option)}
+            onPress={() => toggleOption(option)}
           />
         ))}
       </View>
@@ -56,7 +68,7 @@ export function OptionQuestionScreen({
         canSubmit={canSubmit}
         isSubmitting={isSubmitting}
         submitError={submitError}
-        onSubmit={onSubmit}
+        onSubmit={() => onSubmit(selectedResponses)}
       />
     </View>
   );

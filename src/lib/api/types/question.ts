@@ -75,3 +75,37 @@ export interface ActiveQuestionsResponseDTO {
 }
 
 export type VoteResponseValue = string[] | Record<string, string>;
+
+export interface QuestionResultUserDTO {
+  username: string;
+  avatarUrl?: string;
+}
+
+export interface QuestionResultDTO {
+  option: string;
+  count: number;
+  percentage: number;
+  users: QuestionResultUserDTO[];
+}
+
+export interface PairingValueResultDTO {
+  value: string;
+  count: number;
+  percentage: number;
+  users: QuestionResultUserDTO[];
+}
+
+export interface PairingResultDTO {
+  key: string;
+  valueCounts: PairingValueResultDTO[];
+  topValue: string;
+}
+
+export interface QuestionResultsResponseDTO {
+  results: QuestionResultDTO[];
+  pairingResults?: PairingResultDTO[];
+  totalVotes: number;
+  totalUsers: number;
+  questionType: QuestionType;
+  multiSelect: boolean;
+}

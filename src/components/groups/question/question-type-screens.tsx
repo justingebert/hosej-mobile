@@ -1,45 +1,32 @@
 import {
   QuestionType,
-  type QuestionOptionDTO,
   type QuestionWithUserStateDTO,
 } from "@/lib/api/types/question";
-import { FeaturePlaceholder } from "./question-placeholders";
 import {
   OptionQuestionScreen,
   type OptionQuestionScreenProps,
 } from "./question-option-screen";
+import { PairingQuestionScreen } from "./question-pairing-screen";
 import { TextQuestionScreen } from "./question-text-screen";
+import type { QuestionResponseSubmitHandler } from "./types";
 
 export function QuestionTypeScreen({
   question,
-  textResponse,
-  selectedResponses,
   isSubmitting,
-  canSubmit,
   submitError,
-  onTextChange,
-  onToggleOption,
   onSubmit,
 }: {
   question: QuestionWithUserStateDTO;
-  textResponse: string;
-  selectedResponses: string[];
   isSubmitting: boolean;
-  canSubmit: boolean;
   submitError: string | null;
-  onTextChange: (value: string) => void;
-  onToggleOption: (option: QuestionOptionDTO) => void;
-  onSubmit: () => void;
+  onSubmit: QuestionResponseSubmitHandler;
 }) {
   switch (question.questionType) {
     case QuestionType.Text:
       return (
         <TextQuestionScreen
-          value={textResponse}
           isSubmitting={isSubmitting}
-          canSubmit={canSubmit}
           submitError={submitError}
-          onChange={onTextChange}
           onSubmit={onSubmit}
         />
       );
@@ -52,17 +39,21 @@ export function QuestionTypeScreen({
     case QuestionType.Image:
       return <ImageQuestionScreen {...optionProps()} />;
     case QuestionType.Pairing:
-      return <PairingQuestionScreen question={question} />;
+      return (
+        <PairingQuestionScreen
+          question={question}
+          isSubmitting={isSubmitting}
+          submitError={submitError}
+          onSubmit={onSubmit}
+        />
+      );
   }
 
   function optionProps(): OptionQuestionScreenProps {
     return {
       question,
-      selectedResponses,
       isSubmitting,
-      canSubmit,
       submitError,
-      onToggleOption,
       onSubmit,
     };
   }
@@ -82,17 +73,4 @@ function RatingQuestionScreen(props: OptionQuestionScreenProps) {
 
 function ImageQuestionScreen(props: OptionQuestionScreenProps) {
   return <OptionQuestionScreen {...props} isImage />;
-}
-
-function PairingQuestionScreen({
-  question,
-}: {
-  question: QuestionWithUserStateDTO;
-}) {
-  return (
-    <FeaturePlaceholder
-      title="Pairing question"
-      body={`Mobile matching controls are not built yet. ${question.pairing?.values.length ?? 0} values available.`}
-    />
-  );
 }

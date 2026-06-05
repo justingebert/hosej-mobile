@@ -1,23 +1,4 @@
 import { Text, View } from "react-native";
-import type { QuestionWithUserStateDTO } from "@/lib/api/types/question";
-
-export function AnsweredPlaceholder({
-  question,
-}: {
-  question: QuestionWithUserStateDTO;
-}) {
-  return (
-    <View className="gap-2 rounded-xl bg-secondary p-4">
-      <Text className="text-base font-extrabold text-secondary-foreground">
-        You answered this question.
-      </Text>
-      <Text className="text-sm text-muted-foreground">
-        Results preview is a placeholder for now. {question.answers.length} answer
-        {question.answers.length === 1 ? "" : "s"} recorded.
-      </Text>
-    </View>
-  );
-}
 
 export function ChatPlaceholder() {
   return (

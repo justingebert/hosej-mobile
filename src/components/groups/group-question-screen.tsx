@@ -4,7 +4,6 @@ import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native"
 import { useActiveQuestions, useVoteOnQuestion } from "@/lib/api/questions";
 import { ChatPlaceholder } from "@/components/groups/question/question-placeholders";
 import { QuestionCard } from "@/components/groups/question/question-card";
-import { QuestionProgress } from "@/components/groups/question/question-progress";
 import {
   EmptyQuestionState,
   QuestionErrorState,

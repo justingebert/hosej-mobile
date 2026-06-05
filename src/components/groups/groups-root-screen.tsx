@@ -4,6 +4,7 @@ import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native"
 import { useGroups } from "@/lib/api/groups";
 import type { GroupDTO } from "@/lib/api/types/group";
 import { API_URL } from "@/lib/config";
+import { CircleHelp, User } from "lucide-react-native";
 
 const GROUP_VIBES = [
   "hosej-ing...",
@@ -70,6 +71,19 @@ export function GroupsRootScreen() {
             ))}
           </View>
         )}
+
+        <View className="flex-row gap-3">
+          <Link href="/groups/create" asChild>
+            <Pressable className="flex-1 rounded-full bg-primary px-4 py-3">
+              <Text className="text-center font-bold text-primary-foreground">Create</Text>
+            </Pressable>
+          </Link>
+          <Link href="/groups/join" asChild>
+            <Pressable className="flex-1 rounded-full border border-border bg-card px-4 py-3">
+              <Text className="text-center font-bold text-card-foreground">Join</Text>
+            </Pressable>
+          </Link>
+        </View>
       </View>
     </ScrollView>
   );

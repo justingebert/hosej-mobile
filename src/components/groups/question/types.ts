@@ -12,3 +12,5 @@ export type QuestionVoteHandler = (
   questionId: string,
   response: VoteResponseValue
 ) => void;
+
+export type QuestionResponseSubmitHandler = (response: VoteResponseValue) => void;
