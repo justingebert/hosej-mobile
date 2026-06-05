@@ -6,6 +6,52 @@ The exisitng Webapplication Hosej lives: /Users/justingebert/Projects/Personal/H
 
 when using Icons use lucide-react-native icons
 
+# Data Fetching & Screen States
+
+Server state flows through React Query hooks in `src/lib/api/*` (one query-key
+factory per resource). Screens render loading/error/empty with **explicit,
+in-place branches** — no render-prop wrappers, no hidden control flow. The
+repeated views are shared primitives in `src/components/ui/`; reuse them instead
+of hand-rolling per screen:
+
+- `Screen` — scrollable container with themed background + optional
+  pull-to-refresh. Pass `onRefresh={refetch}` and `refreshing={isRefetching}`.
+- `ErrorCard` — the single error view for a failed query. Renders where the
+  content would be, with an optional retry button. Props: `title`, `error`,
+  `onRetry`, `isRetrying`.
+- `EmptyState` — "no content yet" (distinct from an error). Props: `title`,
+  optional `description`.
+- `Skeleton` — placeholder-bar primitive. Compose into a content-shaped
+  skeleton kept **local** to each screen.
+
+Standard query screen:
+
+```tsx
+const { data, error, isError, isPending, isRefetching, refetch } = useThing();
+const items = data?.items ?? [];
+
+return (
+  <Screen onRefresh={refetch} refreshing={isRefetching}>
+    {isPending ? (
+      <ThingSkeleton />
+    ) : isError ? (
+      <ErrorCard title="Could not load things" error={error} onRetry={refetch} isRetrying={isRefetching} />
+    ) : items.length === 0 ? (
+      <EmptyState title="No things yet" />
+    ) : (
+      <ThingList items={items} />
+    )}
+  </Screen>
+);
+```
+
+Rules:
+- Skeletons are layout-specific → keep them local (built from `Skeleton`).
+  Error/empty views are shared → never copy them into a screen.
+- **Query** error → `ErrorCard` (the content is missing). **Mutation/action**
+  error → transient feedback (toast), not a card — the screen content is still
+  valid. (Toast lib not chosen yet; mutation forms show inline error text for now.)
+
 # General Guidelines
 
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.

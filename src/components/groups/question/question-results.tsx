@@ -1,6 +1,7 @@
 import { Image } from "expo-image";
 import { ActivityIndicator, Text, View } from "react-native";
 import { useQuestionResults } from "@/lib/api/questions";
+import { ErrorCard } from "@/components/ui/error-card";
 import {
   QuestionType,
   type PairingResultDTO,
@@ -13,7 +14,7 @@ export function QuestionResults({
 }: {
   question: QuestionWithUserStateDTO;
 }) {
-  const { data, error, isError, isPending } = useQuestionResults(
+  const { data, error, isError, isPending, isRefetching, refetch } = useQuestionResults(
     question.groupId,
     question._id
   );
@@ -28,14 +29,12 @@ export function QuestionResults({
 
   if (isError) {
     return (
-      <View className="gap-2 rounded-xl bg-secondary p-4">
-        <Text className="text-base font-extrabold text-secondary-foreground">
-          Could not load results
-        </Text>
-        <Text selectable className="text-sm text-muted-foreground">
-          {error instanceof Error ? error.message : "Please try again."}
-        </Text>
-      </View>
+      <ErrorCard
+        title="Could not load results"
+        error={error}
+        onRetry={refetch}
+        isRetrying={isRefetching}
+      />
     );
   }
 

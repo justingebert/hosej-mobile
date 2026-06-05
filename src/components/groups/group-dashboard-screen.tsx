@@ -1,16 +1,13 @@
 import { Link, type Href, useLocalSearchParams } from "expo-router";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { Screen } from "@/components/ui/screen";
 
 export function GroupDashboardScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const questionHref = `/groups/${groupId}/question` as Href;
 
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerClassName="grow gap-6 p-5"
-      contentInsetAdjustmentBehavior="automatic"
-    >
+    <Screen>
       <View className="w-full flex-1 gap-6">
         <Link href={questionHref} asChild>
           <Pressable
@@ -36,6 +33,6 @@ export function GroupDashboardScreen() {
           </Pressable>
         </Link>
       </View>
-    </ScrollView>
+    </Screen>
   );
 }

@@ -10,6 +10,12 @@ export class ApiError extends Error {
   }
 }
 
+export function getErrorMessage(error: unknown, fallback = "Something went wrong."): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  return fallback;
+}
+
 const DEV_TOKEN = process.env.EXPO_PUBLIC_DEV_TOKEN;
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {

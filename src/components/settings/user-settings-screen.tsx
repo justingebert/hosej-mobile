@@ -1,24 +1,23 @@
 import { useState } from "react";
 import { Image } from "expo-image";
-import { Pressable, ScrollView, Switch, Text, View } from "react-native";
+import { Pressable, Switch, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useUpdateUser, useUser } from "@/lib/api/user";
 import { NOTIFICATION_LANGUAGES, NOTIFICATION_STYLES } from "@/lib/api/types/user";
+import { ErrorCard } from "@/components/ui/error-card";
+import { Screen } from "@/components/ui/screen";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function UserSettingsScreen() {
   const router = useRouter();
-  const { data: user, isError, error, refetch } = useUser();
+  const { data: user, isPending, isError, error, isRefetching, refetch } = useUser();
   const updateUser = useUpdateUser();
 
   // Cosmetic only for now — TODO: implement push registration / persistence.
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerClassName="grow gap-6 p-5"
-      contentInsetAdjustmentBehavior="automatic"
-    >
+    <Screen onRefresh={refetch} refreshing={isRefetching}>
       <View className="flex-row items-center justify-between">
         <Pressable onPress={() => router.back()}>
           <Text className="text-foreground">Back</Text>
@@ -27,16 +26,16 @@ export function UserSettingsScreen() {
         <View className="w-10" />
       </View>
 
-      {isError ? (
-        <View className="gap-2">
-          <Text className="text-destructive">{error?.message}</Text>
-          <Pressable onPress={() => refetch()}>
-            <Text className="text-foreground">Try again</Text>
-          </Pressable>
-        </View>
-      ) : !user ? (
-        <Text className="text-muted-foreground">Loading...</Text>
-      ) : (
+      {isPending ? (
+        <SettingsSkeleton />
+      ) : isError ? (
+        <ErrorCard
+          title="Could not load settings"
+          error={error}
+          onRetry={refetch}
+          isRetrying={isRefetching}
+        />
+      ) : user ? (
         <View className="gap-8">
           <View className="gap-4">
             <Text className="text-lg font-bold text-foreground">Preferences</Text>
@@ -97,15 +96,26 @@ export function UserSettingsScreen() {
               <InfoRow label="Joined" value={new Date(user.createdAt).toLocaleDateString()} />
               {user.deviceId ? <InfoRow label="Device ID" value={user.deviceId} /> : null}
             </View>
-          </View>0
+          </View>
 
           {/* Logout — placeholder, auth not wired yet */}
           <Pressable className="rounded-full border border-border px-4 py-3">
             <Text className="text-center font-bold text-foreground">Log out</Text>
           </Pressable>
         </View>
-      )}
-    </ScrollView>
+      ) : null}
+    </Screen>
+  );
+}
+
+function SettingsSkeleton() {
+  return (
+    <View className="gap-4">
+      <Skeleton className="h-5 w-1/3" />
+      <Skeleton className="h-12 w-full rounded-xl" />
+      <Skeleton className="h-12 w-full rounded-xl" />
+      <Skeleton className="h-24 w-full rounded-xl" />
+    </View>
   );
 }
 

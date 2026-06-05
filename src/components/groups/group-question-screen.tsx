@@ -1,14 +1,13 @@
 import { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useActiveQuestions, useVoteOnQuestion } from "@/lib/api/questions";
 import { ChatPlaceholder } from "@/components/groups/question/question-placeholders";
 import { QuestionCard } from "@/components/groups/question/question-card";
-import {
-  EmptyQuestionState,
-  QuestionErrorState,
-  QuestionSkeleton,
-} from "@/components/groups/question/question-states";
+import { QuestionSkeleton } from "@/components/groups/question/question-states";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorCard } from "@/components/ui/error-card";
+import { Screen } from "@/components/ui/screen";
 import { QuestionTabs } from "@/components/groups/question/question-tabs";
 import { buildFlatQuestionList } from "@/components/groups/question/question-utils";
 import type { VoteResponseValue } from "@/lib/api/types/question";
@@ -40,28 +39,24 @@ export function GroupQuestionScreen() {
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-background"
-      contentContainerClassName="grow gap-6 p-5"
-      contentInsetAdjustmentBehavior="automatic"
-      refreshControl={
-        <RefreshControl
-          refreshing={isRefetching}
-          onRefresh={refetch}
-          colorsClassName="accent-muted-foreground"
-          tintColorClassName="accent-muted-foreground"
-        />
-      }
-    >
+    <Screen onRefresh={refetch} refreshing={isRefetching}>
       <View className="w-full flex-1 gap-6">
         <QuestionHeader onBack={router.back} />
 
         {isPending ? (
           <QuestionSkeleton />
         ) : isError ? (
-          <QuestionErrorState error={error} isRetrying={isRefetching} onRetry={refetch} />
+          <ErrorCard
+            title="Could not load questions"
+            error={error}
+            onRetry={refetch}
+            isRetrying={isRefetching}
+          />
         ) : flatQuestions.length === 0 ? (
-          <EmptyQuestionState />
+          <EmptyState
+            title="No active questions"
+            description="Activate or create a question from the existing web flow for now."
+          />
         ) : activeQuestion ? (
           <>
             <QuestionTabs
@@ -80,7 +75,7 @@ export function GroupQuestionScreen() {
           </>
         ) : null}
       </View>
-    </ScrollView>
+    </Screen>
   );
 }
 
