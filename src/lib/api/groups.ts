@@ -1,6 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "./client";
-import type { GroupListResponseDTO, GroupWithAdminDTO } from "./types/group";
+import type {
+  CreateGroupInput,
+  GroupDTO,
+  GroupListResponseDTO,
+  GroupWithAdminDTO,
+  JoinGroupResponseDTO,
+} from "./types/group";
 
 export const groupKeys = {
   all: ["groups"] as const,
@@ -20,4 +26,37 @@ export function useGroup(id: string) {
     queryFn: () => apiFetch<GroupWithAdminDTO>(`/api/groups/${id}`),
     enabled: !!id,
   });
+}
+
+export function useCreateGroup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: CreateGroupInput) =>
+      apiFetch<GroupDTO>("/api/groups", {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: groupKeys.all }),
+  });
+}
+
+export function useJoinGroup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    // Join is keyed by groupId; the invite link is just /join/:groupId.
+    mutationFn: (groupId: string) =>
+      apiFetch<JoinGroupResponseDTO>(`/api/groups/${groupId}/members`, {
+        method: "POST",
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: groupKeys.all }),
+  });
+}
+
+// Accepts a raw group id or a /join/:groupId invite link.
+export function extractGroupId(input: string): string {
+  const trimmed = input.trim();
+  const match = trimmed.match(/\/join\/([^\s/?#]+)/);
+  return match ? match[1] : trimmed;
 }

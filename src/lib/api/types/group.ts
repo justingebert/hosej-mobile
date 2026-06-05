@@ -67,3 +67,14 @@ export interface GroupWithAdminDTO extends GroupDTO {
 export interface GroupListResponseDTO {
   groups: GroupDTO[];
 }
+
+export interface CreateGroupInput {
+  name: string;
+  language?: GroupLanguage;
+}
+
+// POST /api/groups/:groupId/members
+export interface JoinGroupResponseDTO {
+  message: string;
+  group: GroupDTO;
+}

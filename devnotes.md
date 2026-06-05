@@ -27,6 +27,12 @@
 
 # Worklog
 
+
+## 2026-06-05
+- think about loading and error boundarys/hadneling
+- also i want universal styling to adjust corners for all compoents
+- add icons and clean up genereated slop
+
 ## 2026-06-02
 - think about auth strategy with claude
 - watch expo tutiral for auth flow within expo

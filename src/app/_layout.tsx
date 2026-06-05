@@ -12,7 +12,24 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <Stack screenOptions={{ headerShown: false }} />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen
+              name="groups/create"
+              options={{
+                presentation: "formSheet",
+                sheetAllowedDetents: [0.5],
+                sheetGrabberVisible: true,
+              }}
+            />
+            <Stack.Screen
+              name="groups/join"
+              options={{
+                presentation: "formSheet",
+                sheetAllowedDetents: [0.5],
+                sheetGrabberVisible: true,
+              }}
+            />
+          </Stack>
           <StatusBar style="auto" />
         </QueryClientProvider>
       </SafeAreaProvider>
