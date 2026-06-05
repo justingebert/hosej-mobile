@@ -42,15 +42,19 @@ export function GroupsRootScreen() {
     >
       <View className="w-full flex-1 gap-6">
         <View className="flex-row items-center justify-between">
-          <Pressable>
-            <Text>HELP</Text>
-          </Pressable>
+          <Link href="/help" asChild>
+            <Pressable>
+              <CircleHelp className="h-5 w-5" />
+            </Pressable>
+          </Link>
 
           <Text className="text-4xl font-extrabold text-foreground">Groups</Text>
 
-          <Pressable>
-            <Text>USER</Text>
-          </Pressable>
+          <Link href="/settings" asChild>
+            <Pressable>
+              <User className="h-5 w-5" />
+            </Pressable>
+          </Link>
         </View>
 
         {isPending ? (
