@@ -17,8 +17,8 @@ export function JoinGroupScreen() {
   };
 
   return (
-    <View className="flex-1 gap-4 bg-background p-5">
-      <Text className="text-2xl font-extrabold text-foreground">Join a group</Text>
+    <View className="gap-4 bg-background p-5">
+      <Text className="text-2xl font-extrabold text-foreground text-center">Join a group</Text>
 
       <TextInput
         autoFocus

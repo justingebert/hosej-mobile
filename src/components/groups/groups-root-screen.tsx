@@ -1,11 +1,13 @@
 import { useMemo } from "react";
 import { type Href, Link } from "expo-router";
-import { Pressable, View } from "react-native";
+import { Platform, Pressable, Share as RNShare, StyleSheet, useColorScheme, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BlurView } from "expo-blur";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { useGroups } from "@/lib/api/groups";
+import { buildInviteLink, useGroups } from "@/lib/api/groups";
 import type { GroupDTO } from "@/lib/api/types/group";
-import { CircleHelp, Share, User } from "lucide-react-native";
+import { CircleHelp, Share, Star, User } from "lucide-react-native";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorCard } from "@/components/ui/error-card";
 import { Screen } from "@/components/ui/screen";
@@ -32,63 +34,100 @@ export function GroupsRootScreen() {
     return vibes;
   }, [groups]);
 
+  const insets = useSafeAreaInsets();
+  const scheme = useColorScheme();
+
   return (
-    <Screen onRefresh={refetch} refreshing={isRefetching}>
-      <View className="w-full flex-1 gap-6">
-        <View className="flex-row items-center justify-between">
-          <Link href="/help" asChild>
-            <Button size={"icon"} variant="secondary">
-              <CircleHelp className="h-5 w-5" />
-            </Button>
-          </Link>
+    <View className="flex-1">
+      <Screen
+        onRefresh={refetch}
+        refreshing={isRefetching}
+        contentContainerClassName="grow gap-6 px-5 pt-5 pb-36"
+      >
+        <View className="flex-1 gap-6">
+          <View className="flex-row items-center justify-between">
+            <Link href="/help" asChild>
+              <Button size={"icon"} variant="secondary">
+                <CircleHelp className="h-5 w-5" />
+              </Button>
+            </Link>
 
-          <Text className="text-4xl font-extrabold text-foreground">Groups</Text>
+            <Text className="text-4xl font-extrabold text-foreground">Groups</Text>
 
-          <Link href="/settings" asChild>
-            <Button size={"icon"} variant="secondary">
-              <User className="h-5 w-5" />
-            </Button>
-          </Link>
-        </View>
-
-        {isPending ? (
-          <GroupsSkeleton />
-        ) : isError ? (
-          <ErrorCard
-            title="Could not load groups"
-            error={error}
-            onRetry={refetch}
-            isRetrying={isRefetching}
-          />
-        ) : groups.length === 0 ? (
-          <EmptyState title="No groups yet" />
-        ) : (
-          <View className="gap-3">
-            {groups.map((group) => (
-              <GroupCard key={group._id} group={group} vibe={vibesByGroup[group._id]} />
-            ))}
+            <Link href="/settings" asChild>
+              <Button size={"icon"} variant="secondary">
+                <User className="h-5 w-5" />
+              </Button>
+            </Link>
           </View>
-        )}
 
-        <View className="flex-row gap-3">
-          <Link href="/groups/create" asChild>
-            <Button className="flex-1">
-              <Text>Create</Text>
-            </Button>
-          </Link>
-          <Link href="/groups/join" asChild>
-            <Button variant="outline" className="flex-1">
-              <Text>Join</Text>
-            </Button>
-          </Link>
+          {isPending ? (
+            <GroupsSkeleton />
+          ) : isError ? (
+            <ErrorCard
+              title="Could not load groups"
+              error={error}
+              onRetry={refetch}
+              isRetrying={isRefetching}
+            />
+          ) : groups.length === 0 ? (
+            <EmptyState title="No groups yet" />
+          ) : (
+            <View className="gap-3">
+              {groups.map((group) => (
+                <GroupCard key={group._id} group={group} vibe={vibesByGroup[group._id]} />
+              ))}
+            </View>
+          )}
+        </View>
+      </Screen>
+
+      <View className="absolute inset-x-0 bottom-0">
+        <View className="overflow-hidden">
+          <BlurView
+            tint={scheme === "dark" ? "dark" : "light"}
+            intensity={50}
+            blurMethod="dimezisBlurView"
+            style={StyleSheet.absoluteFill}
+          />
+          <View
+            className="flex-row gap-3 px-5 pt-3"
+            style={{ paddingBottom: insets.bottom + 12 }}
+          >
+            <Link href="/groups/join" asChild>
+              <Button variant="outline" className="flex-1">
+                <Text>Join</Text>
+              </Button>
+            </Link>
+            <Link href="/groups/create" asChild>
+              <Button className="flex-1">
+                <Text>Create</Text>
+              </Button>
+            </Link>
+          </View>
         </View>
       </View>
-    </Screen>
+    </View>
   );
 }
 
 function GroupCard({ group, vibe }: { group: GroupDTO; vibe: string }) {
   const dashboardHref = `/groups/${group._id}/dashboard` as Href;
+
+  const handleShare = async () => {
+    const joinLink = buildInviteLink(group._id);
+    const message = `Join my group "${group.name}" on HoseJ!`;
+    try {
+      // iOS shows `url` as a rich link; Android only reads `message`, so fold it in there.
+      await RNShare.share(
+        Platform.OS === "ios"
+          ? { title: message, url: joinLink, message }
+          : { title: message, message: `${message}\n${joinLink}` },
+      );
+    } catch {
+      // Share sheet dismissed or unavailable — nothing actionable.
+    }
+  };
 
   return (
     <Link href={dashboardHref} asChild>
@@ -107,8 +146,11 @@ function GroupCard({ group, vibe }: { group: GroupDTO; vibe: string }) {
             <Text className="text-sm text-muted-foreground">{vibe}</Text>
           </View>
 
-          <View className="items-end">
-            <Share className="h-5 w-5"/>
+          <View className="flex-row items-center gap-4">
+            <Star />
+            <Pressable onPress={handleShare} hitSlop={8} accessibilityLabel={`Share ${group.name}`}>
+              <Share className="h-5 w-5" />
+            </Pressable>
           </View>
         </View>
       </Pressable>

@@ -21,8 +21,8 @@ export function CreateGroupScreen() {
   };
 
   return (
-    <View className="flex-1 gap-4 bg-background p-5">
-      <Text className="text-2xl font-extrabold text-foreground">Create a group</Text>
+    <View className="gap-4 bg-background p-5">
+      <Text className="text-2xl font-extrabold text-foreground text-center">Create a group</Text>
 
       <TextInput
         autoFocus

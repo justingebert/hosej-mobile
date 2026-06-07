@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { API_URL } from "@/lib/config";
 import { apiFetch } from "./client";
 import type {
   CreateGroupInput,
@@ -59,4 +60,9 @@ export function extractGroupId(input: string): string {
   const trimmed = input.trim();
   const match = trimmed.match(/\/join\/([^\s/?#]+)/);
   return match ? match[1] : trimmed;
+}
+
+
+export function buildInviteLink(groupId: string): string {
+  return `${API_URL}/join/${groupId}`;
 }
