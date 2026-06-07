@@ -1,4 +1,4 @@
-import { Pressable, View } from "react-native";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Text } from "@/components/ui/text";
 import type { FlatQuestionItem } from "./types";
 
@@ -12,31 +12,16 @@ export function QuestionTabs({
   onSelect: (questionId: string) => void;
 }) {
   return (
-    <View className="flex-row gap-2">
-      {questions.map(({ question, label }) => {
-        const isActive = question._id === activeQuestionId;
-
-        return (
-          <Pressable
-            key={question._id}
-            className={`min-h-11 flex-1 items-center justify-center rounded-xl border px-3 py-2 ${
-              isActive ? "border-primary bg-primary" : "border-border bg-card"
-            }`}
-            style={{ borderCurve: "continuous" }}
-            onPress={() => onSelect(question._id)}
-          >
-            <Text
-              adjustsFontSizeToFit
-              numberOfLines={1}
-              className={`text-center text-sm font-bold ${
-                isActive ? "text-primary-foreground" : "text-card-foreground"
-              }`}
-            >
+    <Tabs value={activeQuestionId} onValueChange={onSelect}>
+      <TabsList>
+        {questions.map(({ question, label }) => (
+          <TabsTrigger key={question._id} value={question._id} className="flex-1">
+            <Text>
               {label}
             </Text>
-          </Pressable>
-        );
-      })}
-    </View>
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   );
 }
