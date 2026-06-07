@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { Pressable, View } from "react-native";
-import { Text } from "@/components/ui/text";
+import { useLocalSearchParams } from "expo-router";
+import { View } from "react-native";
 import { useActiveQuestions, useVoteOnQuestion } from "@/lib/api/questions";
 import { ChatPlaceholder } from "@/components/groups/question/question-placeholders";
 import { QuestionCard } from "@/components/groups/question/question-card";
@@ -14,7 +13,6 @@ import { buildFlatQuestionList } from "@/components/groups/question/question-uti
 import type { VoteResponseValue } from "@/lib/api/types/question";
 
 export function GroupQuestionScreen() {
-  const router = useRouter();
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const {
     data,
@@ -42,8 +40,6 @@ export function GroupQuestionScreen() {
   return (
     <Screen onRefresh={refetch} refreshing={isRefetching}>
       <View className="w-full flex-1 gap-6">
-        <QuestionHeader onBack={router.back} />
-
         {isPending ? (
           <QuestionSkeleton />
         ) : isError ? (
@@ -77,21 +73,5 @@ export function GroupQuestionScreen() {
         ) : null}
       </View>
     </Screen>
-  );
-}
-
-function QuestionHeader({ onBack }: { onBack: () => void }) {
-  return (
-    <View className="flex-row items-center justify-between gap-3">
-      <Pressable onPress={onBack}>
-        <Text>back</Text>
-      </Pressable>
-
-      <Text className="flex-1 text-center text-3xl font-extrabold text-foreground">
-        Daily Question
-      </Text>
-
-      <View className="h-11 w-11" />
-    </View>
   );
 }

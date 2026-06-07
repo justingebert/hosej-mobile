@@ -3,7 +3,6 @@ import { Image } from "expo-image";
 import { Pressable, Switch, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { useRouter } from "expo-router";
 import { useUpdateUser, useUser } from "@/lib/api/user";
 import { NOTIFICATION_LANGUAGES, NOTIFICATION_STYLES } from "@/lib/api/types/user";
 import { ErrorCard } from "@/components/ui/error-card";
@@ -11,7 +10,6 @@ import { Screen } from "@/components/ui/screen";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function UserSettingsScreen() {
-  const router = useRouter();
   const { data: user, isPending, isError, error, isRefetching, refetch } = useUser();
   const updateUser = useUpdateUser();
 
@@ -20,14 +18,6 @@ export function UserSettingsScreen() {
 
   return (
     <Screen onRefresh={refetch} refreshing={isRefetching}>
-      <View className="flex-row items-center justify-between">
-        <Pressable onPress={() => router.back()}>
-          <Text className="text-foreground">Back</Text>
-        </Pressable>
-        <Text className="text-2xl font-extrabold text-foreground">Settings</Text>
-        <View className="w-10" />
-      </View>
-
       {isPending ? (
         <SettingsSkeleton />
       ) : isError ? (

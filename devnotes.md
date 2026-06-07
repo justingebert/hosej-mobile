@@ -28,6 +28,10 @@
 # Worklog
 
 
+## 2026-06-08
+- improve styling and add icons
+- ai produces to much code to review atm but makes seeminlng good progress lets see what come soon
+
 ## 2026-06-05
 - think about loading and error boundarys/hadneling
 - also i want universal styling to adjust corners for all compoents

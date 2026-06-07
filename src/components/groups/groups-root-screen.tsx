@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { buildInviteLink, useGroups } from "@/lib/api/groups";
 import type { GroupDTO } from "@/lib/api/types/group";
-import { CircleHelp, Share, Star, User } from "lucide-react-native";
+import { Share, Star } from "lucide-react-native";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorCard } from "@/components/ui/error-card";
 import { Screen } from "@/components/ui/screen";
@@ -45,22 +45,6 @@ export function GroupsRootScreen() {
         contentContainerClassName="grow gap-6 px-5 pt-5 pb-36"
       >
         <View className="flex-1 gap-6">
-          <View className="flex-row items-center justify-between">
-            <Link href="/help" asChild>
-              <Button size={"icon"} variant="secondary">
-                <CircleHelp className="h-5 w-5" />
-              </Button>
-            </Link>
-
-            <Text className="text-4xl font-extrabold text-foreground">Groups</Text>
-
-            <Link href="/settings" asChild>
-              <Button size={"icon"} variant="secondary">
-                <User className="h-5 w-5" />
-              </Button>
-            </Link>
-          </View>
-
           {isPending ? (
             <GroupsSkeleton />
           ) : isError ? (

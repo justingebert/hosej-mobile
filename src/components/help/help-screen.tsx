@@ -1,5 +1,4 @@
-import { Alert, Linking, Pressable, View } from "react-native";
-import { useRouter } from "expo-router";
+import { Alert, Linking, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Screen } from "@/components/ui/screen";
 import { Text } from "@/components/ui/text";
@@ -7,8 +6,6 @@ import { Text } from "@/components/ui/text";
 const FEEDBACK_EMAIL = "pregame_acid_9o@icloud.com";
 
 export function HelpScreen() {
-  const router = useRouter();
-
   const handleBugReport = async () => {
     const subject = encodeURIComponent("HoseJ — Bug report");
     const body = encodeURIComponent(
@@ -33,14 +30,6 @@ export function HelpScreen() {
 
   return (
     <Screen>
-      <View className="flex-row items-center justify-between">
-        <Pressable onPress={() => router.back()}>
-          <Text className="text-foreground">Back</Text>
-        </Pressable>
-        <Text className="text-2xl font-extrabold text-foreground">Help</Text>
-        <View className="w-10" />
-      </View>
-
       <View className="gap-4">
         <Text className="text-center text-muted-foreground">
           This is a private app in development.
