@@ -109,3 +109,17 @@ export interface QuestionResultsResponseDTO {
   questionType: QuestionType;
   multiSelect: boolean;
 }
+
+// POST /api/groups/:groupId/question
+// The mobile create flow only handles the option-free / text-option types.
+// `pairing` and `image` questions are not supported yet (image needs an
+// upload pipeline; pairing needs the nested config UI).
+export interface CreateQuestionInput {
+  category: string;
+  questionType: QuestionType;
+  question: string;
+  submittedBy: string;
+  multiSelect: boolean;
+  // Sent only for `custom`; the backend fills options for `users`/`rating`.
+  options?: string[];
+}

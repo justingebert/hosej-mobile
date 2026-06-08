@@ -19,13 +19,14 @@ export function Screen({
   children,
   onRefresh,
   refreshing = false,
-  contentContainerClassName = "grow gap-6 p-5",
+  contentContainerClassName = "grow gap-6 p-4",
 }: ScreenProps) {
   return (
     <ScrollView
       className="flex-1 bg-background"
       contentContainerClassName={contentContainerClassName}
       contentInsetAdjustmentBehavior="automatic"
+      keyboardShouldPersistTaps="handled"
       refreshControl={
         onRefresh ? (
           <RefreshControl

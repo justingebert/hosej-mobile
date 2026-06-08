@@ -8,6 +8,7 @@ import { Text } from "@/components/ui/text";
 import { buildInviteLink, useGroups } from "@/lib/api/groups";
 import type { GroupDTO } from "@/lib/api/types/group";
 import { Share, Star } from "lucide-react-native";
+import { Icon } from "@/components/ui/icon";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorCard } from "@/components/ui/error-card";
 import { Screen } from "@/components/ui/screen";
@@ -131,9 +132,9 @@ function GroupCard({ group, vibe }: { group: GroupDTO; vibe: string }) {
           </View>
 
           <View className="flex-row items-center gap-4">
-            <Star />
+            <Icon as={Star} className="size-6" />
             <Pressable onPress={handleShare} hitSlop={8} accessibilityLabel={`Share ${group.name}`}>
-              <Share className="h-5 w-5" />
+              <Icon as={Share} className="size-5" />
             </Pressable>
           </View>
         </View>

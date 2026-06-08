@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "./client";
 import type {
   ActiveQuestionsResponseDTO,
+  CreateQuestionInput,
   QuestionResultsResponseDTO,
   VoteResponseValue,
 } from "./types/question";
@@ -18,6 +19,19 @@ export function useActiveQuestions(groupId: string) {
     queryKey: questionKeys.active(groupId),
     queryFn: () => apiFetch<ActiveQuestionsResponseDTO>(`/api/groups/${groupId}/question`),
     enabled: !!groupId,
+  });
+}
+
+export function useCreateQuestion(groupId: string) {
+  // Created questions enter the group's question pool and are activated later
+  // (daily), so they don't show up in the active-questions list immediately —
+  // there's no cached query to invalidate on success yet.
+  return useMutation({
+    mutationFn: (input: CreateQuestionInput) =>
+      apiFetch(`/api/groups/${groupId}/question`, {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
   });
 }
 

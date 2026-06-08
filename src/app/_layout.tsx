@@ -6,13 +6,16 @@ import { useColorScheme } from "react-native";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import { queryClient } from "@/lib/query";
+import { toastConfig } from "@/components/ui/toast";
 import {
   GroupHeaderButton,
   GroupHeaderSpacer,
   GroupHeaderTitle,
 } from "@/components/groups/group-header";
 import { ArrowLeft, CircleHelp, User } from "lucide-react-native";
+import { Icon } from "@/components/ui/icon";
 
 export const unstable_settings = {
   initialRouteName: "index",
@@ -39,14 +42,14 @@ export default function RootLayout() {
                 headerLeft: () => (
                   <Link href="/help" asChild>
                     <GroupHeaderButton>
-                      <CircleHelp className="h-5 w-5" />
+                      <Icon as={CircleHelp} className="size-5" />
                     </GroupHeaderButton>
                   </Link>
                 ),
                 headerRight: () => (
                   <Link href="/settings" asChild>
                     <GroupHeaderButton>
-                      <User className="h-5 w-5" />
+                      <Icon as={User} className="size-5" />
                     </GroupHeaderButton>
                   </Link>
                 ),
@@ -63,7 +66,7 @@ export default function RootLayout() {
                 headerBackVisible: false,
                 headerLeft: () => (
                   <GroupHeaderButton onPress={router.back}>
-                    <ArrowLeft className="h-5 w-5" />
+                    <Icon as={ArrowLeft} className="size-5" />
                   </GroupHeaderButton>
                 ),
                 headerRight: () => <GroupHeaderSpacer />,
@@ -80,7 +83,7 @@ export default function RootLayout() {
                 headerBackVisible: false,
                 headerLeft: () => (
                   <GroupHeaderButton onPress={router.back}>
-                    <ArrowLeft className="h-5 w-5" />
+                    <Icon as={ArrowLeft} className="size-5" />
                   </GroupHeaderButton>
                 ),
                 headerRight: () => <GroupHeaderSpacer />,
@@ -107,6 +110,7 @@ export default function RootLayout() {
           </Stack>
           <StatusBar style="auto" />
         </QueryClientProvider>
+        <Toast config={toastConfig} topOffset={60} />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

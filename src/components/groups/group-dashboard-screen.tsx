@@ -1,10 +1,10 @@
-import { Link, type Href, useLocalSearchParams } from "expo-router";
+import { Link, type Href, useGlobalSearchParams } from "expo-router";
 import { Pressable, View } from "react-native";
 import { Screen } from "@/components/ui/screen";
 import { Text } from "@/components/ui/text";
 
 export function GroupDashboardScreen() {
-  const { groupId } = useLocalSearchParams<{ groupId: string }>();
+  const { groupId } = useGlobalSearchParams<{ groupId: string }>();
   const questionHref = `/groups/${groupId}/question` as Href;
 
   return (
@@ -23,7 +23,7 @@ export function GroupDashboardScreen() {
                 Daily Question
               </Text>
               <Text className="text-2xl font-extrabold text-card-foreground">
-                Answer today's question
+                Answer todays question
               </Text>
               <Text className="text-sm text-muted-foreground">
                 Open the group question screen

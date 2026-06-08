@@ -22,6 +22,7 @@
 - introducing unessarty compelxity
 - adding glued on fixes
 - too complex and too much safe guards
+- wants to add packages that are very small -> destined to change
 
 ---
 
@@ -29,6 +30,11 @@
 
 
 ## 2026-06-08
+- wathc ui yt videos
+- geenrate create page frist only 4 simple types
+- add toast for error and success mesasges, brainstoremd with ai but ai dint really find a good package for this
+
+## 2026-06-07
 - improve styling and add icons
 - ai produces to much code to review atm but makes seeminlng good progress lets see what come soon
 

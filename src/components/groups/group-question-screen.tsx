@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useGlobalSearchParams } from "expo-router";
 import { View } from "react-native";
 import { useActiveQuestions, useVoteOnQuestion } from "@/lib/api/questions";
 import { ChatPlaceholder } from "@/components/groups/question/question-placeholders";
@@ -13,7 +13,7 @@ import { buildFlatQuestionList } from "@/components/groups/question/question-uti
 import type { VoteResponseValue } from "@/lib/api/types/question";
 
 export function GroupQuestionScreen() {
-  const { groupId } = useLocalSearchParams<{ groupId: string }>();
+  const { groupId } = useGlobalSearchParams<{ groupId: string }>();
   const {
     data,
     error,

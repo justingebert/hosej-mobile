@@ -1,5 +1,5 @@
-import { GroupTabPlaceholderScreen } from "@/components/groups/group-tab-placeholder-screen";
+import { CreateQuestionScreen } from "@/components/groups/question/create-question-screen";
 
 export default function CreateRoute() {
-  return <GroupTabPlaceholderScreen title="Create" />;
+  return <CreateQuestionScreen />;
 }

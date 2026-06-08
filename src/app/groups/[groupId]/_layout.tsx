@@ -1,13 +1,10 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useColorScheme } from "react-native";
 
-import {
-  GroupHeaderButton,
-  GroupHeaderSpacer,
-  GroupHeaderTitle,
-} from "@/components/groups/group-header";
+import { GroupHeaderButton, GroupHeaderTitle, } from "@/components/groups/group-header";
 import { useGroup } from "@/lib/api/groups";
 import { ArrowLeft, Info, Users } from "lucide-react-native";
+import { Icon } from "@/components/ui/icon";
 
 export default function GroupLayout() {
   const router = useRouter();
@@ -31,14 +28,14 @@ export default function GroupLayout() {
             <GroupHeaderButton
               onPress={() => router.dismissTo("/")}
             >
-              <Users className="h-5 w-5" />
+              <Icon as={Users} className="size-5" />
             </GroupHeaderButton>
           ),
           headerRight: () => (
             <GroupHeaderButton
-              onPress={router.back}
+              onPress={(() => router.push(`/groups/${groupId}/stats`))}
             >
-              <Info className="h-5 w-5" />
+              <Icon as={Info} className="size-5" />
             </GroupHeaderButton>
           ),
         }}
@@ -55,10 +52,9 @@ export default function GroupLayout() {
           headerBackVisible: false,
           headerLeft: () => (
             <GroupHeaderButton onPress={router.back}>
-              <ArrowLeft className="h-5 w-5" />
+              <Icon as={ArrowLeft} className="size-5" />
             </GroupHeaderButton>
           ),
-          headerRight: () => <GroupHeaderSpacer />,
         }}
       />
     </Stack>
