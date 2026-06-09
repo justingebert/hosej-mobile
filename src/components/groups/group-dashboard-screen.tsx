@@ -1,10 +1,10 @@
-import { Link, type Href, useGlobalSearchParams } from "expo-router";
+import { Link, type Href, useLocalSearchParams } from "expo-router";
 import { Pressable, View } from "react-native";
 import { Screen } from "@/components/ui/screen";
 import { Text } from "@/components/ui/text";
 
 export function GroupDashboardScreen() {
-  const { groupId } = useGlobalSearchParams<{ groupId: string }>();
+  const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const questionHref = `/groups/${groupId}/question` as Href;
 
   return (

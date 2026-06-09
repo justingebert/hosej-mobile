@@ -28,25 +28,24 @@ export function ErrorCard({
 }: ErrorCardProps) {
   return (
     <View
-      className="gap-3 rounded-2xl border border-border bg-card p-5"
-      style={{ borderCurve: "continuous" }}
+      className="flex-1 items-center justify-center gap-3 p-5"
     >
-      <Text className="text-sm font-extrabold text-destructive">{title}</Text>
+      <Text className="text-center text-sm font-extrabold text-destructive">{title}</Text>
 
       {error != null ? (
-        <Text selectable className="text-base text-card-foreground">
+        <Text selectable className="text-center text-base text-card-foreground">
           {getErrorMessage(error)}
         </Text>
       ) : null}
 
       {__DEV__ ? (
-        <Text selectable className="text-xs text-muted-foreground">
+        <Text selectable className="text-center text-xs text-muted-foreground">
           API: {API_URL}
         </Text>
       ) : null}
 
       {onRetry ? (
-        <Button className="self-start" disabled={isRetrying} onPress={onRetry}>
+        <Button className="self-center" disabled={isRetrying} onPress={onRetry}>
           <Text>{isRetrying ? "Retrying…" : "Try again"}</Text>
         </Button>
       ) : null}

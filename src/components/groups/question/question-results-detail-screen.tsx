@@ -1,3 +1,4 @@
+import { useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -13,27 +14,18 @@ import {
 } from "@/lib/api/types/question";
 import { StyledImage } from "./styled-image";
 
-export function QuestionResultsDetailScreen({
-  groupId,
-  questionId,
-}: {
-  groupId: string;
-  questionId: string;
-}) {
+export function QuestionResultsDetailScreen() {
+  const { groupId, questionId } = useLocalSearchParams<{
+    groupId: string;
+    questionId: string;
+  }>();
   const { data, error, isError, isPending, isRefetching, refetch } = useQuestionResults(
     groupId,
     questionId
   );
 
-  if (!groupId || !questionId) {
-    return (
-      <Screen>
-        <EmptyState title="No results found" />
-      </Screen>
-    );
-  }
-
   const results = data?.results ?? [];
+  const isImage = data?.questionType === QuestionType.Image;
 
   return (
     <Screen onRefresh={refetch} refreshing={isRefetching}>
@@ -53,7 +45,7 @@ export function QuestionResultsDetailScreen({
           {results.map((result, index) => (
             <ResultDetailCard
               key={`${result.option}-${index}`}
-              isImage={data?.questionType === QuestionType.Image}
+              isImage={isImage}
               result={result}
             />
           ))}
@@ -73,47 +65,48 @@ function ResultDetailCard({
   const voteLabel = result.count === 1 ? "vote" : "votes";
 
   return (
-    <View className="gap-3 rounded-xl bg-secondary p-3" style={{ borderCurve: "continuous" }}>
-      <View className="gap-2">
+    <View className="items-center justify-center gap-3 rounded-xl border border-border bg-card p-4">
+      <View className="w-full items-center gap-1.5">
         {isImage ? (
           <StyledImage uri={result.option} className="h-32 w-full rounded-lg" />
         ) : (
-          <Text selectable className="text-base font-bold text-secondary-foreground">
+          <Text selectable className="text-center text-lg font-black text-card-foreground">
             {result.option}
           </Text>
         )}
 
-        <Text className="text-sm font-bold text-muted-foreground">
+        <Text className="text-center text-sm text-muted-foreground">
           {result.count} {voteLabel} ({result.percentage}%)
         </Text>
       </View>
 
       {result.users.length > 0 ? (
-        <View className="flex-row flex-wrap gap-2">
+        <View className="w-full flex-row flex-wrap justify-center gap-2">
           {result.users.map((user, index) => (
             <ResultUserChip key={`${user.username}-${index}`} user={user} />
           ))}
         </View>
       ) : (
-        <Text className="text-sm text-muted-foreground">No votes</Text>
+        <Text className="text-center text-sm text-muted-foreground">No votes</Text>
       )}
     </View>
   );
 }
 
 function ResultUserChip({ user }: { user: QuestionResultUserDTO }) {
-  const initial = (user.username || "?").slice(0, 1).toUpperCase();
+  const displayName = user.username || "Unknown";
+  const initial = displayName.slice(0, 1).toUpperCase();
 
   return (
-    <View className="max-w-44 flex-row items-center gap-2 rounded-full bg-primary px-2 py-1.5">
-      <Avatar alt={`${user.username} avatar`} className="h-6 w-6">
+    <View className="max-w-44 flex-row items-center gap-2 rounded-full border border-border bg-primary px-2 py-1.5">
+      <Avatar alt={`${displayName} avatar`} className="h-6 w-6">
         {user.avatarUrl ? <AvatarImage source={{ uri: user.avatarUrl }} /> : null}
-        <AvatarFallback className="bg-primary-foreground">
-          <Text className="text-[10px] font-extrabold text-primary">{initial}</Text>
+        <AvatarFallback>
+          <Text className="text-[10px] font-extrabold text-foreground">{initial}</Text>
         </AvatarFallback>
       </Avatar>
-      <Text numberOfLines={1} className="min-w-0 flex-1 text-sm font-bold text-primary-foreground">
-        {user.username}
+      <Text numberOfLines={1} className="max-w-32 text-sm font-semibold text-secondary">
+        {displayName}
       </Text>
     </View>
   );
@@ -123,7 +116,7 @@ function ResultsDetailSkeleton() {
   return (
     <View className="gap-3">
       {Array.from({ length: 3 }).map((_, index) => (
-        <View key={index} className="gap-3 rounded-xl bg-secondary p-3">
+        <View key={index} className="gap-3 rounded-xl border border-border bg-card p-4">
           <Skeleton className="h-5 w-2/3" />
           <Skeleton className="h-4 w-24" />
           <View className="flex-row gap-2">

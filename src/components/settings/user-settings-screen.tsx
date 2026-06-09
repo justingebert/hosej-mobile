@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Image } from "expo-image";
-import { Pressable, Switch, View } from "react-native";
+import { Switch, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { Segmented } from "@/components/ui/segmented";
 import { useUpdateUser, useUser } from "@/lib/api/user";
 import { NOTIFICATION_LANGUAGES, NOTIFICATION_STYLES } from "@/lib/api/types/user";
 import { ErrorCard } from "@/components/ui/error-card";
@@ -41,8 +42,8 @@ export function UserSettingsScreen() {
               />
             </View>
 
-            <View className="gap-2">
-              <Text className="font-bold text-foreground">Notification Language</Text>
+            <View className="flex-row items-center justify-between">
+              <Text className="text-foreground">Notification Language</Text>
               <Segmented
                 options={NOTIFICATION_LANGUAGES.map((lang) => ({
                   label: lang.toUpperCase(),
@@ -53,8 +54,8 @@ export function UserSettingsScreen() {
               />
             </View>
 
-            <View className="gap-2">
-              <Text className="font-bold text-foreground">Notification Style</Text>
+            <View className="flex-row items-center justify-between">
+              <Text className="text-foreground">Notification Style</Text>
               <Segmented
                 options={NOTIFICATION_STYLES.map((style) => ({ label: style, value: style }))}
                 value={user.notificationStyle}
@@ -107,39 +108,6 @@ function SettingsSkeleton() {
       <Skeleton className="h-12 w-full rounded-xl" />
       <Skeleton className="h-12 w-full rounded-xl" />
       <Skeleton className="h-24 w-full rounded-xl" />
-    </View>
-  );
-}
-
-function Segmented<T extends string>({
-  options,
-  value,
-  onChange,
-}: {
-  options: { label: string; value: T }[];
-  value: T;
-  onChange: (value: T) => void;
-}) {
-  return (
-    <View className="flex-row rounded-lg border border-border bg-muted p-1">
-      {options.map((opt) => {
-        const active = opt.value === value;
-        return (
-          <Pressable
-            key={opt.value}
-            onPress={() => onChange(opt.value)}
-            className={
-              active
-                ? "flex-1 items-center rounded-md bg-card py-2"
-                : "flex-1 items-center rounded-md py-2"
-            }
-          >
-            <Text className={active ? "font-bold text-foreground" : "text-muted-foreground"}>
-              {opt.label}
-            </Text>
-          </Pressable>
-        );
-      })}
     </View>
   );
 }

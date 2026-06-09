@@ -29,6 +29,7 @@
 ## Ai the good stuff:
 - wirte boilterpalte really quick
 - i liek the jetbrains integration
+- good for building loading skeletons
 
 ---
 

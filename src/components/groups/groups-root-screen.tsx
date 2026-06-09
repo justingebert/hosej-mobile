@@ -69,14 +69,8 @@ export function GroupsRootScreen() {
 
       <View className="absolute inset-x-0 bottom-0">
         <View className="overflow-hidden">
-          <BlurView
-            tint={scheme === "dark" ? "dark" : "light"}
-            intensity={50}
-            blurMethod="dimezisBlurView"
-            style={StyleSheet.absoluteFill}
-          />
           <View
-            className="flex-row gap-3 px-5 pt-3"
+            className="flex-row gap-3 px-5 pt-3 bg-background"
             style={{ paddingBottom: insets.bottom + 12 }}
           >
             <Link href="/groups/join" asChild>

@@ -3,7 +3,6 @@ import { useColorScheme } from "react-native";
 
 import {
   GroupHeaderButton,
-  GroupHeaderSpacer,
   GroupHeaderTitle,
 } from "@/components/groups/group-header";
 import { useGroup } from "@/lib/api/groups";
@@ -51,7 +50,7 @@ export default function GroupLayout() {
           headerShown: true,
           headerShadowVisible: false,
           headerStyle: { backgroundColor: headerBackground },
-          headerTitle: () => <GroupHeaderTitle>Daily Question</GroupHeaderTitle>,
+          headerTitle: () => <GroupHeaderTitle>Daily Questions</GroupHeaderTitle>,
           headerTitleAlign: "center",
           headerBackVisible: false,
           headerLeft: () => (

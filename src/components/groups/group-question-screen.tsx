@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { useGlobalSearchParams } from "expo-router";
-import { View } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { StyleSheet, View } from "react-native";
 import { useActiveQuestions, useVoteOnQuestion } from "@/lib/api/questions";
 import { QuestionTabContent } from "@/components/groups/question/question-tab-content";
 import { QuestionSkeleton } from "@/components/groups/question/question-states";
@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export function GroupQuestionScreen() {
   const insets = useSafeAreaInsets();
-  const { groupId } = useGlobalSearchParams<{ groupId: string }>();
+  const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const {
     data,
     error,
@@ -72,7 +72,7 @@ export function GroupQuestionScreen() {
         refreshing={isRefetching}
         contentContainerClassName={
           loadedQuestion
-            ? `grow gap-6 px-4 pt-1 ${showSubmitFooter ? "pb-28" : "pb-4"}`
+            ? `grow gap-6 px-4 pt-1 ${showSubmitFooter ? "pb-44" : "pb-4"}`
             : undefined
         }
       >

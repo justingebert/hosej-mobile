@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useGlobalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { KeyboardAvoidingView, Platform, Pressable, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { List, ListChecks, type LucideIcon, Plus, Star, Trash, Type, Users } from "lucide-react-native";
@@ -33,7 +33,7 @@ const MIN_CUSTOM_OPTIONS = 2;
 const MULTISELECT_TYPES: QuestionType[] = [QuestionType.Users, QuestionType.Custom];
 
 export function CreateQuestionScreen() {
-  const { groupId } = useGlobalSearchParams<{ groupId: string }>();
+  const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const { data: group } = useGroup(groupId);
   const { data: user } = useUser();
   const createQuestion = useCreateQuestion(groupId);

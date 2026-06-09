@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { Pressable, TextInput, View } from "react-native";
+import { TextInput, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { Segmented } from "@/components/ui/segmented";
 import { useCreateGroup } from "@/lib/api/groups";
 import { GROUP_LANGUAGES, type GroupLanguage } from "@/lib/api/types/group";
 
@@ -16,7 +17,7 @@ export function CreateGroupScreen() {
     if (!name.trim()) return;
     createGroup.mutate(
       { name: name.trim(), language },
-      { onSuccess: () => router.back() }
+      { onSettled: () => router.back() }
     );
   };
 
@@ -32,25 +33,19 @@ export function CreateGroupScreen() {
         className="rounded-xl border border-border bg-card p-4 text-foreground"
       />
 
-      <View className="flex-row gap-2">
-        {GROUP_LANGUAGES.map((lang) => (
-          <Pressable
-            key={lang}
-            onPress={() => setLanguage(lang)}
-            className={`rounded-full border border-border px-4 py-2 ${
-              language === lang ? "bg-primary" : "bg-card"
-            }`}
-          >
-            <Text className={language === lang ? "text-primary-foreground" : "text-foreground"}>
-              {lang.toUpperCase()}
-            </Text>
-          </Pressable>
-        ))}
+      <View className="flex-row items-center justify-between gap-4">
+        <View className="flex-1 gap-1">
+          <Text className="font-bold text-foreground">Starting Question Language</Text>
+          <Text className="text-xs text-muted-foreground">
+            Only applies to the starting questions and question packs added to the group.
+          </Text>
+        </View>
+        <Segmented
+          options={GROUP_LANGUAGES.map((lang) => ({ label: lang.toUpperCase(), value: lang }))}
+          value={language}
+          onChange={setLanguage}
+        />
       </View>
-
-      {createGroup.isError ? (
-        <Text className="text-sm text-destructive">{createGroup.error.message}</Text>
-      ) : null}
 
       <Button onPress={handleCreate} disabled={!name.trim() || createGroup.isPending}>
         <Text>{createGroup.isPending ? "Creating..." : "Create"}</Text>
