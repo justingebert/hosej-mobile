@@ -8,9 +8,10 @@ export type FlatQuestionItem = {
   label: string;
 };
 
-export type QuestionVoteHandler = (
-  questionId: string,
-  response: VoteResponseValue
-) => void;
+export type QuestionResponseChangeHandler = (response: VoteResponseValue | null) => void;
 
-export type QuestionResponseSubmitHandler = (response: VoteResponseValue) => void;
+export type QuestionInputProps = {
+  question: QuestionWithUserStateDTO;
+  response: VoteResponseValue | null;
+  onResponseChange: QuestionResponseChangeHandler;
+};

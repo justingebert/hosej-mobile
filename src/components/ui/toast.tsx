@@ -50,8 +50,14 @@ function BaseToast({
   );
 }
 
-const render = (variant: keyof typeof VARIANTS) => (props: ToastConfigParams<unknown>) =>
-  <BaseToast variant={variant} text1={props.text1} text2={props.text2} />;
+const render = (variant: keyof typeof VARIANTS) => {
+  function ToastRenderer(props: ToastConfigParams<unknown>) {
+    return <BaseToast variant={variant} text1={props.text1} text2={props.text2} />;
+  }
+
+  ToastRenderer.displayName = `${variant}Toast`;
+  return ToastRenderer;
+};
 
 export const toastConfig: ToastConfig = {
   success: render("success"),

@@ -28,11 +28,7 @@ export function buildFlatQuestionList(
     );
 }
 
-export function optionResponseValue(option: QuestionOptionDTO) {
-  return typeof option === "string" ? option : option.key;
-}
-
-export function optionDisplayLabel(option: QuestionOptionDTO) {
+export function optionKey(option: QuestionOptionDTO) {
   return typeof option === "string" ? option : option.key;
 }
 

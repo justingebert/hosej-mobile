@@ -8,12 +8,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Icon } from "@/components/ui/icon";
 import { Screen } from "@/components/ui/screen";
 import { Text } from "@/components/ui/text";
-import { getErrorMessage } from "@/lib/api/client";
 import { useGroup } from "@/lib/api/groups";
 import { useCreateQuestion } from "@/lib/api/questions";
 import { useUser } from "@/lib/api/user";
 import { QuestionType } from "@/lib/api/types/question";
-import { toastError, toastSuccess } from "@/lib/toast";
+import { toastSuccess } from "@/lib/toast";
 
 type TypeMeta = {
   type: QuestionType;
@@ -88,9 +87,6 @@ export function CreateQuestionScreen() {
           setOptions(["", ""]);
           setMultiSelect(false);
           toastSuccess("Question created", "Added to the pool");
-        },
-        onError: (error) => {
-          toastError("Could not create question", getErrorMessage(error));
         },
       }
     );
@@ -185,18 +181,6 @@ export function CreateQuestionScreen() {
                 ))}
               </View>
             </View>
-          ) : null}
-
-          {type === QuestionType.Text ? (
-            <Text className="text-sm text-muted-foreground">
-              Members reply with a free-form answer.
-            </Text>
-          ) : null}
-
-          {type === QuestionType.Rating ? (
-            <Text className="text-sm text-muted-foreground">
-              Members rate from 1 to 10.
-            </Text>
           ) : null}
 
           {MULTISELECT_TYPES.includes(type) ? (

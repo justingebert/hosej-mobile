@@ -15,6 +15,7 @@
 - add andrew kapathy skills and matt pocock skills
 - help with setup, works good with docs that have LLM with agents with websearch, not always thow with bleeding edge e.g. nativewind a bit sloppy
 - it really used a lot of the docu which was nice
+- really like
 
 ## AI problems:
 - goood UI
@@ -23,11 +24,20 @@
 - adding glued on fixes
 - too complex and too much safe guards
 - wants to add packages that are very small -> destined to change
+- too much ocntextg switching => fatigue
+
+## Ai the good stuff:
+- wirte boilterpalte really quick
+- i liek the jetbrains integration
 
 ---
 
 # Worklog
 
+
+## 2026-06-09
+- clean up quesiton page generated code
+- meanwhiel watch auth videos for expo
 
 ## 2026-06-08
 - wathc ui yt videos

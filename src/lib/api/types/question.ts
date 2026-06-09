@@ -4,24 +4,6 @@ export enum QuestionType {
   Image = "image",
   Text = "text",
   Rating = "rating",
-  Pairing = "pairing",
-}
-
-export enum PairingKeySource {
-  Members = "members",
-  Custom = "custom",
-}
-
-export enum PairingMode {
-  Exclusive = "exclusive",
-  Open = "open",
-}
-
-export interface PairingConfigDTO {
-  keySource: PairingKeySource;
-  mode: PairingMode;
-  keys?: string[];
-  values: string[];
 }
 
 export interface QuestionAnswerDTO {
@@ -57,7 +39,6 @@ export interface QuestionWithUserStateDTO {
   options?: QuestionOptionDTO[];
   answers: QuestionAnswerDTO[];
   rating: QuestionRatingDTO;
-  pairing?: PairingConfigDTO;
   used: boolean;
   active: boolean;
   usedAt?: string;
@@ -88,22 +69,8 @@ export interface QuestionResultDTO {
   users: QuestionResultUserDTO[];
 }
 
-export interface PairingValueResultDTO {
-  value: string;
-  count: number;
-  percentage: number;
-  users: QuestionResultUserDTO[];
-}
-
-export interface PairingResultDTO {
-  key: string;
-  valueCounts: PairingValueResultDTO[];
-  topValue: string;
-}
-
 export interface QuestionResultsResponseDTO {
   results: QuestionResultDTO[];
-  pairingResults?: PairingResultDTO[];
   totalVotes: number;
   totalUsers: number;
   questionType: QuestionType;

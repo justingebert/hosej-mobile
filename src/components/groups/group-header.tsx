@@ -13,7 +13,7 @@ export function GroupHeaderTitle({ children }: { children: ReactNode }) {
 }
 
 export function GroupHeaderButton(props: ButtonProps) {
-  return <Button size="icon" variant="secondary" {...props} />;
+  return <Button size="icon" variant="ghost" {...props} />;
 }
 
 export function GroupHeaderSpacer() {

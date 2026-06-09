@@ -32,6 +32,9 @@ export function useCreateQuestion(groupId: string) {
         method: "POST",
         body: JSON.stringify(input),
       }),
+    meta: {
+      errorToastTitle: "Could not create question",
+    },
   });
 }
 
@@ -53,6 +56,9 @@ export function useVoteOnQuestion(groupId: string) {
           body: JSON.stringify({ response }),
         }
       ),
+    meta: {
+      errorToastTitle: "Could not submit vote",
+    },
     onSuccess: async (_data, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: questionKeys.active(groupId) }),

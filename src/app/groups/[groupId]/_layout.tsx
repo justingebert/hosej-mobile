@@ -1,7 +1,11 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useColorScheme } from "react-native";
 
-import { GroupHeaderButton, GroupHeaderTitle, } from "@/components/groups/group-header";
+import {
+  GroupHeaderButton,
+  GroupHeaderSpacer,
+  GroupHeaderTitle,
+} from "@/components/groups/group-header";
 import { useGroup } from "@/lib/api/groups";
 import { ArrowLeft, Info, Users } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
@@ -48,6 +52,22 @@ export default function GroupLayout() {
           headerShadowVisible: false,
           headerStyle: { backgroundColor: headerBackground },
           headerTitle: () => <GroupHeaderTitle>Daily Question</GroupHeaderTitle>,
+          headerTitleAlign: "center",
+          headerBackVisible: false,
+          headerLeft: () => (
+            <GroupHeaderButton onPress={router.back}>
+              <Icon as={ArrowLeft} className="size-5" />
+            </GroupHeaderButton>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="question/[questionId]/resultsdetailed"
+        options={{
+          headerShown: true,
+          headerShadowVisible: false,
+          headerStyle: { backgroundColor: headerBackground },
+          headerTitle: () => <GroupHeaderTitle>Results</GroupHeaderTitle>,
           headerTitleAlign: "center",
           headerBackVisible: false,
           headerLeft: () => (

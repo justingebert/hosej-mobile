@@ -26,6 +26,9 @@ export function useUpdateUser() {
         method: "PUT",
         body: JSON.stringify(data),
       }),
+    meta: {
+      errorToastTitle: "Could not save settings",
+    },
     onSuccess: (user) => {
       queryClient.setQueryData(userKeys.me, user);
     },

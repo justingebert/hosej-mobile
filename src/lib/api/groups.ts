@@ -38,6 +38,9 @@ export function useCreateGroup() {
         method: "POST",
         body: JSON.stringify(input),
       }),
+    meta: {
+      errorToastTitle: "Could not create group",
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: groupKeys.all }),
   });
 }
@@ -51,6 +54,9 @@ export function useJoinGroup() {
       apiFetch<JoinGroupResponseDTO>(`/api/groups/${groupId}/members`, {
         method: "POST",
       }),
+    meta: {
+      errorToastTitle: "Could not join group",
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: groupKeys.all }),
   });
 }

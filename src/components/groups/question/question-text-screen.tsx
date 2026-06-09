@@ -1,23 +1,14 @@
-import { useState } from "react";
 import { TextInput, View } from "react-native";
-import { QuestionSubmitButton } from "./question-submit-button";
-import type { QuestionResponseSubmitHandler } from "./types";
+import type { QuestionInputProps } from "./types";
 
 export function TextQuestionScreen({
-  isSubmitting,
-  submitError,
-  onSubmit,
-}: {
-  isSubmitting: boolean;
-  submitError: string | null;
-  onSubmit: QuestionResponseSubmitHandler;
-}) {
-  const [value, setValue] = useState("");
-  const trimmedValue = value.trim();
-  const canSubmit = trimmedValue.length > 0;
+  response,
+  onResponseChange,
+}: Omit<QuestionInputProps, "question">) {
+  const value = Array.isArray(response) ? response[0] ?? "" : "";
 
   return (
-    <View className="gap-4">
+    <View>
       <TextInput
         className="min-h-32 rounded-xl border border-border bg-background p-4 text-base text-foreground"
         multiline
@@ -25,13 +16,7 @@ export function TextQuestionScreen({
         placeholderTextColor="#777777"
         textAlignVertical="top"
         value={value}
-        onChangeText={setValue}
-      />
-      <QuestionSubmitButton
-        canSubmit={canSubmit}
-        isSubmitting={isSubmitting}
-        submitError={submitError}
-        onSubmit={() => onSubmit([trimmedValue])}
+        onChangeText={(nextValue) => onResponseChange(nextValue ? [nextValue] : null)}
       />
     </View>
   );
