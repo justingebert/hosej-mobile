@@ -1,5 +1,5 @@
-import { GroupTabPlaceholderScreen } from "@/components/groups/group-tab-placeholder-screen";
+import { GroupSettingsScreen } from "@/components/groups/group-settings-screen";
 
 export default function SettingsRoute() {
-  return <GroupTabPlaceholderScreen title="Settings" />;
+  return <GroupSettingsScreen />;
 }

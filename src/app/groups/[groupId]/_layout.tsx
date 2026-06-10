@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { Stack, useGlobalSearchParams, useRouter } from "expo-router";
 import { useColorScheme } from "react-native";
 
 import {
@@ -8,16 +8,18 @@ import {
 import { useGroup } from "@/lib/api/groups";
 import { ArrowLeft, Info, Users } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
+import { GroupIdProvider } from "@/lib/group-id";
 
 export default function GroupLayout() {
   const router = useRouter();
   const scheme = useColorScheme();
-  const { groupId } = useLocalSearchParams<{ groupId: string }>();
+  const { groupId } = useGlobalSearchParams<{ groupId: string }>();
   const { data: group } = useGroup(groupId);
   const headerBackground = scheme === "dark" ? "#0a0a0a" : "#ffffff";
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <GroupIdProvider groupId={groupId}>
+      <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen
         name="(tabs)"
         options={{
@@ -36,7 +38,7 @@ export default function GroupLayout() {
           ),
           headerRight: () => (
             <GroupHeaderButton
-              onPress={(() => router.push(`/groups/${groupId}/stats`))}
+              onPress={() => router.push(`/groups/${groupId}/stats`)}
             >
               <Icon as={Info} className="size-5" />
             </GroupHeaderButton>
@@ -76,6 +78,7 @@ export default function GroupLayout() {
           ),
         }}
       />
-    </Stack>
+      </Stack>
+    </GroupIdProvider>
   );
 }

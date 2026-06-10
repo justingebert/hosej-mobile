@@ -1,4 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
+import { useGroupId } from "@/lib/group-id";
 import { View } from "react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -15,10 +16,8 @@ import {
 import { StyledImage } from "./styled-image";
 
 export function QuestionResultsDetailScreen() {
-  const { groupId, questionId } = useLocalSearchParams<{
-    groupId: string;
-    questionId: string;
-  }>();
+  const groupId = useGroupId();
+  const { questionId } = useLocalSearchParams<{ questionId: string }>();
   const { data, error, isError, isPending, isRefetching, refetch } = useQuestionResults(
     groupId,
     questionId

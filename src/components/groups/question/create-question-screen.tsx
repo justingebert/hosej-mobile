@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useGroupId } from "@/lib/group-id";
 import { KeyboardAvoidingView, Platform, Pressable, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { List, ListChecks, type LucideIcon, Plus, Star, Trash, Type, Users } from "lucide-react-native";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Icon } from "@/components/ui/icon";
 import { Screen } from "@/components/ui/screen";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { useGroup } from "@/lib/api/groups";
 import { useCreateQuestion } from "@/lib/api/questions";
@@ -33,8 +34,8 @@ const MIN_CUSTOM_OPTIONS = 2;
 const MULTISELECT_TYPES: QuestionType[] = [QuestionType.Users, QuestionType.Custom];
 
 export function CreateQuestionScreen() {
-  const { groupId } = useLocalSearchParams<{ groupId: string }>();
-  const { data: group } = useGroup(groupId);
+  const groupId = useGroupId();
+  const { data: group, isPending: groupPending, isError: groupError } = useGroup(groupId);
   const { data: user } = useUser();
   const createQuestion = useCreateQuestion(groupId);
   const insets = useSafeAreaInsets();
@@ -173,13 +174,29 @@ export function CreateQuestionScreen() {
           {type === QuestionType.Users ? (
             <View className="gap-3">
               <Text className="text-sm font-medium text-foreground">Options</Text>
-              <View className="flex-row flex-wrap gap-2">
-                {members.map((member) => (
-                  <View key={member.user} className="rounded-full bg-secondary px-3 py-1">
-                    <Text className="text-xs text-secondary-foreground">{member.name}</Text>
-                  </View>
-                ))}
-              </View>
+              {groupPending ? (
+                <View className="flex-row flex-wrap gap-2">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-7 w-20 rounded-full" />
+                  ))}
+                </View>
+              ) : groupError ? (
+                <Text className="text-sm text-muted-foreground">
+                  Couldn't load members. Pull to refresh.
+                </Text>
+              ) : members.length === 0 ? (
+                <Text className="text-sm text-muted-foreground">
+                  No members in this group yet.
+                </Text>
+              ) : (
+                <View className="flex-row flex-wrap gap-2">
+                  {members.map((member) => (
+                    <View key={member.user} className="rounded-full bg-secondary px-3 py-1">
+                      <Text className="text-xs text-secondary-foreground">{member.name}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
           ) : null}
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useGroupId } from "@/lib/group-id";
 import { StyleSheet, View } from "react-native";
 import { useActiveQuestions, useVoteOnQuestion } from "@/lib/api/questions";
 import { QuestionTabContent } from "@/components/groups/question/question-tab-content";
@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export function GroupQuestionScreen() {
   const insets = useSafeAreaInsets();
-  const { groupId } = useLocalSearchParams<{ groupId: string }>();
+  const groupId = useGroupId();
   const {
     data,
     error,

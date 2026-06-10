@@ -36,6 +36,10 @@
 # Worklog
 
 
+## 2026-06-10
+- found a bug with resreach that was terrorizing me, the uselocalsearchparams/globalsearchmapams -> claude help
+- now context
+
 ## 2026-06-09
 - clean up quesiton page generated code
 - meanwhiel watch auth videos for expo

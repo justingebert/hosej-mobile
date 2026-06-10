@@ -7,6 +7,7 @@ import type {
   GroupListResponseDTO,
   GroupWithAdminDTO,
   JoinGroupResponseDTO,
+  UpdateGroupInput,
 } from "./types/group";
 
 export const groupKeys = {
@@ -56,6 +57,62 @@ export function useJoinGroup() {
       }),
     meta: {
       errorToastTitle: "Could not join group",
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: groupKeys.all }),
+  });
+}
+
+export function useUpdateGroup(groupId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: UpdateGroupInput) =>
+      apiFetch<GroupDTO>(`/api/groups/${groupId}`, {
+        method: "PUT",
+        body: JSON.stringify(input),
+      }),
+    meta: {
+      errorToastTitle: "Could not save settings",
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) }),
+  });
+}
+
+export function useRemoveMember(groupId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (memberId: string) =>
+      apiFetch<unknown>(`/api/groups/${groupId}/members/${memberId}`, { method: "DELETE" }),
+    meta: {
+      errorToastTitle: "Could not remove member",
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) }),
+  });
+}
+
+// Leaving is removing yourself; unlike a kick it refreshes the group list (you
+// navigate away), so the now-inaccessible detail query is left alone.
+export function useLeaveGroup(groupId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userId: string) =>
+      apiFetch<unknown>(`/api/groups/${groupId}/members/${userId}`, { method: "DELETE" }),
+    meta: {
+      errorToastTitle: "Could not leave group",
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: groupKeys.all }),
+  });
+}
+
+export function useDeleteGroup(groupId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => apiFetch<unknown>(`/api/groups/${groupId}`, { method: "DELETE" }),
+    meta: {
+      errorToastTitle: "Could not delete group",
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: groupKeys.all }),
   });

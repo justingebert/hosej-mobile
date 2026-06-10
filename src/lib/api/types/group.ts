@@ -78,3 +78,10 @@ export interface JoinGroupResponseDTO {
   message: string;
   group: GroupDTO;
 }
+
+// Body for PUT /api/groups/:groupId. The server shallow-merges `features` by
+// key, so any feature you send must be the complete object for that key.
+export interface UpdateGroupInput {
+  name?: string;
+  features?: Partial<GroupFeaturesDTO>;
+}
