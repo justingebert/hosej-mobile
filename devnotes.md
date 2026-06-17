@@ -25,6 +25,7 @@
 - too complex and too much safe guards
 - wants to add packages that are very small -> destined to change
 - too much ocntextg switching => fatigue
+- not trusting with auth stuff
 
 ## Ai the good stuff:
 - wirte boilterpalte really quick
@@ -35,6 +36,20 @@
 
 # Worklog
 
+
+## 2026-06-17 plan out first alha release to ios
+- add google aoauth client for login
+
+## 2026-06-17 create developer accounts and verify
+- google play console 25$
+- apple development program 99euro
+
+## 2026-06-15 audit and fix mobile api auth
+- review and audit mobile auth
+- fix obvious bugs and review approach (takes alot of time)
+
+## 2026-06-11 one shot mobile api auth
+- prompt to get mobiel auth wired into api
 
 ## 2026-06-10
 - found a bug with resreach that was terrorizing me, the uselocalsearchparams/globalsearchmapams -> claude help

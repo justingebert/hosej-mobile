@@ -1,38 +1,38 @@
 import { fetch } from "expo/fetch";
 import { API_URL } from "@/lib/config";
+import { ApiError, getErrorMessage } from "@/lib/api/errors";
+import { refreshTokens } from "@/lib/auth/api";
+import {
+  clearTokens,
+  getAuthRevision,
+  getAccessToken,
+  getRefreshToken,
+  notifyUnauthorized,
+  setTokens,
+} from "@/lib/auth/session";
 
-export class ApiError extends Error {
-  status: number;
-  constructor(status: number, message: string) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-  }
-}
-
-export function getErrorMessage(error: unknown, fallback = "Something went wrong."): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === "string") return error;
-  return fallback;
-}
-
-const DEV_TOKEN = process.env.EXPO_PUBLIC_DEV_TOKEN;
+// Re-exported so existing importers (`@/lib/api/client`) keep their import path
+// after these moved to ./errors. See errors.ts for why they live there.
+export { ApiError, getErrorMessage };
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  let res: Response;
+  let res = await rawFetch(path, options, getAccessToken());
 
-  try {
-    res = await fetch(`${API_URL}${path}`, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        "x-hosej-client": "mobile",
-        ...(DEV_TOKEN ? { Authorization: `Bearer ${DEV_TOKEN}` } : {}),
-        ...options.headers,
-      },
-    });
-  } catch {
-    throw new ApiError(0, "Could not reach the HoseJ API.");
+  // The access token is short-lived (~15 min). On 401, mint a fresh one from the
+  // refresh token (single-flight — see refreshAccessToken) and retry once. If
+  // that fails, sign out so the router gate redirects to /login.
+  if (res.status === 401 && getRefreshToken()) {
+    const refresh = await refreshAccessToken();
+    if (refresh.status === "refreshed") {
+      res = await rawFetch(path, options, refresh.accessToken);
+      if (res.status === 401) {
+        await clearTokens();
+        notifyUnauthorized();
+      }
+    } else if (refresh.status === "failed") {
+      await clearTokens();
+      notifyUnauthorized();
+    }
   }
 
   const isJson = res.headers.get("content-type")?.includes("application/json");
@@ -45,4 +45,61 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   }
 
   return body as T;
+}
+
+async function rawFetch(
+  path: string,
+  options: RequestInit,
+  token: string | null
+): Promise<Response> {
+  try {
+    return await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        "x-hosej-client": "mobile",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    });
+  } catch {
+    throw new ApiError(0, "Could not reach the HoseJ API.");
+  }
+}
+
+// Single-flight refresh: the refresh token ROTATES (the server invalidates the
+// old one on use), so concurrent 401s must share ONE refresh — otherwise the
+// second call sends an already-spent token and spuriously signs the user out.
+// Returns stale when logout/account switch changed local auth state while the
+// refresh request was in flight.
+type RefreshResult =
+  | { status: "refreshed"; accessToken: string }
+  | { status: "failed" }
+  | { status: "stale" };
+
+let refreshInFlight: Promise<RefreshResult> | null = null;
+
+function refreshAccessToken(): Promise<RefreshResult> {
+  if (!refreshInFlight) {
+    refreshInFlight = doRefresh().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
+}
+
+async function doRefresh(): Promise<RefreshResult> {
+  const rt = getRefreshToken();
+  if (!rt) return { status: "failed" };
+  const revision = getAuthRevision();
+  try {
+    const res = await refreshTokens(rt);
+    if (getAuthRevision() !== revision || getRefreshToken() !== rt) {
+      return { status: "stale" };
+    }
+    await setTokens(res.accessToken, res.refreshToken);
+    return { status: "refreshed", accessToken: res.accessToken };
+  } catch {
+    return getAuthRevision() === revision ? { status: "failed" } : { status: "stale" };
+  }
 }

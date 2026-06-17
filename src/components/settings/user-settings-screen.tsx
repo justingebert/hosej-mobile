@@ -9,13 +9,32 @@ import { NOTIFICATION_LANGUAGES, NOTIFICATION_STYLES } from "@/lib/api/types/use
 import { ErrorCard } from "@/components/ui/error-card";
 import { Screen } from "@/components/ui/screen";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getErrorMessage } from "@/lib/api/client";
+import { useAuth } from "@/lib/auth/auth-context";
+import { isGoogleConfigured, useGoogleSignIn } from "@/lib/auth/google";
 
 export function UserSettingsScreen() {
   const { data: user, isPending, isError, error, isRefetching, refetch } = useUser();
   const updateUser = useUpdateUser();
+  const { deviceId, linkGoogle, signOut } = useAuth();
 
   // Cosmetic only for now — TODO: implement push registration / persistence.
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [isLinkingGoogle, setIsLinkingGoogle] = useState(false);
+  const [linkGoogleError, setLinkGoogleError] = useState<string | null>(null);
+
+  const runGoogleLink = async (getIdToken: () => Promise<string | null>) => {
+    setLinkGoogleError(null);
+    setIsLinkingGoogle(true);
+    try {
+      const idToken = await getIdToken();
+      if (idToken) await linkGoogle(idToken);
+    } catch (e) {
+      setLinkGoogleError(getErrorMessage(e));
+    } finally {
+      setIsLinkingGoogle(false);
+    }
+  };
 
   return (
     <Screen onRefresh={refetch} refreshing={isRefetching}>
@@ -87,12 +106,29 @@ export function UserSettingsScreen() {
             <View className="gap-1">
               <InfoRow label="User ID" value={user._id} />
               <InfoRow label="Joined" value={new Date(user.createdAt).toLocaleDateString()} />
-              {user.deviceId ? <InfoRow label="Device ID" value={user.deviceId} /> : null}
+              {deviceId ? <InfoRow label="Device ID" value={deviceId} /> : null}
             </View>
+
+            {deviceId && !user.googleConnected ? (
+              <View className="gap-2">
+                {isGoogleConfigured ? (
+                  <GoogleLinkButton
+                    isBusy={isLinkingGoogle}
+                    onIdToken={(getIdToken) => void runGoogleLink(getIdToken)}
+                  />
+                ) : (
+                  <Button variant="secondary" disabled>
+                    <Text>Connect Google</Text>
+                  </Button>
+                )}
+                {linkGoogleError ? (
+                  <Text className="text-sm text-destructive">{linkGoogleError}</Text>
+                ) : null}
+              </View>
+            ) : null}
           </View>
 
-          {/* Logout — placeholder, auth not wired yet */}
-          <Button variant="outline">
+          <Button variant="outline" onPress={() => signOut()}>
             <Text>Log out</Text>
           </Button>
         </View>
@@ -120,5 +156,25 @@ function InfoRow({ label, value }: { label: string; value: string }) {
         {value}
       </Text>
     </View>
+  );
+}
+
+function GoogleLinkButton({
+  isBusy,
+  onIdToken,
+}: {
+  isBusy: boolean;
+  onIdToken: (getIdToken: () => Promise<string | null>) => void;
+}) {
+  const { promptForIdToken, ready } = useGoogleSignIn();
+
+  return (
+    <Button
+      variant="secondary"
+      disabled={!ready || isBusy}
+      onPress={() => onIdToken(promptForIdToken)}
+    >
+      <Text>{isBusy ? "Connecting..." : "Connect Google"}</Text>
+    </Button>
   );
 }
