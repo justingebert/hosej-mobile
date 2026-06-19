@@ -26,6 +26,7 @@
 - wants to add packages that are very small -> destined to change
 - too much ocntextg switching => fatigue
 - not trusting with auth stuff
+- rsolving dpendenciy stuff
 
 ## Ai the good stuff:
 - wirte boilterpalte really quick
@@ -36,6 +37,9 @@
 
 # Worklog
 
+
+## 2026-06-18/19
+- google auth
 
 ## 2026-06-17 plan out first alha release to ios
 - add google aoauth client for login
@@ -125,3 +129,9 @@
 - look at expo and diffrencete between expo go and expo dev, and what eas is
 - decided for react native expo
   - because i know react and js
+
+
+## learned / overview
+- mobiel navigation (stack/tabs)
+- storage
+- swift lifecycle/deps

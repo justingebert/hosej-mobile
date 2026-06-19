@@ -19,8 +19,9 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   let res = await rawFetch(path, options, getAccessToken());
 
   // The access token is short-lived (~15 min). On 401, mint a fresh one from the
-  // refresh token (single-flight — see refreshAccessToken) and retry once. If
-  // that fails, sign out so the router gate redirects to /login.
+  // refresh token (single-flight — see refreshAccessToken) and retry once.
+  // Only terminal refresh-token failures sign out; transient network/server
+  // failures keep the stored session for the next request to retry.
   if (res.status === 401 && getRefreshToken()) {
     const refresh = await refreshAccessToken();
     if (refresh.status === "refreshed") {
@@ -32,6 +33,8 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
     } else if (refresh.status === "failed") {
       await clearTokens();
       notifyUnauthorized();
+    } else if (refresh.status === "unavailable") {
+      throw refresh.error;
     }
   }
 
@@ -75,6 +78,7 @@ async function rawFetch(
 type RefreshResult =
   | { status: "refreshed"; accessToken: string }
   | { status: "failed" }
+  | { status: "unavailable"; error: unknown }
   | { status: "stale" };
 
 let refreshInFlight: Promise<RefreshResult> | null = null;
@@ -99,7 +103,12 @@ async function doRefresh(): Promise<RefreshResult> {
     }
     await setTokens(res.accessToken, res.refreshToken);
     return { status: "refreshed", accessToken: res.accessToken };
-  } catch {
-    return getAuthRevision() === revision ? { status: "failed" } : { status: "stale" };
+  } catch (error) {
+    if (getAuthRevision() !== revision) return { status: "stale" };
+    return isTerminalRefreshError(error) ? { status: "failed" } : { status: "unavailable", error };
   }
+}
+
+function isTerminalRefreshError(error: unknown): boolean {
+  return error instanceof ApiError && [400, 401, 403].includes(error.status);
 }
