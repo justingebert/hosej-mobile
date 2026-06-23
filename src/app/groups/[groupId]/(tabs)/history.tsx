@@ -1,5 +1,5 @@
-import { GroupTabPlaceholderScreen } from "@/components/groups/group-tab-placeholder-screen";
+import { GroupHistoryScreen } from "@/components/groups/group-history-screen";
 
 export default function HistoryRoute() {
-  return <GroupTabPlaceholderScreen title="History" />;
+  return <GroupHistoryScreen />;
 }

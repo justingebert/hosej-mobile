@@ -90,3 +90,19 @@ export interface CreateQuestionInput {
   // Sent only for `custom`; the backend fills options for `users`/`rating`.
   options?: string[];
 }
+
+// GET /api/groups/:groupId/history — the endpoint returns full question docs,
+// but the history list only reads these fields. Typed narrow on purpose.
+export interface HistoryQuestionDTO {
+  _id: string;
+  groupId: string;
+  question: string;
+  questionType: QuestionType;
+  submittedBy?: string | null;
+  usedAt?: string;
+  createdAt: string;
+}
+
+export interface GroupHistoryResponseDTO {
+  questions: HistoryQuestionDTO[];
+}
