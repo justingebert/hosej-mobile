@@ -54,7 +54,7 @@ export function GroupHistoryScreen() {
 
   const { data: group } = useGroup(groupId);
   const memberOptions = useMemo(
-    () => (group?.members ?? []).map((m) => ({ value: m.user, label: m.name })),
+    () => (group?.members ?? []).map((m) => ({ value: m.user, label: m.name, avatarUrl: m.avatarUrl })),
     [group?.members]
   );
 

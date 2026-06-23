@@ -1,16 +1,20 @@
 import { useState } from "react";
 import { Modal, Pressable, ScrollView, View } from "react-native";
+import { Check } from "lucide-react-native";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
+import { cn } from "@/lib/utils";
 
 type Option = { label: string; value: string };
+type MemberOption = Option & { avatarUrl?: string };
 
 type Props = {
   visible: boolean;
   onClose: () => void;
   typeOptions: Option[];
-  memberOptions: Option[];
+  memberOptions: MemberOption[];
   selectedTypes: string[];
   selectedMembers: string[];
   onApply: (next: { questionType: string[]; submittedBy: string[] }) => void;
@@ -59,35 +63,40 @@ function SheetBody({
       </View>
       <Text variant="large">Filters</Text>
 
-      <ScrollView style={{ maxHeight: 360 }} className="grow-0">
-        <Text variant="muted" className="mb-1">
+      <ScrollView style={{ maxHeight: 380 }} className="grow-0">
+        <Text variant="muted" className="mb-2">
           Type
         </Text>
-        {typeOptions.map((opt) => (
-          <OptionRow
-            key={opt.value}
-            label={opt.label}
-            checked={types.includes(opt.value)}
-            onToggle={() => toggle(opt.value, setTypes)}
-          />
-        ))}
+        <View className="flex-row flex-wrap gap-2">
+          {typeOptions.map((opt) => (
+            <FilterChip
+              key={opt.value}
+              label={opt.label}
+              selected={types.includes(opt.value)}
+              onPress={() => toggle(opt.value, setTypes)}
+            />
+          ))}
+        </View>
 
-        <Text variant="muted" className="mb-1 mt-4">
+        <Text variant="muted" className="mb-2 mt-5">
           Submitted by
         </Text>
         {memberOptions.length === 0 ? (
           <Text variant="muted">No members</Text>
         ) : (
-          memberOptions.map((opt) => (
-            <OptionRow
-              key={opt.value}
-              label={opt.label}
-              checked={members.includes(opt.value)}
-              onToggle={() => toggle(opt.value, setMembers)}
-            />
-          ))
+          <View className="flex-row flex-wrap gap-2">
+            {memberOptions.map((opt) => (
+              <MemberChip
+                key={opt.value}
+                option={opt}
+                selected={members.includes(opt.value)}
+                onPress={() => toggle(opt.value, setMembers)}
+              />
+            ))}
+          </View>
         )}
       </ScrollView>
+
       <View className="flex-row gap-3 pt-1">
         <Button
           variant="outline"
@@ -108,19 +117,69 @@ function SheetBody({
   );
 }
 
-function OptionRow({
+function FilterChip({
   label,
-  checked,
-  onToggle,
+  selected,
+  onPress,
 }: {
   label: string;
-  checked: boolean;
-  onToggle: () => void;
+  selected: boolean;
+  onPress: () => void;
 }) {
   return (
-    <Pressable onPress={onToggle} className="flex-row items-center gap-3 py-2.5 active:opacity-60">
-      <Checkbox checked={checked} onCheckedChange={onToggle} />
-      <Text className="flex-1">{label}</Text>
+    <Pressable
+      onPress={onPress}
+      className={cn(
+        "flex-row items-center gap-1.5 rounded-full border px-3 py-2 active:opacity-70",
+        selected ? "border-primary bg-primary" : "border-border bg-background"
+      )}
+    >
+      {selected ? <Icon as={Check} className="size-3.5 text-primary-foreground" /> : null}
+      <Text
+        className={cn(
+          "text-sm font-medium",
+          selected ? "text-primary-foreground" : "text-foreground"
+        )}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+function MemberChip({
+  option,
+  selected,
+  onPress,
+}: {
+  option: MemberOption;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  const initial = option.label.slice(0, 1).toUpperCase();
+  return (
+    <Pressable
+      onPress={onPress}
+      className={cn(
+        "max-w-full flex-row items-center gap-2 rounded-full border py-1 pl-1 pr-3 active:opacity-70",
+        selected ? "border-primary bg-primary" : "border-border bg-background"
+      )}
+    >
+      <Avatar alt={`${option.label} avatar`} className="size-6">
+        {option.avatarUrl ? <AvatarImage source={{ uri: option.avatarUrl }} /> : null}
+        <AvatarFallback>
+          <Text className="text-[10px] font-extrabold text-foreground">{initial}</Text>
+        </AvatarFallback>
+      </Avatar>
+      <Text
+        numberOfLines={1}
+        className={cn(
+          "shrink text-sm font-medium",
+          selected ? "text-primary-foreground" : "text-foreground"
+        )}
+      >
+        {option.label}
+      </Text>
     </Pressable>
   );
 }
