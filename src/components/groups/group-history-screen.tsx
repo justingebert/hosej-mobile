@@ -183,7 +183,7 @@ export function GroupHistoryScreen() {
 }
 
 function openResults(groupId: string, question: HistoryQuestionDTO) {
-  router.push(`/groups/${groupId}/question/${question._id}/resultsdetailed` as Href);
+  router.push(`/groups/${groupId}/question/${question._id}` as Href);
 }
 
 function HistoryRow({ item, onPress }: { item: HistoryQuestionDTO; onPress: () => void }) {

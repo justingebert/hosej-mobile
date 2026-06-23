@@ -4,6 +4,7 @@ import type {
   ActiveQuestionsResponseDTO,
   CreateQuestionInput,
   GroupHistoryResponseDTO,
+  QuestionDTO,
   QuestionResultsResponseDTO,
   VoteResponseValue,
 } from "./types/question";
@@ -23,6 +24,8 @@ export const questionKeys = {
   active: (groupId: string) => ["groups", groupId, "questions", "active"] as const,
   results: (groupId: string, questionId: string) =>
     ["groups", groupId, "questions", questionId, "results"] as const,
+  detail: (groupId: string, questionId: string) =>
+    ["groups", groupId, "questions", questionId, "detail"] as const,
   history: (groupId: string, filters: GroupHistoryFilters) =>
     ["groups", groupId, "questions", "history", filters] as const,
 };
@@ -90,6 +93,17 @@ export function useQuestionResults(groupId: string, questionId: string) {
       apiFetch<QuestionResultsResponseDTO>(
         `/api/groups/${groupId}/question/${questionId}/results`
       ),
+    enabled: !!groupId && !!questionId,
+  });
+}
+
+// Single question document (text, image, rating, options). Used by the results
+// page for everything the aggregated /results endpoint doesn't return.
+export function useQuestion(groupId: string, questionId: string) {
+  return useQuery({
+    queryKey: questionKeys.detail(groupId, questionId),
+    queryFn: () =>
+      apiFetch<QuestionDTO>(`/api/groups/${groupId}/question/${questionId}`),
     enabled: !!groupId && !!questionId,
   });
 }

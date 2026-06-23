@@ -7,19 +7,20 @@ import { StyledImage } from "./styled-image";
 import {
   QuestionType,
   type QuestionResultDTO,
-  type QuestionWithUserStateDTO,
 } from "@/lib/api/types/question";
 import { ChevronRight } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
 
 export function QuestionResults({
-  question,
+  groupId,
+  questionId,
 }: {
-  question: QuestionWithUserStateDTO;
+  groupId: string;
+  questionId: string;
 }) {
   const { data, error, isError, isPending, isRefetching, refetch } = useQuestionResults(
-    question.groupId,
-    question._id
+    groupId,
+    questionId
   );
 
 
@@ -43,7 +44,7 @@ export function QuestionResults({
   }
 
   const detailsHref =
-    `/groups/${question.groupId}/question/${question._id}/resultsdetailed` as Href;
+    `/groups/${groupId}/question/${questionId}/resultsdetailed` as Href;
 
   return (
     <View className="gap-4">

@@ -27,7 +27,10 @@ export type SignedUrlDTO = {
 
 export type QuestionOptionDTO = string | SignedUrlDTO;
 
-export interface QuestionWithUserStateDTO {
+// GET /api/groups/:groupId/question/:questionId — the raw question document with
+// a signed `imageUrl` and resolved image `options`. Does NOT carry the per-user
+// vote state; that's only computed for the active-questions list.
+export interface QuestionDTO {
   _id: string;
   groupId: string;
   category: string;
@@ -46,6 +49,9 @@ export interface QuestionWithUserStateDTO {
   templateId?: string;
   chat?: string;
   createdAt: string;
+}
+
+export interface QuestionWithUserStateDTO extends QuestionDTO {
   userHasVoted: boolean;
   userRating: UserRating;
 }

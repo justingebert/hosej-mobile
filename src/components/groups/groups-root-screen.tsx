@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { type Href, Link } from "expo-router";
 import { Platform, Pressable, Share as RNShare, StyleSheet, useColorScheme, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BlurView } from "expo-blur";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { buildInviteLink, useGroups } from "@/lib/api/groups";

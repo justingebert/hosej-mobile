@@ -13,7 +13,7 @@ import {
   type QuestionResultDTO,
   type QuestionResultUserDTO,
 } from "@/lib/api/types/question";
-import { StyledImage } from "./styled-image";
+import { AspectImage } from "./aspect-image";
 
 export function QuestionResultsDetailScreen() {
   const groupId = useGroupId();
@@ -67,7 +67,7 @@ function ResultDetailCard({
     <View className="items-center justify-center gap-3 rounded-xl border border-border bg-card p-4">
       <View className="w-full items-center gap-1.5">
         {isImage ? (
-          <StyledImage uri={result.option} className="h-32 w-full rounded-lg" />
+          <AspectImage uri={result.option} className="rounded-lg" />
         ) : (
           <Text selectable className="text-center text-lg font-black text-card-foreground">
             {result.option}

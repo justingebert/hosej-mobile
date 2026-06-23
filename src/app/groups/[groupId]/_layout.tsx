@@ -62,6 +62,22 @@ export default function GroupLayout() {
           }}
         />
         <Stack.Screen
+          name="question/[questionId]/index"
+          options={{
+            headerShown: true,
+            headerShadowVisible: false,
+            headerStyle: { backgroundColor: headerBackground },
+            headerTitle: () => <GroupHeaderTitle>Results</GroupHeaderTitle>,
+            headerTitleAlign: "center",
+            headerBackVisible: false,
+            headerLeft: () => (
+              <GroupHeaderButton onPress={router.back}>
+                <Icon as={ArrowLeft} className="size-5" />
+              </GroupHeaderButton>
+            ),
+          }}
+        />
+        <Stack.Screen
           name="question/[questionId]/resultsdetailed"
           options={{
             headerShown: true,
