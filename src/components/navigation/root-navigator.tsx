@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Link, Stack, useRouter } from "expo-router";
 import { useColorScheme } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
-import { ArrowLeft, CircleHelp, User } from "lucide-react-native";
+import { CircleHelp, User, X } from "lucide-react-native";
 import { useAuth } from "@/lib/auth/auth-context";
 import {
   GroupHeaderButton,
@@ -73,35 +73,37 @@ export function RootNavigator() {
         <Stack.Screen
           name="help"
           options={{
+            presentation: "modal",
             headerShown: true,
             headerShadowVisible: false,
             headerStyle: { backgroundColor: sheetBackground },
+            contentStyle: { backgroundColor: sheetBackground },
             headerTitle: () => <GroupHeaderTitle>Help</GroupHeaderTitle>,
             headerTitleAlign: "center",
             headerBackVisible: false,
-            headerLeft: () => (
+            headerRight: () => (
               <GroupHeaderButton onPress={router.back}>
-                <Icon as={ArrowLeft} className="size-5" />
+                <Icon as={X} className="size-5" />
               </GroupHeaderButton>
             ),
-            headerRight: () => <GroupHeaderSpacer />,
           }}
         />
         <Stack.Screen
           name="settings"
           options={{
+            presentation: "modal",
             headerShown: true,
             headerShadowVisible: false,
             headerStyle: { backgroundColor: sheetBackground },
+            contentStyle: { backgroundColor: sheetBackground },
             headerTitle: () => <GroupHeaderTitle>Settings</GroupHeaderTitle>,
             headerTitleAlign: "center",
             headerBackVisible: false,
-            headerLeft: () => (
+            headerRight: () => (
               <GroupHeaderButton onPress={router.back}>
-                <Icon as={ArrowLeft} className="size-5" />
+                <Icon as={X} className="size-5" />
               </GroupHeaderButton>
-            ),
-            headerRight: () => <GroupHeaderSpacer />,
+            )
           }}
         />
         <Stack.Screen

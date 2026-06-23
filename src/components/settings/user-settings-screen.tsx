@@ -9,6 +9,7 @@ import { NOTIFICATION_LANGUAGES, NOTIFICATION_STYLES } from "@/lib/api/types/use
 import { ErrorCard } from "@/components/ui/error-card";
 import { Screen } from "@/components/ui/screen";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ReportBugButton } from "@/components/help/report-bug-button";
 import { getErrorMessage } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
 import { isGoogleConfigured, useGoogleSignIn } from "@/lib/auth/google";
@@ -48,7 +49,8 @@ export function UserSettingsScreen() {
           isRetrying={isRefetching}
         />
       ) : user ? (
-        <View className="gap-8">
+        <View className="flex-1 justify-between gap-8">
+          <View className="gap-8">
           <View className="gap-4">
             <Text className="text-lg font-bold text-foreground">Preferences</Text>
 
@@ -127,10 +129,14 @@ export function UserSettingsScreen() {
               </View>
             ) : null}
           </View>
+          </View>
 
-          <Button variant="outline" onPress={() => signOut()}>
-            <Text>Log out</Text>
-          </Button>
+          <View className="gap-4">
+            <ReportBugButton variant="outline" />
+            <Button variant="destructive" onPress={() => signOut()}>
+              <Text>Log out</Text>
+            </Button>
+          </View>
         </View>
       ) : null}
     </Screen>
