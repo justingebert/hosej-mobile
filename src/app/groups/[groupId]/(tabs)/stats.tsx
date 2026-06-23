@@ -1,5 +1,5 @@
-import { GroupTabPlaceholderScreen } from "@/components/groups/group-tab-placeholder-screen";
+import { GroupStatsScreen } from "@/components/groups/group-stats-screen";
 
 export default function StatsRoute() {
-  return <GroupTabPlaceholderScreen title="Stats" />;
+  return <GroupStatsScreen />;
 }

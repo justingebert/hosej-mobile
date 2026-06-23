@@ -85,3 +85,27 @@ export interface UpdateGroupInput {
   name?: string;
   features?: Partial<GroupFeaturesDTO>;
 }
+
+export interface QuestionPackStatDTO {
+  packId: string;
+  name: string;
+  total: number;
+  used: number;
+  left: number;
+}
+
+// GET /api/groups/:groupId/stats — only the fields the mobile stats screen
+// renders (questions feature + overview row). Rally/jukebox fields the endpoint
+// also returns are omitted until those features migrate.
+export interface GroupStatsDTO {
+  questionsUsedCount: number;
+  questionsLeftCount: number;
+  questionsByType: { _id: string; count: number }[];
+  questionsByUser: { username: string; count: number }[];
+  selfCreatedUsedCount: number;
+  selfCreatedLeftCount: number;
+  packQuestionsUsedCount: number;
+  packQuestionsLeftCount: number;
+  packs: QuestionPackStatDTO[];
+  messagesCount: number;
+}
