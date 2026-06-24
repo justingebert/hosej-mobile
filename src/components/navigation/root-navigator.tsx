@@ -42,8 +42,6 @@ export function RootNavigator() {
             headerTitle: () => <GroupHeaderTitle>Profile</GroupHeaderTitle>,
             headerTitleAlign: "center",
             headerBackVisible: false,
-            headerLeft: () => <GroupHeaderSpacer />,
-            headerRight: () => <GroupHeaderSpacer />,
           }}
         />
         <Stack.Screen

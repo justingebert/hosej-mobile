@@ -34,7 +34,7 @@ type AuthContextValue = {
   deviceId: string | null;
   needsNameSetup: boolean;
   completeNameSetup: (username: string) => void;
-  registerDevice: (userName: string) => Promise<void>;
+  registerDevice: () => Promise<void>;
   loginWithDeviceId: (deviceId: string) => Promise<void>;
   loginWithGoogle: (idToken: string) => Promise<void>;
   linkGoogle: (idToken: string) => Promise<void>;
@@ -131,11 +131,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [reset]);
 
   const registerDevice = useCallback(
-    async (userName: string) => {
+    async () => {
       // Fresh device account: a random UUID is the account's only credential. The
       // user can read it back in Settings to sign in elsewhere later. Keep a
       // pending UUID across failed attempts so a lost response can't create a
-      // second account on retry.
+      // second account on retry. No name is sent — the account starts as the
+      // "New user" placeholder and the server returns needsNameSetup, which routes
+      // the user to the setup-name screen.
       let nextDeviceId = getPendingDeviceId();
       if (!nextDeviceId) {
         nextDeviceId = Crypto.randomUUID();
@@ -143,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const res = await apiRegisterDevice(nextDeviceId, userName);
+        const res = await apiRegisterDevice(nextDeviceId);
         await applyAuth(res, nextDeviceId);
         await clearPendingDeviceId();
       } catch (error) {

@@ -45,9 +45,13 @@ async function authPost(path: string, body: unknown): Promise<AuthResponse> {
   return data as AuthResponse;
 }
 
-/** Create a new device account. deviceId must be a UUID. 409 if it already exists. */
-export function registerDevice(deviceId: string, userName: string) {
-  return authPost("/api/auth/mobile/device/register", { deviceId, userName });
+/**
+ * Create a new device account under the "New user" placeholder. deviceId must be a
+ * UUID. The app prompts for a real display name afterwards (needsNameSetup). 409 if
+ * the account already exists.
+ */
+export function registerDevice(deviceId: string) {
+  return authPost("/api/auth/mobile/device/register", { deviceId });
 }
 
 /** Sign in to an existing device account. 404 if the deviceId is unknown. */

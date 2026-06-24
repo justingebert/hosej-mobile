@@ -1,15 +1,24 @@
 import { useState } from "react";
-import { Image } from "expo-image";
 import { Switch, View } from "react-native";
+import * as Clipboard from "expo-clipboard";
+import Toast from "react-native-toast-message";
+import { Check, Copy } from "lucide-react-native";
+import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { Segmented } from "@/components/ui/segmented";
-import { useUpdateUser, useUser } from "@/lib/api/user";
-import { NOTIFICATION_LANGUAGES, NOTIFICATION_STYLES } from "@/lib/api/types/user";
 import { ErrorCard } from "@/components/ui/error-card";
 import { Screen } from "@/components/ui/screen";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SettingsGroup, SettingsRow } from "@/components/settings/settings-group";
 import { ReportBugButton } from "@/components/help/report-bug-button";
+import { useUpdateUser, useUploadAvatar, useUser } from "@/lib/api/user";
+import {
+  NOTIFICATION_LANGUAGES,
+  NOTIFICATION_STYLES,
+  type UserDTO,
+} from "@/lib/api/types/user";
 import { getErrorMessage } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
 import { isGoogleConfigured, useGoogleSignIn } from "@/lib/auth/google";
@@ -50,88 +59,74 @@ export function UserSettingsScreen() {
         />
       ) : user ? (
         <View className="flex-1 justify-between gap-8">
-          <View className="gap-8">
-          <View className="gap-4">
-            <Text className="text-lg font-bold text-foreground">Preferences</Text>
-
-            <View className="flex-row items-center justify-between">
-              <Text className="text-foreground">Push notifications</Text>
-              <Switch
-                value={notificationsEnabled}
-                // TODO: implement push registration; this does nothing yet.
-                onValueChange={setNotificationsEnabled}
-              />
-            </View>
-
-            <View className="flex-row items-center justify-between">
-              <Text className="text-foreground">Notification Language</Text>
-              <Segmented
-                options={NOTIFICATION_LANGUAGES.map((lang) => ({
-                  label: lang.toUpperCase(),
-                  value: lang,
-                }))}
-                value={user.notificationLanguage}
-                onChange={(value) => updateUser.mutate({ notificationLanguage: value })}
-              />
-            </View>
-
-            <View className="flex-row items-center justify-between">
-              <Text className="text-foreground">Notification Style</Text>
-              <Segmented
-                options={NOTIFICATION_STYLES.map((style) => ({ label: style, value: style }))}
-                value={user.notificationStyle}
-                onChange={(value) => updateUser.mutate({ notificationStyle: value })}
-              />
-            </View>
-          </View>
-
-          <View className="gap-4">
-            <Text className="text-lg font-bold text-foreground">Profile</Text>
-
-            <View className="flex-row items-center gap-4">
-              {user.avatarUrl ? (
-                <Image
-                  source={{ uri: user.avatarUrl }}
-                  style={{ width: 56, height: 56, borderRadius: 28 }}
+          <View className="gap-6">
+            <SettingsGroup title="Preferences">
+              <SettingsRow label="Push notifications">
+                <Switch
+                  value={notificationsEnabled}
+                  // TODO: implement push registration; this does nothing yet.
+                  onValueChange={setNotificationsEnabled}
                 />
-              ) : (
-                <View className="h-14 w-14 items-center justify-center rounded-full bg-muted">
-                  <Text className="text-xl font-bold text-foreground">
-                    {(user.username || "?").slice(0, 1).toUpperCase()}
-                  </Text>
-                </View>
-              )}
+              </SettingsRow>
+              <SettingsRow label="Language">
+                <Segmented
+                  options={NOTIFICATION_LANGUAGES.map((lang) => ({
+                    label: lang.toUpperCase(),
+                    value: lang,
+                  }))}
+                  value={user.notificationLanguage}
+                  onChange={(value) => updateUser.mutate({ notificationLanguage: value })}
+                />
+              </SettingsRow>
+              <SettingsRow label="Style">
+                <Segmented
+                  options={NOTIFICATION_STYLES.map((style) => ({ label: style, value: style }))}
+                  value={user.notificationStyle}
+                  onChange={(value) => updateUser.mutate({ notificationStyle: value })}
+                />
+              </SettingsRow>
+            </SettingsGroup>
 
-              <Text className="flex-1 text-lg font-bold text-foreground">{user.username}</Text>
-            </View>
+            <SettingsGroup title="Profile">
+              <AvatarField user={user} />
+              <SettingsRow label="Name">
+                <Text className="text-muted-foreground">{user.username}</Text>
+              </SettingsRow>
+              <SettingsRow label="Joined">
+                <Text className="text-muted-foreground">
+                  {new Date(user.createdAt).toLocaleDateString()}
+                </Text>
+              </SettingsRow>
+              {deviceId ? (
+                <SettingsRow label="Device ID">
+                  <DeviceIdValue deviceId={deviceId} />
+                </SettingsRow>
+              ) : null}
+            </SettingsGroup>
 
-            <View className="gap-1">
-              <InfoRow label="User ID" value={user._id} />
-              <InfoRow label="Joined" value={new Date(user.createdAt).toLocaleDateString()} />
-              {deviceId ? <InfoRow label="Device ID" value={deviceId} /> : null}
-            </View>
-
-            {deviceId && !user.googleConnected ? (
-              <View className="gap-2">
-                {isGoogleConfigured ? (
+            <SettingsGroup title="Connections">
+              <SettingsRow
+                label="Google"
+                description={user.googleConnected ? "Connected" : "Sign in across devices"}
+              >
+                {user.googleConnected ? (
+                  <Icon as={Check} className="size-5 text-success" />
+                ) : isGoogleConfigured ? (
                   <GoogleLinkButton
                     isBusy={isLinkingGoogle}
                     onIdToken={(getIdToken) => void runGoogleLink(getIdToken)}
                   />
                 ) : (
-                  <Button variant="secondary" disabled>
-                    <Text>Connect Google</Text>
-                  </Button>
+                  <Text className="text-xs text-muted-foreground">Unavailable</Text>
                 )}
-                {linkGoogleError ? (
-                  <Text className="text-sm text-destructive">{linkGoogleError}</Text>
-                ) : null}
-              </View>
+              </SettingsRow>
+            </SettingsGroup>
+            {linkGoogleError ? (
+              <Text className="px-1 text-sm text-destructive">{linkGoogleError}</Text>
             ) : null}
           </View>
-          </View>
 
-          <View className="gap-4">
+          <View className="gap-3">
             <ReportBugButton variant="outline" />
             <Button variant="destructive" onPress={() => signOut()}>
               <Text>Log out</Text>
@@ -143,24 +138,44 @@ export function UserSettingsScreen() {
   );
 }
 
-function SettingsSkeleton() {
+function AvatarField({ user }: { user: UserDTO }) {
+  const uploadAvatar = useUploadAvatar();
+  const updateUser = useUpdateUser();
+  const busy = uploadAvatar.isPending || updateUser.isPending;
+  const initial = (user.username || "?").slice(0, 1).toUpperCase();
+
   return (
-    <View className="gap-4">
-      <Skeleton className="h-5 w-1/3" />
-      <Skeleton className="h-12 w-full rounded-xl" />
-      <Skeleton className="h-12 w-full rounded-xl" />
-      <Skeleton className="h-24 w-full rounded-xl" />
+    <View className="items-center py-5">
+      <AvatarPicker
+        imageUri={user.avatarUrl}
+        initial={initial}
+        busy={busy}
+        alt={`${user.username}'s profile photo`}
+        onPick={(asset) => uploadAvatar.mutate(asset)}
+        onRemove={() => updateUser.mutate({ avatar: null })}
+      />
     </View>
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function DeviceIdValue({ deviceId }: { deviceId: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const onCopy = async () => {
+    await Clipboard.setStringAsync(deviceId);
+    setCopied(true);
+    Toast.show({ type: "success", text1: "Device ID copied" });
+    setTimeout(() => setCopied(false), 1500);
+  };
+
   return (
-    <View className="flex-row items-center justify-between gap-4 border-b border-border py-2">
-      <Text className="text-muted-foreground">{label}</Text>
-      <Text numberOfLines={1} className="flex-1 text-right text-foreground">
-        {value}
+    <View className="flex-row items-center gap-1">
+      <Text numberOfLines={1} className="max-w-[150px] text-muted-foreground">
+        {deviceId}
       </Text>
+      <Button variant="ghost" size="icon" className="size-8" onPress={onCopy}>
+        <Icon as={copied ? Check : Copy} className="size-4" />
+      </Button>
     </View>
   );
 }
@@ -177,10 +192,21 @@ function GoogleLinkButton({
   return (
     <Button
       variant="secondary"
+      size="sm"
       disabled={!ready || isBusy}
       onPress={() => onIdToken(promptForIdToken)}
     >
-      <Text>{isBusy ? "Connecting..." : "Connect Google"}</Text>
+      <Text>{isBusy ? "Connecting…" : "Connect"}</Text>
     </Button>
+  );
+}
+
+function SettingsSkeleton() {
+  return (
+    <View className="gap-6">
+      <Skeleton className="h-44 w-full rounded-2xl" />
+      <Skeleton className="h-56 w-full rounded-2xl" />
+      <Skeleton className="h-20 w-full rounded-2xl" />
+    </View>
   );
 }
