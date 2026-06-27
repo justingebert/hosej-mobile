@@ -14,6 +14,12 @@ let accessToken: string | null = null;
 let refreshToken: string | null = null;
 let deviceId: string | null = null;
 let pendingDeviceId: string | null = null;
+// The invite code a logged-out user tapped Join on, kept across the login/onboarding
+// bounce so the flow resumes once they're authed. In-memory only: the whole bounce
+// happens within one app session (no restart), so there's nothing to persist — and
+// not persisting means a stale code can never auto-join someone on a later normal
+// launch. Consumed (cleared) by root-navigator when it performs the resume join.
+let pendingInvite: string | null = null;
 let authRevision = 0;
 
 export function getAccessToken(): string | null {
@@ -111,6 +117,18 @@ export async function clearPendingDeviceId(): Promise<void> {
   } catch {
     // Ignore — see setTokens.
   }
+}
+
+export function getPendingInvite(): string | null {
+  return pendingInvite;
+}
+
+export function setPendingInvite(code: string): void {
+  pendingInvite = code;
+}
+
+export function clearPendingInvite(): void {
+  pendingInvite = null;
 }
 
 // Single callback the request layer invokes when a request is 401 and the token

@@ -4,15 +4,22 @@ import { apiFetch } from "./client";
 import type {
   CreateGroupInput,
   GroupDTO,
+  GroupInviteDTO,
   GroupListResponseDTO,
   GroupWithAdminDTO,
-  JoinGroupResponseDTO,
+  InvitePreviewDTO,
+  JoinByCodeResponseDTO,
   UpdateGroupInput,
 } from "./types/group";
 
 export const groupKeys = {
   all: ["groups"] as const,
   detail: (id: string) => ["groups", id] as const,
+};
+
+export const inviteKeys = {
+  preview: (code: string) => ["invite-preview", code] as const,
+  group: (groupId: string) => ["group-invite", groupId] as const,
 };
 
 export function useGroups() {
@@ -46,13 +53,13 @@ export function useCreateGroup() {
   });
 }
 
-export function useJoinGroup() {
+// Join by invite code (the deep link is /join/:code). Idempotent server-side.
+export function useJoinByCode() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    // Join is keyed by groupId; the invite link is just /join/:groupId.
-    mutationFn: (groupId: string) =>
-      apiFetch<JoinGroupResponseDTO>(`/api/groups/${groupId}/members`, {
+    mutationFn: (code: string) =>
+      apiFetch<JoinByCodeResponseDTO>(`/api/invites/${code}`, {
         method: "POST",
       }),
     meta: {
@@ -60,6 +67,47 @@ export function useJoinGroup() {
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: groupKeys.all }),
   });
+}
+
+// Public invite preview — works without an account (the GET endpoint is public).
+export function useInvitePreview(code: string) {
+  return useQuery({
+    queryKey: inviteKeys.preview(code),
+    queryFn: () => apiFetch<InvitePreviewDTO>(`/api/invites/${code}`),
+    enabled: !!code,
+    retry: false,
+  });
+}
+
+// A group's own shareable invite code (any member). Lazily created server-side.
+export function useGroupInvite(groupId: string) {
+  return useQuery({
+    queryKey: inviteKeys.group(groupId),
+    queryFn: () => apiFetch<GroupInviteDTO>(`/api/groups/${groupId}/invite`),
+    enabled: !!groupId,
+  });
+}
+
+// Regenerate the invite code (admin only), invalidating outstanding links.
+export function useResetInvite(groupId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<GroupInviteDTO>(`/api/groups/${groupId}/invite/reset`, {
+        method: "POST",
+      }),
+    meta: {
+      errorToastTitle: "Could not reset invite link",
+    },
+    onSuccess: (data) => queryClient.setQueryData(inviteKeys.group(groupId), data),
+  });
+}
+
+// One-shot fetch of a group's invite code for an on-tap share (avoids a query per
+// card in the group list).
+export function fetchInviteCode(groupId: string): Promise<GroupInviteDTO> {
+  return apiFetch<GroupInviteDTO>(`/api/groups/${groupId}/invite`);
 }
 
 export function useUpdateGroup(groupId: string) {
@@ -118,14 +166,13 @@ export function useDeleteGroup(groupId: string) {
   });
 }
 
-// Accepts a raw group id or a /join/:groupId invite link.
-export function extractGroupId(input: string): string {
+// Accepts a bare invite code or a /join/:code invite link.
+export function extractInviteCode(input: string): string {
   const trimmed = input.trim();
   const match = trimmed.match(/\/join\/([^\s/?#]+)/);
   return match ? match[1] : trimmed;
 }
 
-
-export function buildInviteLink(groupId: string): string {
-  return `${API_URL}/join/${groupId}`;
+export function buildInviteLink(code: string): string {
+  return `${API_URL}/join/${code}`;
 }

@@ -8,6 +8,7 @@ import { Text } from "@/components/ui/text";
 import { getErrorMessage } from "@/lib/api/client";
 import { useUpdateUser, useUploadAvatar, type PickedAvatar } from "@/lib/api/user";
 import { useAuth } from "@/lib/auth/auth-context";
+import { getPendingInvite } from "@/lib/auth/session";
 import { toastError } from "@/lib/toast";
 
 export default function SetupNameScreen() {
@@ -23,8 +24,13 @@ export default function SetupNameScreen() {
 
   const saving = updateUser.isPending || uploadAvatar.isPending;
 
+  // Once naming is done (or wasn't needed), leave setup. A pending invite is resumed by
+  // root-navigator (background join behind a <SplashView>), so here we only handle the
+  // plain no-invite case by landing on the groups list — leaving root-navigator the
+  // single resume authority, so the invite is never double-routed.
   useEffect(() => {
-    if (!needsNameSetup) router.replace("/");
+    if (needsNameSetup) return;
+    if (!getPendingInvite()) router.replace("/");
   }, [needsNameSetup, router]);
 
   const submit = async () => {
@@ -42,8 +48,8 @@ export default function SetupNameScreen() {
           toastError("Could not set photo", "You can add it later in Settings.");
         }
       }
+      // Exit is handled by the effect above once needsNameSetup flips to false.
       completeNameSetup(updatedUser.username);
-      router.replace("/");
     } catch (e) {
       setError(getErrorMessage(e));
     }

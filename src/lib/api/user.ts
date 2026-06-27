@@ -37,6 +37,15 @@ export function useUpdateUser() {
   });
 }
 
+export function useDeleteUser() {
+  return useMutation({
+    mutationFn: () => apiFetch<{ message: string }>("/api/users", { method: "DELETE" }),
+    meta: {
+      errorToastTitle: "Could not delete account",
+    },
+  });
+}
+
 /** A photo chosen from the device, as returned by expo-image-picker. */
 export type PickedAvatar = {
   uri: string;

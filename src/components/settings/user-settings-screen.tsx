@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Switch, View } from "react-native";
+import { Alert, Switch, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import Toast from "react-native-toast-message";
-import { Check, Copy } from "lucide-react-native";
+import { Check, Copy, Trash2 } from "lucide-react-native";
 import { AvatarPicker } from "@/components/ui/avatar-picker";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
@@ -13,7 +13,7 @@ import { Screen } from "@/components/ui/screen";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SettingsGroup, SettingsRow } from "@/components/settings/settings-group";
 import { ReportBugButton } from "@/components/help/report-bug-button";
-import { useUpdateUser, useUploadAvatar, useUser } from "@/lib/api/user";
+import { useDeleteUser, useUpdateUser, useUploadAvatar, useUser } from "@/lib/api/user";
 import {
   NOTIFICATION_LANGUAGES,
   NOTIFICATION_STYLES,
@@ -26,6 +26,7 @@ import { isGoogleConfigured, useGoogleSignIn } from "@/lib/auth/google";
 export function UserSettingsScreen() {
   const { data: user, isPending, isError, error, isRefetching, refetch } = useUser();
   const updateUser = useUpdateUser();
+  const deleteUser = useDeleteUser();
   const { deviceId, linkGoogle, signOut } = useAuth();
 
   // Cosmetic only for now — TODO: implement push registration / persistence.
@@ -45,6 +46,23 @@ export function UserSettingsScreen() {
       setIsLinkingGoogle(false);
     }
   };
+
+  const confirmDeleteAccount = () =>
+    Alert.alert(
+      "Delete account",
+      "This permanently deletes your account and removes you from your groups. This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () =>
+            deleteUser.mutate(undefined, {
+              onSuccess: () => void signOut(),
+            }),
+        },
+      ],
+    );
 
   return (
     <Screen onRefresh={refetch} refreshing={isRefetching}>
@@ -128,6 +146,14 @@ export function UserSettingsScreen() {
 
           <View className="gap-3">
             <ReportBugButton variant="outline" />
+            <Button
+              variant="destructive"
+              onPress={confirmDeleteAccount}
+              disabled={deleteUser.isPending}
+            >
+              <Icon as={Trash2} className="size-4" />
+              <Text>{deleteUser.isPending ? "Deleting…" : "Delete account"}</Text>
+            </Button>
             <Button variant="destructive" onPress={() => signOut()}>
               <Text>Log out</Text>
             </Button>

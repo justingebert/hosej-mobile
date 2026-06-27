@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -13,10 +13,13 @@ import { Image } from "expo-image";
 import * as WebBrowser from "expo-web-browser";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { API_URL } from "@/lib/config";
 import { getErrorMessage } from "@/lib/api/client";
+import { useInvitePreview } from "@/lib/api/groups";
 import { useAuth } from "@/lib/auth/auth-context";
+import { clearPendingInvite, getPendingInvite } from "@/lib/auth/session";
 import { useGoogleSignIn } from "@/lib/auth/google";
 import { useCSSVariable } from "uniwind";
 
@@ -31,6 +34,20 @@ export default function LoginScreen() {
   const [busy, setBusy] = useState<Action | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lostOpen, setLostOpen] = useState(false);
+
+  // Reached via the invite deep link: join/[code] stashes the code (in-memory) and
+  // redirects here, so the whole logged-out join is one screen. Show the group inline.
+  const inviteCode = getPendingInvite();
+  const invitePreview = useInvitePreview(inviteCode ?? "");
+  const inviteName = inviteCode ? invitePreview.data?.name : null;
+  const inviteMemberCount = inviteCode ? invitePreview.data?.memberCount : null;
+  const showInvite = !!inviteCode && (invitePreview.isPending || !!inviteName);
+
+  // Invalid/revoked code: drop it so a doomed background join doesn't fire after auth,
+  // and fall back to the plain sign-in screen.
+  useEffect(() => {
+    if (inviteCode && invitePreview.isError) clearPendingInvite();
+  }, [inviteCode, invitePreview.isError]);
 
   const run = async (action: Action, fn: () => Promise<void>) => {
     setError(null);
@@ -53,7 +70,31 @@ export default function LoginScreen() {
       style={{ paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }}
     >
       <View className="grow justify-center gap-10">
-        <Text variant="h1">HoseJ</Text>
+        {showInvite ? (
+          <View className="items-center gap-1">
+            {invitePreview.isPending ? (
+              <>
+                <Skeleton className="h-4 w-44" />
+                <Skeleton className="h-9 w-56" />
+                <Skeleton className="h-4 w-24" />
+              </>
+            ) : (
+              <>
+                <Text className="text-muted-foreground">You&apos;ve been invited to join</Text>
+                <Text className="text-center text-3xl font-extrabold text-foreground">
+                  {inviteName}
+                </Text>
+                {typeof inviteMemberCount === "number" ? (
+                  <Text className="text-sm text-muted-foreground">
+                    {inviteMemberCount} member{inviteMemberCount === 1 ? "" : "s"}
+                  </Text>
+                ) : null}
+              </>
+            )}
+          </View>
+        ) : (
+          <Text variant="h1">HoseJ</Text>
+        )}
 
         <View className="gap-3">
           {error ? <Text className="text-center text-sm text-destructive">{error}</Text> : null}

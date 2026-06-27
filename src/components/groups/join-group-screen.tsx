@@ -3,17 +3,17 @@ import { useRouter } from "expo-router";
 import { TextInput, View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { extractGroupId, useJoinGroup } from "@/lib/api/groups";
+import { extractInviteCode, useJoinByCode } from "@/lib/api/groups";
 
 export function JoinGroupScreen() {
   const router = useRouter();
   const [input, setInput] = useState("");
-  const joinGroup = useJoinGroup();
+  const joinGroup = useJoinByCode();
 
   const handleJoin = () => {
-    const groupId = extractGroupId(input);
-    if (!groupId) return;
-    joinGroup.mutate(groupId, { onSuccess: () => router.back() });
+    const code = extractInviteCode(input);
+    if (!code) return;
+    joinGroup.mutate(code, { onSuccess: () => router.back() });
   };
 
   return (
@@ -23,7 +23,7 @@ export function JoinGroupScreen() {
       <TextInput
         autoFocus
         autoCapitalize="none"
-        placeholder="Group ID or invite link"
+        placeholder="Invite code or link"
         value={input}
         onChangeText={setInput}
         className="rounded-xl border border-border bg-card p-4 text-foreground"

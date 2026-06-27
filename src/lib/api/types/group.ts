@@ -73,10 +73,20 @@ export interface CreateGroupInput {
   language?: GroupLanguage;
 }
 
-// POST /api/groups/:groupId/members
-export interface JoinGroupResponseDTO {
-  message: string;
+// POST /api/invites/:code — join by invite code (idempotent).
+export interface JoinByCodeResponseDTO {
   group: GroupDTO;
+}
+
+// GET /api/invites/:code — public preview; never leaks the groupId.
+export interface InvitePreviewDTO {
+  name: string;
+  memberCount: number;
+}
+
+// GET /api/groups/:groupId/invite and POST .../invite/reset.
+export interface GroupInviteDTO {
+  code: string;
 }
 
 // Body for PUT /api/groups/:groupId. The server shallow-merges `features` by

@@ -4,7 +4,8 @@ import { Platform, Pressable, Share as RNShare, StyleSheet, useColorScheme, View
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { buildInviteLink, useGroups } from "@/lib/api/groups";
+import { buildInviteLink, fetchInviteCode, useGroups } from "@/lib/api/groups";
+import { toastError } from "@/lib/toast";
 import type { GroupDTO } from "@/lib/api/types/group";
 import { Share, Star } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
@@ -93,7 +94,14 @@ function GroupCard({ group, vibe }: { group: GroupDTO; vibe: string }) {
   const dashboardHref = `/groups/${group._id}/dashboard` as Href;
 
   const handleShare = async () => {
-    const joinLink = buildInviteLink(group._id);
+    let code: string;
+    try {
+      ({ code } = await fetchInviteCode(group._id));
+    } catch {
+      toastError("Could not get invite link");
+      return;
+    }
+    const joinLink = buildInviteLink(code);
     const message = `Join my group "${group.name}" on HoseJ!`;
     try {
       // iOS shows `url` as a rich link; Android only reads `message`, so fold it in there.

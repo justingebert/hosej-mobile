@@ -1,7 +1,7 @@
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useGroupId } from "@/lib/group-id";
-import { DoorOpen, Share, Trash, UserRoundMinus } from "lucide-react-native";
+import { DoorOpen, RefreshCw, Share, Trash, UserRoundMinus } from "lucide-react-native";
 import { Alert, Platform, Share as RNShare, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,10 @@ import {
   buildInviteLink,
   useDeleteGroup,
   useGroup,
+  useGroupInvite,
   useLeaveGroup,
   useRemoveMember,
+  useResetInvite,
   useUpdateGroup,
 } from "@/lib/api/groups";
 import type { GroupMemberDTO, GroupWithAdminDTO } from "@/lib/api/types/group";
@@ -61,6 +63,8 @@ function GroupSettingsContent({
   const removeMember = useRemoveMember(group._id);
   const leaveGroup = useLeaveGroup(group._id);
   const deleteGroup = useDeleteGroup(group._id);
+  const { data: invite } = useGroupInvite(group._id);
+  const resetInvite = useResetInvite(group._id);
 
   const { userIsAdmin, members } = group;
   const yourName = members.find((m) => m.user === currentUserId)?.name ?? "You";
@@ -68,7 +72,8 @@ function GroupSettingsContent({
   const questionCount = group.features.questions.settings.questionCount;
 
   const shareInvite = async () => {
-    const link = buildInviteLink(group._id);
+    if (!invite?.code) return;
+    const link = buildInviteLink(invite.code);
     const message = `Join my group "${group.name}" on HoseJ!`;
     try {
       await RNShare.share(
@@ -80,6 +85,21 @@ function GroupSettingsContent({
       // Share sheet dismissed — nothing to do.
     }
   };
+
+  const confirmResetInvite = () =>
+    Alert.alert(
+      "Reset invite link",
+      "The current link stops working. You'll need to share the new one.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Reset",
+          style: "destructive",
+          onPress: () =>
+            resetInvite.mutate(undefined, { onSuccess: () => toastSuccess("Invite link reset") }),
+        },
+      ],
+    );
 
   // Send the complete questions object: the server shallow-merges by feature
   // key, so a partial here would drop lastQuestionDate / packs.
@@ -149,10 +169,28 @@ function GroupSettingsContent({
           <InfoRow label="Created" value={new Date(group.createdAt).toLocaleDateString()} />
           <View className="flex-row items-center justify-between gap-3 py-3">
             <Text className="text-muted-foreground">Invite</Text>
-            <Button size="sm" variant="outline" onPress={shareInvite}>
-              <Icon as={Share} className="size-4" />
-              <Text>Share link</Text>
-            </Button>
+            <View className="flex-row items-center gap-2">
+              {userIsAdmin ? (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onPress={confirmResetInvite}
+                  disabled={resetInvite.isPending}
+                  accessibilityLabel="Reset invite link"
+                >
+                  <Icon as={RefreshCw} className="size-4" />
+                </Button>
+              ) : null}
+              <Button
+                size="sm"
+                variant="outline"
+                onPress={shareInvite}
+                disabled={!invite?.code}
+              >
+                <Icon as={Share} className="size-4" />
+                <Text>Share link</Text>
+              </Button>
+            </View>
           </View>
         </CardContent>
       </Card>
