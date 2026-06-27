@@ -1,12 +1,9 @@
-import { Stack, useGlobalSearchParams, useRouter, type Href } from "expo-router";
+import { type Href, Stack, useGlobalSearchParams, useRouter } from "expo-router";
 import { useColorScheme } from "react-native";
 
-import {
-  GroupHeaderButton,
-  GroupHeaderTitle,
-} from "@/components/groups/group-header";
+import { GroupHeaderButton, GroupHeaderTitle, } from "@/components/groups/group-header";
 import { useGroup } from "@/lib/api/groups";
-import { ArrowLeft, Info, Users, X } from "lucide-react-native";
+import { ArrowLeft, Users, X } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
 import { GroupIdProvider } from "@/lib/group-id";
 import { Text } from "@/components/ui/text";

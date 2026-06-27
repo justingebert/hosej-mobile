@@ -78,15 +78,15 @@ export function UserSettingsScreen() {
       ) : user ? (
         <View className="flex-1 justify-between gap-8">
           <View className="gap-6">
-            <SettingsGroup title="Preferences">
-              <SettingsRow label="Push notifications">
+            <SettingsGroup title="Push Notification Preferences">
+              <SettingsRow label="Notifications">
                 <Switch
                   value={notificationsEnabled}
                   // TODO: implement push registration; this does nothing yet.
                   onValueChange={setNotificationsEnabled}
                 />
               </SettingsRow>
-              <SettingsRow label="Language">
+              <SettingsRow label="Notification Language">
                 <Segmented
                   options={NOTIFICATION_LANGUAGES.map((lang) => ({
                     label: lang.toUpperCase(),
@@ -96,7 +96,7 @@ export function UserSettingsScreen() {
                   onChange={(value) => updateUser.mutate({ notificationLanguage: value })}
                 />
               </SettingsRow>
-              <SettingsRow label="Style">
+              <SettingsRow label="Notification Style">
                 <Segmented
                   options={NOTIFICATION_STYLES.map((style) => ({ label: style, value: style }))}
                   value={user.notificationStyle}

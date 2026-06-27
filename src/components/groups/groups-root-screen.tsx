@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { type Href, Link } from "expo-router";
-import { Platform, Pressable, Share as RNShare, StyleSheet, useColorScheme, View } from "react-native";
+import { Platform, Pressable, Share as RNShare, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -36,7 +36,6 @@ export function GroupsRootScreen() {
   }, [groups]);
 
   const insets = useSafeAreaInsets();
-  const scheme = useColorScheme();
 
   return (
     <View className="flex-1">

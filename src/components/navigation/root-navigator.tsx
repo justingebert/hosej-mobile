@@ -6,11 +6,7 @@ import { CircleHelp, User, X } from "lucide-react-native";
 import { useJoinByCode } from "@/lib/api/groups";
 import { useAuth } from "@/lib/auth/auth-context";
 import { clearPendingInvite, getPendingInvite } from "@/lib/auth/session";
-import {
-  GroupHeaderButton,
-  GroupHeaderSpacer,
-  GroupHeaderTitle,
-} from "@/components/groups/group-header";
+import { GroupHeaderButton, GroupHeaderTitle, } from "@/components/groups/group-header";
 import { Icon } from "@/components/ui/icon";
 
 export function RootNavigator() {

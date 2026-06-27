@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useGroupId } from "@/lib/group-id";
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import { useActiveQuestions, useVoteOnQuestion } from "@/lib/api/questions";
 import { QuestionTabContent } from "@/components/groups/question/question-tab-content";
 import { QuestionSkeleton } from "@/components/groups/question/question-states";

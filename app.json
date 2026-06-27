@@ -9,7 +9,9 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "app.hosej",
-      "associatedDomains": ["applinks:www.hosej.app"],
+      "associatedDomains": [
+        "applinks:www.hosej.app"
+      ],
       "icon": {
         "light": "./assets/images/app-icon-light.png",
         "dark": "./assets/images/app-icon-dark.png"
@@ -61,7 +63,9 @@
             "useFrameworks": "static"
           }
         }
-      ]
+      ],
+      "expo-image",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
