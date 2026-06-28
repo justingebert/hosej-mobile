@@ -7,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { toastConfig } from "@/components/ui/toast";
 import { AuthProvider } from "@/lib/auth/auth-context";
+import { PushBridge } from "@/lib/push/hooks";
 import { queryClient } from "@/lib/query";
 
 export function AppProviders({ children }: { children: ReactNode }) {
@@ -15,7 +16,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <SafeAreaProvider>
         <BottomSheetModalProvider>
           <QueryClientProvider client={queryClient}>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              <PushBridge />
+              {children}
+            </AuthProvider>
             <StatusBar style="auto" />
           </QueryClientProvider>
           <Toast config={toastConfig} topOffset={60} />

@@ -37,6 +37,21 @@
 
 # Worklog
 
+## 2026-06-28
+- basic chat migration
+- start with push notifications
+-
+
+## 2026-06-27
+- joining with deeplinks
+- user delte
+
+## 2026-06-24
+- question history improvements
+
+## 2026-06-23
+- stats and leaderboard
+- hisotry page
 
 ## 2026-06-18/19
 - google auth
@@ -135,3 +150,6 @@
 - mobiel navigation (stack/tabs)
 - storage
 - swift lifecycle/deps
+- a bit mobile ui/ux
+- push notificaitons
+- mobile oauth flow e.g. google with pkce

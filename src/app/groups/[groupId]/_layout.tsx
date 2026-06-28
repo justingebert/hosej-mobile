@@ -115,7 +115,7 @@ export default function GroupLayout() {
             headerStyle: { backgroundColor: headerBackground },
             headerTitle: () => <GroupHeaderTitle>Remaining</GroupHeaderTitle>,
             headerTitleAlign: "center",
-            headerLeft: () => (
+            headerRight: () => (
               <GroupHeaderButton onPress={router.back}>
                 <Icon as={X} className="size-5" />
               </GroupHeaderButton>

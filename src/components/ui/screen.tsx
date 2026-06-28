@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
 import { RefreshControl, ScrollView } from "react-native";
 
 type ScreenProps = {
@@ -15,14 +15,13 @@ type ScreenProps = {
  * content insets, and optional pull-to-refresh. Use this instead of hand-rolling
  * a ScrollView + RefreshControl in every screen.
  */
-export function Screen({
-  children,
-  onRefresh,
-  refreshing = false,
-  contentContainerClassName = "grow gap-6 p-4",
-}: ScreenProps) {
+export const Screen = forwardRef<ScrollView, ScreenProps>(function Screen(
+  { children, onRefresh, refreshing = false, contentContainerClassName = "grow gap-6 p-4" },
+  ref
+) {
   return (
     <ScrollView
+      ref={ref}
       className="flex-1 bg-background"
       contentContainerClassName={contentContainerClassName}
       contentInsetAdjustmentBehavior="automatic"
@@ -41,4 +40,4 @@ export function Screen({
       {children}
     </ScrollView>
   );
-}
+});

@@ -31,6 +31,23 @@ export function useUpdateUser() {
     meta: {
       errorToastTitle: "Could not save settings",
     },
+    // Optimistically flip notification toggles so the Switch responds instantly —
+    // a controlled Switch otherwise snaps back until the round-trip returns.
+    onMutate: async (data) => {
+      if (!data.notificationPrefs) return;
+      await queryClient.cancelQueries({ queryKey: userKeys.me });
+      const previous = queryClient.getQueryData<UserDTO>(userKeys.me);
+      if (previous) {
+        queryClient.setQueryData<UserDTO>(userKeys.me, {
+          ...previous,
+          notificationPrefs: { ...previous.notificationPrefs, ...data.notificationPrefs },
+        });
+      }
+      return { previous };
+    },
+    onError: (_error, _data, context) => {
+      if (context?.previous) queryClient.setQueryData(userKeys.me, context.previous);
+    },
     onSuccess: (user) => {
       queryClient.setQueryData(userKeys.me, user);
     },

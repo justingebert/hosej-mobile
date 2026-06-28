@@ -4,6 +4,7 @@ import * as Crypto from "expo-crypto";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/errors";
+import { disablePush } from "@/lib/push/push";
 import {
   loginWithDeviceId as apiLoginWithDeviceId,
   loginWithGoogleIdToken as apiLoginWithGoogle,
@@ -85,6 +86,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
+    // Drop the push token while the session is still valid (DELETE needs the access
+    // token, which reset() clears). Best-effort — never blocks logout.
+    await disablePush();
     // Clear local state first so in-flight refreshes cannot resurrect the session.
     const rt = getRefreshToken();
     await reset(true, true);

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, Switch, View } from "react-native";
+import { Alert, Linking, Switch, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import Toast from "react-native-toast-message";
 import { Check, Copy, Trash2 } from "lucide-react-native";
@@ -17,11 +17,14 @@ import { useDeleteUser, useUpdateUser, useUploadAvatar, useUser } from "@/lib/ap
 import {
   NOTIFICATION_LANGUAGES,
   NOTIFICATION_STYLES,
+  type NotificationPrefs,
   type UserDTO,
 } from "@/lib/api/types/user";
 import { getErrorMessage } from "@/lib/api/client";
 import { useAuth } from "@/lib/auth/auth-context";
 import { isGoogleConfigured, useGoogleSignIn } from "@/lib/auth/google";
+import { usePushPermission } from "@/lib/push/hooks";
+import { enablePush } from "@/lib/push/push";
 
 export function UserSettingsScreen() {
   const { data: user, isPending, isError, error, isRefetching, refetch } = useUser();
@@ -29,10 +32,38 @@ export function UserSettingsScreen() {
   const deleteUser = useDeleteUser();
   const { deviceId, linkGoogle, signOut } = useAuth();
 
-  // Cosmetic only for now — TODO: implement push registration / persistence.
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const { granted: pushGranted, canAskAgain: pushCanAskAgain, refresh: refreshPush } =
+    usePushPermission();
+  const [pushBusy, setPushBusy] = useState(false);
   const [isLinkingGoogle, setIsLinkingGoogle] = useState(false);
   const [linkGoogleError, setLinkGoogleError] = useState<string | null>(null);
+
+  const questionNew = user?.notificationPrefs?.questionNew ?? true;
+  const chatMessage = user?.notificationPrefs?.chatMessage ?? true;
+  const anyPushOn = questionNew || chatMessage;
+
+  // OS permission only gates *delivery* — it can be granted from here but never
+  // revoked (iOS routes that to Settings). Best-effort: simulators and builds
+  // without the push entitlement can't register, which is fine — the prefs still
+  // apply once a real build is installed.
+  const ensureDelivery = async () => {
+    setPushBusy(true);
+    try {
+      await enablePush();
+    } catch (e) {
+      console.warn("[push] enable failed", e);
+    } finally {
+      setPushBusy(false);
+      void refreshPush();
+    }
+  };
+
+  // The toggles are in-app prefs, so flip immediately; only chase OS permission
+  // (in the background) when switching something on without it.
+  const togglePrefs = (prefs: Partial<NotificationPrefs>) => {
+    updateUser.mutate({ notificationPrefs: prefs });
+    if (!pushGranted && Object.values(prefs).some(Boolean)) void ensureDelivery();
+  };
 
   const runGoogleLink = async (getIdToken: () => Promise<string | null>) => {
     setLinkGoogleError(null);
@@ -78,33 +109,6 @@ export function UserSettingsScreen() {
       ) : user ? (
         <View className="flex-1 justify-between gap-8">
           <View className="gap-6">
-            <SettingsGroup title="Push Notification Preferences">
-              <SettingsRow label="Notifications">
-                <Switch
-                  value={notificationsEnabled}
-                  // TODO: implement push registration; this does nothing yet.
-                  onValueChange={setNotificationsEnabled}
-                />
-              </SettingsRow>
-              <SettingsRow label="Notification Language">
-                <Segmented
-                  options={NOTIFICATION_LANGUAGES.map((lang) => ({
-                    label: lang.toUpperCase(),
-                    value: lang,
-                  }))}
-                  value={user.notificationLanguage}
-                  onChange={(value) => updateUser.mutate({ notificationLanguage: value })}
-                />
-              </SettingsRow>
-              <SettingsRow label="Notification Style">
-                <Segmented
-                  options={NOTIFICATION_STYLES.map((style) => ({ label: style, value: style }))}
-                  value={user.notificationStyle}
-                  onChange={(value) => updateUser.mutate({ notificationStyle: value })}
-                />
-              </SettingsRow>
-            </SettingsGroup>
-
             <SettingsGroup title="Profile">
               <AvatarField user={user} />
               <SettingsRow label="Name">
@@ -142,6 +146,71 @@ export function UserSettingsScreen() {
             {linkGoogleError ? (
               <Text className="px-1 text-sm text-destructive">{linkGoogleError}</Text>
             ) : null}
+
+            <SettingsGroup title="Push Notification Preferences">
+              <SettingsRow label="Notifications">
+                <Switch
+                  value={anyPushOn}
+                  disabled={pushBusy}
+                  onValueChange={(value) =>
+                    togglePrefs({ questionNew: value, chatMessage: value })
+                  }
+                />
+              </SettingsRow>
+              <SettingsRow label="New questions" className="pl-8">
+                <Switch
+                  value={questionNew}
+                  disabled={pushBusy}
+                  onValueChange={(value) => togglePrefs({ questionNew: value })}
+                />
+              </SettingsRow>
+              <SettingsRow label="Chat messages" className="pl-8">
+                <Switch
+                  value={chatMessage}
+                  disabled={pushBusy}
+                  onValueChange={(value) => togglePrefs({ chatMessage: value })}
+                />
+              </SettingsRow>
+              {anyPushOn && !pushGranted ? (
+                <SettingsRow
+                  label={pushCanAskAgain ? "Allow notifications" : "Turned off in iOS Settings"}
+                  description={
+                    pushCanAskAgain
+                      ? "Notifications are paused until you allow them."
+                      : "Turn on notifications for HoseJ in Settings to receive these."
+                  }
+                >
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={pushBusy}
+                    onPress={() =>
+                      pushCanAskAgain ? void ensureDelivery() : void Linking.openSettings()
+                    }
+                  >
+                    <Text>{pushCanAskAgain ? "Allow" : "Open Settings"}</Text>
+                  </Button>
+                </SettingsRow>
+              ) : null}
+              <SettingsRow label="Notification Language">
+                <Segmented
+                  options={NOTIFICATION_LANGUAGES.map((lang) => ({
+                    label: lang.toUpperCase(),
+                    value: lang,
+                  }))}
+                  value={user.notificationLanguage}
+                  onChange={(value) => updateUser.mutate({ notificationLanguage: value })}
+                />
+              </SettingsRow>
+              <SettingsRow label="Notification Style">
+                <Segmented
+                  options={NOTIFICATION_STYLES.map((style) => ({ label: style, value: style }))}
+                  value={user.notificationStyle}
+                  onChange={(value) => updateUser.mutate({ notificationStyle: value })}
+                />
+              </SettingsRow>
+            </SettingsGroup>
+
           </View>
 
           <View className="gap-3">

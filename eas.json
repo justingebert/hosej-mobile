@@ -11,6 +11,13 @@
         "simulator": true
       }
     },
+    "development-device": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      }
+    },
     "production": {
       "autoIncrement": true,
       "env": {
