@@ -60,10 +60,8 @@ function QuestionOptionButton({
   return (
     <Pressable
       className={cn(
-        "grow basis-[47%] rounded-xl border",
-        isImageOption
-          ? "aspect-4/5 p-2"
-          : "items-center justify-center p-2",
+        "basis-[47%] rounded-xl border",
+        isImageOption ? "aspect-4/5 p-2" : "items-center justify-center p-3",
         isSelected ? "border-primary bg-primary" : "border-border bg-secondary"
       )}
       style={{ borderCurve: "continuous" }}
@@ -78,11 +76,10 @@ function QuestionOptionButton({
       ) : (
         <Text
           selectable
-          adjustsFontSizeToFit
-          numberOfLines={3}
-          className={`text-center text-sm font-bold ${
+          className={cn(
+            "text-center text-sm font-bold",
             isSelected ? "text-primary-foreground" : "text-secondary-foreground"
-          }`}
+          )}
         >
           {optionKey(option)}
         </Text>

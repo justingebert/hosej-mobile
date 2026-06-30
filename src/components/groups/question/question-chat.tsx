@@ -1,19 +1,19 @@
 import { useCallback, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
+import { Pressable, TextInput, View } from "react-native";
 import { useFocusEffect } from "expo-router";
-import { Send } from "lucide-react-native";
+import { ArrowUp } from "lucide-react-native";
 import { useCSSVariable } from "uniwind";
 
 import { Icon } from "@/components/ui/icon";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { useAddMessage, useChat } from "@/lib/api/chat";
 import { useAuth } from "@/lib/auth/auth-context";
 import { setActiveChat } from "@/lib/push/push";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
-// Inline, read-only message list. Lives at the bottom of the post-vote results
-// (active question) and the history results screen — same component, no input.
-// Sends from the composer land in the shared query cache and show up here.
+// Inline, read-only message list.
 export function QuestionChatMessages({
   groupId,
   chatId,
@@ -49,13 +49,11 @@ export function QuestionChatMessages({
       </Text>
 
       {isPending ? (
-        <View className="items-center py-4">
-          <ActivityIndicator />
-        </View>
+        <ChatMessagesSkeleton />
       ) : isError ? (
-        <Text variant="muted" className="text-sm">
-          Couldn’t load the chat.
-        </Text>
+        <Button variant="link" size="sm" onPress={() => refetch()} className="self-start">
+          <Text>Couldn’t load chat · Try again</Text>
+        </Button>
       ) : messages.length === 0 ? (
         <Text variant="muted" className="text-sm">
           No messages.
@@ -83,6 +81,22 @@ export function QuestionChatMessages({
           );
         })
       )}
+    </View>
+  );
+}
+
+function ChatMessagesSkeleton() {
+  return (
+    <View className="gap-3">
+      <View className="items-start">
+        <Skeleton className="h-9 w-2/5 rounded-2xl" />
+      </View>
+      <View className="items-end">
+        <Skeleton className="h-9 w-1/2 rounded-2xl" />
+      </View>
+      <View className="items-start">
+        <Skeleton className="h-9 w-1/3 rounded-2xl" />
+      </View>
     </View>
   );
 }
@@ -138,7 +152,7 @@ export function QuestionChatComposer({
         )}
       >
         <Icon
-          as={Send}
+          as={ArrowUp}
           className={trimmed ? "text-primary-foreground" : "text-muted-foreground"}
         />
       </Pressable>

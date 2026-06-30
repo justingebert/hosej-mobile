@@ -95,6 +95,26 @@ export function UserSettingsScreen() {
       ],
     );
 
+  const confirmLogOut = () => {
+    if (!deviceId) {
+      void signOut();
+      return;
+    }
+
+    Alert.alert(
+      "Log out?",
+      "Your Device ID is the only way back into this account. Make sure you have copied or noted it before logging out.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Log out",
+          style: "destructive",
+          onPress: () => void signOut(),
+        },
+      ],
+    );
+  };
+
   return (
     <Screen onRefresh={refetch} refreshing={isRefetching}>
       {isPending ? (
@@ -223,7 +243,7 @@ export function UserSettingsScreen() {
               <Icon as={Trash2} className="size-4" />
               <Text>{deleteUser.isPending ? "Deleting…" : "Delete account"}</Text>
             </Button>
-            <Button variant="destructive" onPress={() => signOut()}>
+            <Button variant="destructive" onPress={confirmLogOut}>
               <Text>Log out</Text>
             </Button>
           </View>

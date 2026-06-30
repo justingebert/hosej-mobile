@@ -53,7 +53,8 @@
         "expo-image-picker",
         {
           "photosPermission": "Allow $(PRODUCT_NAME) to access your photos so you can set a profile picture.",
-          "cameraPermission": "Allow $(PRODUCT_NAME) to use the camera so you can take a profile picture."
+          "cameraPermission": "Allow $(PRODUCT_NAME) to use the camera so you can take a profile picture.",
+          "microphonePermission": false
         }
       ],
       [

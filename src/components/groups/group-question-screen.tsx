@@ -3,8 +3,8 @@ import { useGroupId } from "@/lib/group-id";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { useActiveQuestions, useVoteOnQuestion } from "@/lib/api/questions";
 import { QuestionTabContent } from "@/components/groups/question/question-tab-content";
+import { QuestionEmptyGuide } from "@/components/groups/question/question-empty-guide";
 import { QuestionSkeleton } from "@/components/groups/question/question-states";
-import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorCard } from "@/components/ui/error-card";
 import { Screen } from "@/components/ui/screen";
 import { QuestionTabs } from "@/components/groups/question/question-tabs";
@@ -108,10 +108,7 @@ export function GroupQuestionScreen() {
               isRetrying={isRefetching}
             />
           ) : flatQuestions.length === 0 ? (
-            <EmptyState
-              title="No active questions"
-              description="Activate or create a question from the existing web flow for now."
-            />
+            <QuestionEmptyGuide groupId={groupId} />
           ) : loadedQuestion ? (
             <QuestionTabContent
               key={loadedQuestion.question._id}

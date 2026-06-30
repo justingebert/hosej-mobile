@@ -1,9 +1,10 @@
 import { Link, type Href } from "expo-router";
-import { MessageSquareText } from "lucide-react-native";
+import { Camera, MessageSquareText, Radio, type LucideIcon } from "lucide-react-native";
 import { Pressable, View } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { useGroupId } from "@/lib/group-id";
 import { useActiveQuestions } from "@/lib/api/questions";
+import { ErrorCard } from "@/components/ui/error-card";
 import { Icon } from "@/components/ui/icon";
 import { RadialProgress } from "@/components/ui/radial-progress";
 import { Screen } from "@/components/ui/screen";
@@ -13,7 +14,7 @@ import { Text } from "@/components/ui/text";
 export function GroupDashboardScreen() {
   const groupId = useGroupId();
   const questionHref = `/groups/${groupId}/question` as Href;
-  const { data, isPending, isRefetching, refetch } = useActiveQuestions(groupId);
+  const { data, error, isError, isPending, isRefetching, refetch } = useActiveQuestions(groupId);
 
   // Traffic-light ring (web parity): red < 33 < orange < 66 < green.
   // useCSSVariable resolves to a hex string on native; cast for the SVG stroke.
@@ -32,10 +33,17 @@ export function GroupDashboardScreen() {
     <Screen
       onRefresh={refetch}
       refreshing={isRefetching}
-      contentContainerClassName="grow justify-center px-4 pb-24"
+      contentContainerClassName="grow justify-center gap-4 px-4 pb-24"
     >
       {isPending ? (
         <DailyQuestionSkeleton />
+      ) : isError ? (
+        <ErrorCard
+          title="Could not load today's question"
+          error={error}
+          onRetry={refetch}
+          isRetrying={isRefetching}
+        />
       ) : (
         <Link href={questionHref} asChild>
           <Pressable
@@ -46,14 +54,8 @@ export function GroupDashboardScreen() {
             }}
           >
             <View className="flex-1 gap-1">
-              <View className="flex-row items-center gap-2">
-                <Icon as={MessageSquareText} className="size-4 text-muted-foreground" />
-                <Text className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Daily Question
-                </Text>
-              </View>
               <Text className="text-2xl font-extrabold text-card-foreground">
-                Answer today&apos;s
+                Daily Question
               </Text>
               <Text className="text-sm text-muted-foreground">
                 {total > 0 ? `you: ${answered}/${total} · ` : ""}tap to answer →
@@ -74,7 +76,48 @@ export function GroupDashboardScreen() {
           </Pressable>
         </Link>
       )}
+
+      <ComingSoonFeatureCard icon={Camera} eyebrow="Photo Rallies" title="Rally" />
+      <ComingSoonFeatureCard icon={Radio} eyebrow="Group Playlist" title="Jukebox" />
     </Screen>
+  );
+}
+
+function ComingSoonFeatureCard({
+  icon,
+  eyebrow,
+  title,
+}: {
+  icon: LucideIcon;
+  eyebrow: string;
+  title: string;
+}) {
+  return (
+    <View
+      className="flex-row items-center justify-between gap-4 overflow-hidden rounded-2xl border border-border bg-card px-5 py-5"
+      style={{
+        borderCurve: "continuous",
+        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.06)",
+      }}
+    >
+      <View className="flex-1 gap-2">
+        <View className="flex-row flex-wrap items-center gap-2">
+        <Text className="text-2xl font-extrabold text-card-foreground">{title}</Text>
+          <View className="rounded-full bg-secondary px-2.5 py-1">
+            <Text className="text-xs font-bold uppercase tracking-wider text-secondary-foreground">
+              Coming soon
+            </Text>
+          </View>
+        </View>
+        <View className="flex-row flex-wrap items-center gap-2">
+          <Text className="text-sm text-muted-foreground">Use on web today</Text>
+        </View>
+      </View>
+
+      <View className="size-[84px] items-center justify-center rounded-full bg-primary/5">
+        <Icon as={icon} className="size-10 text-primary" />
+      </View>
+    </View>
   );
 }
 

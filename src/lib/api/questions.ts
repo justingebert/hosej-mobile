@@ -1,5 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "./client";
+import { toastInfo } from "@/lib/toast";
 import type {
   ActiveQuestionsResponseDTO,
   CreateQuestionInput,
@@ -50,6 +51,27 @@ export function useCreateQuestion(groupId: string) {
       }),
     meta: {
       errorToastTitle: "Could not create question",
+    },
+  });
+}
+
+export function useActivateNextQuestion(groupId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<{ activated: number }>(`/api/groups/${groupId}/question/activate`, {
+        method: "POST",
+      }),
+    meta: {
+      errorToastTitle: "Could not activate question",
+    },
+    onSuccess: async ({ activated }) => {
+      if (activated === 0) {
+        toastInfo("No questions available", "Create a question or add a pack first.");
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: questionKeys.active(groupId) });
     },
   });
 }

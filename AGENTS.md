@@ -9,10 +9,10 @@ when using Icons use lucide-react-native icons
 # Data Fetching & Screen States
 
 Server state flows through React Query hooks in `src/lib/api/*` (one query-key
-factory per resource). Screens render loading/error/empty with **explicit,
-in-place branches** — no render-prop wrappers, no hidden control flow. The
-repeated views are shared primitives in `src/components/ui/`; reuse them instead
-of hand-rolling per screen:
+factory per resource). Loading/error/empty render with **explicit, in-place
+branches** — no render-prop wrappers, no hidden control flow. The repeated views
+are shared primitives in `src/components/ui/`; reuse them instead of hand-rolling
+per screen:
 
 - `Screen` — scrollable container with themed background + optional
   pull-to-refresh. Pass `onRefresh={refetch}` and `refreshing={isRefetching}`.
@@ -24,7 +24,14 @@ of hand-rolling per screen:
 - `Skeleton` — placeholder-bar primitive. Compose into a content-shaped
   skeleton kept **local** to each screen.
 
-Standard query screen:
+There are **two tiers**. Use Tier 1 for whole route screens; Tier 2 for a data
+region embedded inside otherwise-valid content (e.g. the chat list under the
+vote results).
+
+## Tier 1 — route screens
+
+Explicit 4-branch chain, in this order. `Screen` wraps it (except lists — see
+below):
 
 ```tsx
 const { data, error, isError, isPending, isRefetching, refetch } = useThing();
@@ -45,12 +52,59 @@ return (
 );
 ```
 
-Rules:
-- Skeletons are layout-specific → keep them local (built from `Skeleton`).
-  Error/empty views are shared → never copy them into a screen.
-- **Query** error → `ErrorCard` (the content is missing). **Mutation/action**
-  error → transient feedback (toast), not a card — the screen content is still
-  valid. (Toast lib not chosen yet; mutation forms show inline error text for now.)
+- Branch **order is load-bearing** (pending → error → empty → content).
+- `isPending` must be paired with a guaranteed-`enabled` query. A query disabled
+  via `enabled: false` (e.g. an empty `groupId`) sits in `isPending` forever, so
+  the skeleton never clears — gate the branch, don't enable a half-built query.
+- **Multiple required queries on one screen** (e.g. results = `useQuestionResults`
+  + `useQuestion`): combine the booleans —
+  `isPending = a.isPending || b.isPending`, `isError = a.isError || b.isError`,
+  and the retry refetches both. Non-essential sub-regions stay Tier 2.
+- **Empty states**: a bare title/description uses the shared `EmptyState`. An
+  empty that needs **actions** (buttons/links — e.g. the question screen's
+  Activate / Go-to-Create guide) is a **local component** (like a skeleton), not
+  a bloated `EmptyState`.
+
+## Tier 2 — embedded regions
+
+A region inside a screen whose surrounding content is still valid. **Convention,
+not a component** — there's one today (the chat list), so don't abstract it;
+extract a primitive the day a second region needs it.
+
+- Flows inline — **no `flex-1` centering**.
+- Loading → a small **local skeleton** (no spinner — skeletons everywhere).
+- Error → a subtle **`Button`** (`variant="link"`, `size="sm"`) that calls
+  `refetch` ("Couldn't load … · Try again"). A retry is an action, so it's a real
+  `Button`, not a bare `Pressable` (see UI Components) — but never `ErrorCard`
+  (too heavy, steals focus from the valid content above it). Never a silent
+  dead-end.
+- Empty → one-line muted `Text`.
+
+## Paginated lists (`FlatList`)
+
+A long feed (history) uses `FlatList`, **not** `Screen` — a `ScrollView` would
+render every row. `group-history-screen.tsx` is the canonical reference. Route
+the same 4 states through the list and its slots:
+
+- pending → local list skeleton · error → `ErrorCard` · empty → `EmptyState`
+  (distinguish filtered "no matches" from truly "none yet").
+- `RefreshControl` goes on the `FlatList` directly.
+- Next page: `ListFooterComponent` = skeleton row while `isFetchingNextPage`.
+- **Accepted as-is:** load-more failure is silent (re-tries on next scroll);
+  changing filters flashes the full skeleton **on purpose** (visible loading is
+  wanted there) — do not add `keepPreviousData`.
+
+## Errors: cards, toasts, and silence
+
+- **Query first-load error → `ErrorCard`** (Tier 1) / inline retry (Tier 2). This
+  is the only time the user has nothing to look at.
+- **Mutation/action error → toast**, not a card — the screen content is still
+  valid. Wired globally: `MutationCache.onError` in `src/lib/query.ts` reads
+  `meta.errorToastTitle` (opt out with `meta.suppressErrorToast`).
+- **Background refetch failure → silent, by design.** Once a query has data,
+  React Query keeps `status: 'success'` (so `isError` stays false) and holds the
+  stale data on a failed refetch — the list is never clobbered and a failed
+  pull-to-refresh shows nothing. There is no `QueryCache.onError`; don't add one.
 
 # UI Components
 
@@ -72,9 +126,12 @@ new RNR components by copying the uniwind source manually.
 
 Conventions:
 - react-native `Text` → ui `Text` everywhere.
-- Action buttons → `<Button>`. Leave **tappable surfaces** (cards, tabs,
-  segmented toggles, icon-only header taps) as `Pressable` — Button imposes
-  button sizing/semantics that break those.
+- Action buttons → `<Button>`. This includes **text/inline actions** like a
+  "Try again" retry — use `variant="link"` (and `size="sm"`) rather than a bare
+  `Pressable` around a `Text`, so they stay accessible and consistent. Leave
+  **tappable surfaces** (cards, tabs, segmented toggles, icon-only header taps,
+  bespoke-styled controls like the chat send button) as `Pressable` — Button
+  imposes button sizing/semantics that break those.
 
 # General Guidelines
 

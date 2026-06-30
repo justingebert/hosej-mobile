@@ -21,13 +21,13 @@ const features: Feature[] = [
     icon: Trophy,
     title: "Leaderboard & Stats",
     description:
-      "Track who's the most active, see group statistics, and compete for the top spot. Points are earned by participating in questions.",
+      "Track who's the most active, see group statistics. Points are earned by participating and creating!",
   },
   {
     icon: Plus,
     title: "Create Content",
     description:
-      "Members can create custom questions for the group. Choose from different types: members, custom options, text, or rating.",
+      "You can create custom questions for the group. Choose from different types: members, custom options, text, or rating.",
   },
   {
     icon: History,
@@ -42,8 +42,8 @@ export function HowItWorks() {
     <View className="gap-4">
       <Text variant="large">How It Works</Text>
       {features.map((feature) => (
-        <Card key={feature.title} className="gap-2 py-4">
-          <CardHeader className="pb-0">
+        <Card key={feature.title}>
+          <CardHeader>
             <View className="flex-row items-center gap-3">
               <Icon as={feature.icon} className="size-5 text-muted-foreground" />
               <CardTitle>{feature.title}</CardTitle>

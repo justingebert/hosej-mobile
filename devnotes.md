@@ -16,6 +16,7 @@
 - help with setup, works good with docs that have LLM with agents with websearch, not always thow with bleeding edge e.g. nativewind a bit sloppy
 - it really used a lot of the docu which was nice
 - really like
+- grill -> handoff/plan -> implement -> test manual -> review
 
 ## AI problems:
 - goood UI
@@ -36,6 +37,12 @@
 ---
 
 # Worklog
+
+## 2026-06-30
+- error, empty and loading state definitions + imeplementation
+- migrate onboarding
+- screen for internal and beta testflight review -> packge stuff, support page, ...
+
 
 ## 2026-06-28
 - basic chat migration

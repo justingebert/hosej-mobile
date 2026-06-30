@@ -30,7 +30,7 @@ export function ReportBugButton(props: ButtonProps) {
 
   return (
     <Button {...props} onPress={handleBugReport}>
-      <Text>Report a bug</Text>
+      <Text>Report a Problem</Text>
     </Button>
   );
 }

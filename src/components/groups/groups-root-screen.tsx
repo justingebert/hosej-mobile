@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { type Href, Link } from "expo-router";
 import { Platform, Pressable, Share as RNShare, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -13,6 +13,11 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorCard } from "@/components/ui/error-card";
 import { Screen } from "@/components/ui/screen";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  OnboardingSheet,
+  useAutoPresentOnboarding,
+  type OnboardingSheetRef,
+} from "@/components/onboarding/onboarding-sheet";
 
 const GROUP_VIBES = [
   "hosej-ing...",
@@ -26,6 +31,9 @@ const GROUP_VIBES = [
 export function GroupsRootScreen() {
   const { data, error, isError, isPending, isRefetching, refetch } = useGroups();
   const groups = useMemo(() => data?.groups ?? [], [data?.groups]);
+
+  const onboardingRef = useRef<OnboardingSheetRef>(null);
+  useAutoPresentOnboarding(onboardingRef);
 
   const vibesByGroup = useMemo(() => {
     const vibes: Record<string, string> = {};
@@ -55,7 +63,10 @@ export function GroupsRootScreen() {
               isRetrying={isRefetching}
             />
           ) : groups.length === 0 ? (
-            <EmptyState title="No groups yet" />
+            <EmptyState
+              title="No groups yet"
+              description="Join a group or create your own to get started."
+            />
           ) : (
             <View className="gap-3">
               {groups.map((group) => (
@@ -85,6 +96,8 @@ export function GroupsRootScreen() {
           </View>
         </View>
       </View>
+
+      <OnboardingSheet ref={onboardingRef} />
     </View>
   );
 }
