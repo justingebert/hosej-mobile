@@ -135,7 +135,7 @@ function GroupSettingsContent({
           leaveGroup.mutate(currentUserId, {
             onSuccess: () => {
               toastSuccess("You left the group");
-              router.dismissTo("/");
+              router.replace("/");
             },
           }),
       },
@@ -151,7 +151,7 @@ function GroupSettingsContent({
           deleteGroup.mutate(undefined, {
             onSuccess: () => {
               toastSuccess("Group deleted");
-              router.dismissTo("/");
+              router.replace("/");
             },
           }),
       },

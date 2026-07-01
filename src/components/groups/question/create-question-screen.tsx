@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGroupId } from "@/lib/group-id";
 import { KeyboardAvoidingView, Platform, Pressable, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { List, ListChecks, type LucideIcon, Plus, Star, Trash, Type, Users } from "lucide-react-native";
+import { ArrowLeftRight, List, ListChecks, type LucideIcon, Plus, Star, Trash, Type, Users } from "lucide-react-native";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Icon } from "@/components/ui/icon";
@@ -12,8 +12,14 @@ import { Text } from "@/components/ui/text";
 import { useGroup } from "@/lib/api/groups";
 import { useCreateQuestion } from "@/lib/api/questions";
 import { useUser } from "@/lib/api/user";
-import { QuestionType } from "@/lib/api/types/question";
+import {
+  PairingKeySource,
+  PairingMode,
+  QuestionType,
+  type PairingConfig,
+} from "@/lib/api/types/question";
 import { toastSuccess } from "@/lib/toast";
+import { PairingConfigForm } from "./pairing-config";
 
 type TypeMeta = {
   type: QuestionType;
@@ -22,16 +28,32 @@ type TypeMeta = {
   icon: LucideIcon;
 };
 
-// v1 supports the four option-free / text-option types. Pairing + image come later.
+// Every type except image is creatable on mobile (image needs an upload pipeline).
 const TYPES: TypeMeta[] = [
   { type: QuestionType.Users, label: "Members", blurb: "Vote on each other", icon: Users },
   { type: QuestionType.Custom, label: "Custom", blurb: "Your own options", icon: List },
   { type: QuestionType.Text, label: "Text", blurb: "Free-form answer", icon: Type },
   { type: QuestionType.Rating, label: "Rating", blurb: "Rate 1–10", icon: Star },
+  { type: QuestionType.Pairing, label: "Pairing", blurb: "Match items up", icon: ArrowLeftRight },
 ];
 
 const MIN_CUSTOM_OPTIONS = 2;
 const MULTISELECT_TYPES: QuestionType[] = [QuestionType.Users, QuestionType.Custom];
+
+// Trim, drop blanks, and de-dupe — pairing keys/values must be unique strings
+// (the vote Record can't represent duplicate keys).
+function dedupeTrim(items: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of items) {
+    const value = raw.trim();
+    if (value && !seen.has(value)) {
+      seen.add(value);
+      out.push(value);
+    }
+  }
+  return out;
+}
 
 export function CreateQuestionScreen() {
   const groupId = useGroupId();
@@ -44,30 +66,80 @@ export function CreateQuestionScreen() {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState<string[]>(["", ""]);
   const [multiSelect, setMultiSelect] = useState(false);
+  const [pairing, setPairing] = useState<PairingConfig | null>(null);
+  const optionInputRefs = useRef<(TextInput | null)[]>([]);
+  const pendingOptionFocusIndex = useRef<number | null>(null);
 
   const members = group?.members ?? [];
+  const memberNames = members.map((member) => member.name);
 
   const selectType = (next: QuestionType) => {
     setType(next);
     setOptions(next === QuestionType.Custom ? ["", ""] : []);
     setMultiSelect(false);
+    setPairing(
+      next === QuestionType.Pairing
+        ? {
+            keySource: PairingKeySource.Members,
+            mode: PairingMode.Exclusive,
+            keys: memberNames,
+            values: ["", ""],
+          }
+        : null
+    );
   };
 
   const setOption = (value: string, index: number) =>
     setOptions((prev) => prev.map((opt, i) => (i === index ? value : opt)));
-  const addOption = () => setOptions((prev) => [...prev, ""]);
+  const addOption = (focusNewOption = false) => {
+    if (focusNewOption) {
+      pendingOptionFocusIndex.current = options.length;
+    }
+    setOptions((prev) => [...prev, ""]);
+  };
   const removeOption = (index: number) =>
     setOptions((prev) => prev.filter((_, i) => i !== index));
+  const handleOptionSubmit = (index: number) => {
+    const nextIndex = index + 1;
+    if (nextIndex < options.length) {
+      optionInputRefs.current[nextIndex]?.focus();
+      return;
+    }
+    addOption(true);
+  };
+
+  useEffect(() => {
+    const index = pendingOptionFocusIndex.current;
+    if (index === null || index >= options.length) return;
+    pendingOptionFocusIndex.current = null;
+    optionInputRefs.current[index]?.focus();
+  }, [options.length]);
 
   const trimmedOptions = options.map((opt) => opt.trim()).filter(Boolean);
   const optionsValid =
     type !== QuestionType.Custom || trimmedOptions.length >= MIN_CUSTOM_OPTIONS;
+
+  // Members keys always come from the live member list; custom keys from inputs.
+  const pairingKeys = pairing
+    ? pairing.keySource === PairingKeySource.Members
+      ? dedupeTrim(memberNames)
+      : dedupeTrim(pairing.keys ?? [])
+    : [];
+  const pairingValues = dedupeTrim(pairing?.values ?? []);
+  const pairingValid =
+    type !== QuestionType.Pairing ||
+    (!!pairing &&
+      pairingValues.length >= 2 &&
+      (pairing.keySource === PairingKeySource.Members || pairingKeys.length >= 2) &&
+      (pairing.mode === PairingMode.Open || pairingValues.length >= pairingKeys.length));
+
   const canSubmit =
     !!groupId &&
     !!type &&
     !!user &&
     question.trim().length > 0 &&
     optionsValid &&
+    pairingValid &&
     !createQuestion.isPending;
 
   const handleSubmit = () => {
@@ -80,6 +152,15 @@ export function CreateQuestionScreen() {
         submittedBy: user._id,
         multiSelect,
         options: type === QuestionType.Custom ? trimmedOptions : [],
+        pairing:
+          type === QuestionType.Pairing && pairing
+            ? {
+                keySource: pairing.keySource,
+                mode: pairing.mode,
+                keys: pairingKeys,
+                values: pairingValues,
+              }
+            : undefined,
       },
       {
         onSuccess: () => {
@@ -87,6 +168,7 @@ export function CreateQuestionScreen() {
           setQuestion("");
           setOptions(["", ""]);
           setMultiSelect(false);
+          setPairing(null);
           toastSuccess("Question created", "Added to the pool");
         },
       }
@@ -144,9 +226,15 @@ export function CreateQuestionScreen() {
                 return (
                   <View key={index} className="relative">
                     <TextInput
+                      ref={(input) => {
+                        optionInputRefs.current[index] = input;
+                      }}
                       placeholder={`Option ${index + 1}`}
                       value={opt}
                       onChangeText={(value) => setOption(value, index)}
+                      onSubmitEditing={() => handleOptionSubmit(index)}
+                      returnKeyType="next"
+                      submitBehavior="submit"
                       className={`rounded-xl border border-border bg-card py-3 pl-4 text-base text-foreground placeholder:text-muted-foreground ${
                         canRemove ? "pr-12" : "pr-4"
                       }`}
@@ -164,7 +252,7 @@ export function CreateQuestionScreen() {
                   </View>
                 );
               })}
-              <Button variant="outline" onPress={addOption}>
+              <Button variant="outline" onPress={() => addOption(true)}>
                 <Icon as={Plus} className="size-4" />
                 <Text>Add option</Text>
               </Button>
@@ -214,6 +302,14 @@ export function CreateQuestionScreen() {
               </View>
               <Checkbox checked={multiSelect} onCheckedChange={setMultiSelect} />
             </Pressable>
+          ) : null}
+
+          {type === QuestionType.Pairing && pairing ? (
+            <PairingConfigForm
+              pairing={pairing}
+              memberNames={memberNames}
+              onChange={setPairing}
+            />
           ) : null}
 
         </View>

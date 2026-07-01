@@ -13,8 +13,8 @@ export function CreateStep() {
       />
 
       <View className="flex-row items-center gap-3 rounded-2xl bg-secondary/40 p-3">
-        <View className="size-10 items-center justify-center rounded-full bg-blue-500/10">
-          <Icon as={MessageSquareText} className="size-5 text-blue-500" />
+        <View className="size-10 items-center justify-center rounded-full bg-chart-5/10">
+          <Icon as={MessageSquareText} className="size-5 text-chart-5" />
         </View>
         <View className="flex-1">
           <Text className="text-sm font-semibold">Questions</Text>

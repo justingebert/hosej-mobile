@@ -11,10 +11,10 @@ import { Text } from "@/components/ui/text";
 import { StepHeader } from "../step-header";
 
 const features: { icon: LucideIcon; label: string; color: string }[] = [
-  { icon: MessageSquareText, label: "Daily Questions", color: "text-blue-500" },
-  { icon: Plus, label: "Create", color: "text-amber-500" },
-  { icon: MessageCircle, label: "Chat", color: "text-violet-500" },
-  { icon: BarChart3, label: "History & Stats", color: "text-emerald-500" },
+  { icon: MessageSquareText, label: "Daily Questions", color: "text-chart-5" },
+  { icon: Plus, label: "Create", color: "text-chart-3" },
+  { icon: MessageCircle, label: "Chat", color: "text-chart-7" },
+  { icon: BarChart3, label: "History & Stats", color: "text-chart-4" },
 ];
 
 export function WelcomeStep() {

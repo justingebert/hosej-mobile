@@ -9,7 +9,11 @@ import { ErrorCard } from "@/components/ui/error-card";
 import { Screen } from "@/components/ui/screen";
 import { QuestionTabs } from "@/components/groups/question/question-tabs";
 import { buildFlatQuestionList } from "@/components/groups/question/question-utils";
-import { QuestionType, type VoteResponseValue } from "@/lib/api/types/question";
+import {
+  QuestionType,
+  type QuestionWithUserStateDTO,
+  type VoteResponseValue,
+} from "@/lib/api/types/question";
 import { QuestionSubmitButton } from "@/components/groups/question/question-submit-button";
 import { QuestionChatComposer } from "@/components/groups/question/question-chat";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -44,7 +48,7 @@ export function GroupQuestionScreen() {
     flatQuestions[0];
   const loadedQuestion = !isPending && !isError ? activeQuestion : undefined;
   const submittableResponse = getSubmittableResponse(
-    loadedQuestion?.question.questionType,
+    loadedQuestion?.question,
     draftResponse
   );
 
@@ -148,16 +152,25 @@ export function GroupQuestionScreen() {
 }
 
 function getSubmittableResponse(
-  questionType: QuestionType | undefined,
+  question: QuestionWithUserStateDTO | undefined,
   response: VoteResponseValue | null
 ) {
-  if (!response) return null;
+  if (!question || !response) return null;
 
-  if (questionType === QuestionType.Text) {
+  if (question.questionType === QuestionType.Text) {
     if (!Array.isArray(response)) return null;
 
     const trimmedValue = response[0]?.trim();
     return trimmedValue ? [trimmedValue] : null;
+  }
+
+  if (question.questionType === QuestionType.Pairing) {
+    // Pairing requires every key matched before it can be submitted.
+    if (Array.isArray(response)) return null;
+    const keys = question.pairing?.keys ?? [];
+    const allMatched =
+      keys.length > 0 && keys.every((key) => response[key] !== undefined);
+    return allMatched ? response : null;
   }
 
   if (Array.isArray(response)) {

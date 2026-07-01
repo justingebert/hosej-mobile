@@ -4,6 +4,27 @@ export enum QuestionType {
   Image = "image",
   Text = "text",
   Rating = "rating",
+  Pairing = "pairing",
+}
+
+export enum PairingKeySource {
+  Members = "members",
+  Custom = "custom",
+}
+
+export enum PairingMode {
+  Exclusive = "exclusive", // 1:1 — each value used at most once
+  Open = "open", // many:1 — values can repeat
+}
+
+// `keys` are the left-hand items ("Match these"), `values` the right-hand
+// choices ("With these"). A vote is a Record<key, value>. The model assumes
+// unique key/value strings — the response Record can't represent duplicates.
+export interface PairingConfig {
+  keySource: PairingKeySource;
+  mode: PairingMode;
+  keys?: string[];
+  values: string[];
 }
 
 export interface QuestionAnswerDTO {
@@ -40,6 +61,7 @@ export interface QuestionDTO {
   imageUrl?: string;
   multiSelect: boolean;
   options?: QuestionOptionDTO[];
+  pairing?: PairingConfig;
   answers: QuestionAnswerDTO[];
   rating: QuestionRatingDTO;
   used: boolean;
@@ -64,6 +86,7 @@ export interface ActiveQuestionsResponseDTO {
 export type VoteResponseValue = string[] | Record<string, string>;
 
 export interface QuestionResultUserDTO {
+  userId: string;
   username: string;
   avatarUrl?: string;
 }
@@ -75,8 +98,25 @@ export interface QuestionResultDTO {
   users: QuestionResultUserDTO[];
 }
 
+// Pairing aggregates per key instead of per option: each key carries the
+// distribution of values it was matched with (sorted by count desc).
+export interface PairingValueCountDTO {
+  value: string;
+  count: number;
+  percentage: number;
+  users: QuestionResultUserDTO[];
+}
+
+export interface PairingResultDTO {
+  key: string;
+  valueCounts: PairingValueCountDTO[];
+  topValue: string;
+}
+
 export interface QuestionResultsResponseDTO {
   results: QuestionResultDTO[];
+  // Present (and `results` empty) only for pairing questions.
+  pairingResults?: PairingResultDTO[];
   totalVotes: number;
   totalUsers: number;
   questionType: QuestionType;
@@ -84,9 +124,8 @@ export interface QuestionResultsResponseDTO {
 }
 
 // POST /api/groups/:groupId/question
-// The mobile create flow only handles the option-free / text-option types.
-// `pairing` and `image` questions are not supported yet (image needs an
-// upload pipeline; pairing needs the nested config UI).
+// Image questions still aren't creatable on mobile (needs an upload pipeline);
+// every other type — the text-option types and pairing — is supported.
 export interface CreateQuestionInput {
   category: string;
   questionType: QuestionType;
@@ -95,6 +134,8 @@ export interface CreateQuestionInput {
   multiSelect: boolean;
   // Sent only for `custom`; the backend fills options for `users`/`rating`.
   options?: string[];
+  // Sent only for `pairing`.
+  pairing?: PairingConfig;
 }
 
 // GET /api/groups/:groupId/history — the endpoint returns full question docs,

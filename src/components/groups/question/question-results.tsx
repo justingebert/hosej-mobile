@@ -11,9 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { useQuestionResults } from "@/lib/api/questions";
+import { cn } from "@/lib/utils";
 import { StyledImage } from "./styled-image";
 import {
   QuestionType,
+  type PairingResultDTO,
   type QuestionResultDTO,
 } from "@/lib/api/types/question";
 import { ChevronRight } from "lucide-react-native";
@@ -76,11 +78,101 @@ export function QuestionResults({
         </Text>
       </View>
 
-      <ResultBars
-        detailsHref={detailsHref}
-        isImage={data.questionType === QuestionType.Image}
-        results={data.results}
-      />
+      {data.questionType === QuestionType.Pairing ? (
+        <PairingSummary
+          detailsHref={detailsHref}
+          results={data.pairingResults ?? []}
+        />
+      ) : (
+        <ResultBars
+          detailsHref={detailsHref}
+          isImage={data.questionType === QuestionType.Image}
+          results={data.results}
+        />
+      )}
+    </View>
+  );
+}
+
+// Pairing summary: one row per key showing its leading value(s). Ties surface up
+// to two winners, then a "+N" overflow badge; the whole row drills into the
+// detailed per-key breakdown.
+function PairingSummary({
+  detailsHref,
+  results,
+}: {
+  detailsHref: Href;
+  results: PairingResultDTO[];
+}) {
+  return (
+    <View className="gap-3">
+      {results.map((result) => (
+        <PairingSummaryRow
+          detailsHref={detailsHref}
+          key={result.key}
+          result={result}
+        />
+      ))}
+    </View>
+  );
+}
+
+function PairingSummaryRow({
+  detailsHref,
+  result,
+}: {
+  detailsHref: Href;
+  result: PairingResultDTO;
+}) {
+  const topCount = result.valueCounts[0]?.count ?? 0;
+  const topValues = result.valueCounts.filter((vc) => vc.count === topCount);
+  const visible = topValues.slice(0, 2);
+  const overflow = topValues.length - visible.length;
+
+  return (
+    <Link href={detailsHref} push asChild>
+      <Pressable className="min-h-14 flex-row items-center gap-2 rounded-xl bg-secondary p-3">
+        <Text
+          numberOfLines={1}
+          className="shrink-0 basis-1/3 text-sm font-bold text-secondary-foreground"
+        >
+          {result.key}
+        </Text>
+        <View className="flex-1 flex-row flex-wrap items-center justify-end gap-1">
+          {topValues.length === 0 ? (
+            <ValueBadge label="—" muted />
+          ) : (
+            <>
+              {visible.map((vc) => (
+                <ValueBadge key={vc.value} label={vc.value} />
+              ))}
+              {overflow > 0 ? <ValueBadge label={`+${overflow}`} muted /> : null}
+            </>
+          )}
+        </View>
+        <Icon as={ChevronRight} className="size-5 shrink-0 text-muted-foreground" />
+      </Pressable>
+    </Link>
+  );
+}
+
+function ValueBadge({ label, muted = false }: { label: string; muted?: boolean }) {
+  return (
+    <View
+      className={cn(
+        "max-w-full rounded-full px-2.5 py-1",
+        muted ? "bg-background" : "bg-primary"
+      )}
+    >
+      <Text
+        numberOfLines={1}
+        className={cn(
+          "text-xs font-semibold",
+          muted ? "text-muted-foreground" : "text-primary-foreground"
+        )}
+      >
+        {label}
+      </Text>
     </View>
   );
 }

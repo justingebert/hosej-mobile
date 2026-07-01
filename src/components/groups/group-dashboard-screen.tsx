@@ -19,7 +19,7 @@ export function GroupDashboardScreen() {
   // Traffic-light ring (web parity): red < 33 < orange < 66 < green.
   // useCSSVariable resolves to a hex string on native; cast for the SVG stroke.
   const red = useCSSVariable("--color-destructive") as string;
-  const orange = useCSSVariable("--color-chart-5") as string;
+  const orange = useCSSVariable("--color-chart-3") as string;
   const green = useCSSVariable("--color-success") as string;
   const track = useCSSVariable("--color-muted") as string;
 

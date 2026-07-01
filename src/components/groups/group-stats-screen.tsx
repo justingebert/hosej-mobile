@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Pressable, View } from "react-native";
 import { router, type Href } from "expo-router";
 import { Calendar, MessageSquare, Users, type LucideIcon } from "lucide-react-native";
+import { useCSSVariable } from "uniwind";
 import { Pie, PolarChart } from "victory-native";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,19 +15,6 @@ import { useGroup } from "@/lib/api/groups";
 import { useGroupStats } from "@/lib/api/stats";
 import type { GroupStatsDTO, GroupWithAdminDTO } from "@/lib/api/types/group";
 import { useGroupId } from "@/lib/group-id";
-
-const CHART_COLORS = [
-  "#6366f1",
-  "#ec4899",
-  "#f59e0b",
-  "#10b981",
-  "#3b82f6",
-  "#ef4444",
-  "#8b5cf6",
-  "#14b8a6",
-  "#f97316",
-  "#84cc16",
-];
 
 const QUESTION_TYPE_LABELS: Record<string, string> = {
   users: "Members",
@@ -71,6 +59,7 @@ export function GroupStatsScreen() {
 }
 
 function StatsContent({ group, stats }: { group: GroupWithAdminDTO; stats: GroupStatsDTO }) {
+  const chartColors = useChartColors();
   const daysActive = Math.floor(
     (Date.now() - new Date(group.createdAt).getTime()) / (1000 * 60 * 60 * 24)
   );
@@ -78,12 +67,12 @@ function StatsContent({ group, stats }: { group: GroupWithAdminDTO; stats: Group
 
   const typeSlices: Slice[] = stats.questionsByType.map((d, i) => ({
     value: d.count,
-    color: CHART_COLORS[i % CHART_COLORS.length],
+    color: chartColors[i % chartColors.length],
     label: QUESTION_TYPE_LABELS[d._id] ?? d._id,
   }));
   const userSlices: Slice[] = stats.questionsByUser.map((d, i) => ({
     value: d.count,
-    color: CHART_COLORS[i % CHART_COLORS.length],
+    color: chartColors[i % chartColors.length],
     label: d.username,
   }));
 
@@ -149,6 +138,21 @@ function StatCard({
       {card}
     </Pressable>
   );
+}
+
+function useChartColors() {
+  return [
+    useCSSVariable("--color-chart-1") as string,
+    useCSSVariable("--color-chart-2") as string,
+    useCSSVariable("--color-chart-3") as string,
+    useCSSVariable("--color-chart-4") as string,
+    useCSSVariable("--color-chart-5") as string,
+    useCSSVariable("--color-chart-6") as string,
+    useCSSVariable("--color-chart-7") as string,
+    useCSSVariable("--color-chart-8") as string,
+    useCSSVariable("--color-chart-9") as string,
+    useCSSVariable("--color-chart-10") as string,
+  ];
 }
 
 function DonutCard({ title, slices }: { title: string; slices: Slice[] }) {

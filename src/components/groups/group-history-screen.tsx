@@ -20,6 +20,7 @@ const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   [QuestionType.Image]: "Image",
   [QuestionType.Text]: "Text",
   [QuestionType.Rating]: "Rating",
+  [QuestionType.Pairing]: "Pairing",
 };
 
 const TYPE_OPTIONS = Object.values(QuestionType).map((value) => ({
