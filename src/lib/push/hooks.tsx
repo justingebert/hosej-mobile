@@ -4,8 +4,9 @@ import { useAuth } from "@/lib/auth/auth-context";
 import {
   addResponseListener,
   addTokenRotationListener,
+  getColdStartTargetGroupId,
   getPermissionState,
-  handleColdStartResponse,
+  routeToGroupQuestion,
   setupForegroundHandler,
   syncPushRegistration,
 } from "./push";
@@ -16,18 +17,35 @@ import {
  * login, account switch). Never prompts for permission — that's the Settings row.
  */
 export function usePushBridge() {
-  const { status } = useAuth();
+  const { status, needsNameSetup } = useAuth();
+  // App launched by a notification tap. Held in state (not routed immediately):
+  // it resolves while auth is still "loading", when RootNavigator renders no
+  // Stack yet — routing then would be dropped.
+  const [coldStartGroupId, setColdStartGroupId] = useState<string | null>(null);
 
   useEffect(() => {
     setupForegroundHandler();
     const tokenSub = addTokenRotationListener();
     const responseSub = addResponseListener();
-    void handleColdStartResponse();
+    void getColdStartTargetGroupId().then(setColdStartGroupId);
     return () => {
       tokenSub.remove();
       responseSub.remove();
     };
   }, []);
+
+  useEffect(() => {
+    if (!coldStartGroupId) return;
+    if (status === "unauthed") {
+      // No session to open the group with — drop it so it can't fire after a
+      // later login as a stale navigation.
+      setColdStartGroupId(null);
+      return;
+    }
+    if (status !== "authed" || needsNameSetup) return;
+    setColdStartGroupId(null);
+    routeToGroupQuestion(coldStartGroupId);
+  }, [coldStartGroupId, status, needsNameSetup]);
 
   useEffect(() => {
     if (status === "authed") void syncPushRegistration();

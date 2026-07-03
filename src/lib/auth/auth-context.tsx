@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         if (!active) return;
         if (isTerminalRefreshError(error)) {
-          await reset(true, true);
+          await reset(true);
         } else {
           setStatus("authed");
         }
@@ -126,10 +126,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [applyAuth, reset]);
 
   // Let the request layer force a sign-out when a 401 can't be refreshed. It has
-  // already cleared the tokens; this clears remaining local auth state.
+  // already cleared the tokens; this clears remaining local auth state. Keeps the
+  // stored deviceId (involuntary — see the boot handler above).
   useEffect(() => {
     setUnauthorizedHandler(() => {
-      void reset(false, true);
+      void reset(false);
     });
     return () => setUnauthorizedHandler(null);
   }, [reset]);

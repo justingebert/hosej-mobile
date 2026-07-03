@@ -155,12 +155,16 @@ export function setupForegroundHandler() {
   });
 }
 
+// v1: land on the group's active question — chat read-write lives there and a
+// new-question push is about that screen. Per-question/chat routing is a follow-up.
+export function routeToGroupQuestion(groupId: string) {
+  router.push({ pathname: "/groups/[groupId]/question", params: { groupId } });
+}
+
 function handleResponse(data: Record<string, unknown> | undefined) {
   const groupId = typeof data?.groupId === "string" ? data.groupId : null;
   if (!groupId) return;
-  // v1: land on the group's active question — chat read-write lives there and a
-  // new-question push is about that screen. Per-question/chat routing is a follow-up.
-  router.push({ pathname: "/groups/[groupId]/question", params: { groupId } });
+  routeToGroupQuestion(groupId);
 }
 
 export function addResponseListener() {
@@ -180,8 +184,16 @@ export function addTokenRotationListener() {
   });
 }
 
-/** App opened from a notification while killed — route once on launch. */
-export async function handleColdStartResponse() {
+/**
+ * App opened from a notification while killed — the tap's target group. Routing
+ * happens in the bridge once the authed navigator exists: at read time auth is
+ * still resolving and RootNavigator renders null, so a router.push here would
+ * fire before any Stack is mounted and be dropped.
+ */
+export async function getColdStartTargetGroupId(): Promise<string | null> {
   const response = await Notifications.getLastNotificationResponseAsync();
-  if (response) handleResponse(response.notification.request.content.data);
+  const data = response?.notification.request.content.data as
+    | Record<string, unknown>
+    | undefined;
+  return typeof data?.groupId === "string" ? data.groupId : null;
 }

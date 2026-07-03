@@ -16,17 +16,22 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { API_URL } from "@/lib/config";
-import { getErrorMessage } from "@/lib/api/client";
+import { ApiError, getErrorMessage } from "@/lib/api/client";
 import { useInvitePreview } from "@/lib/api/groups";
 import { useAuth } from "@/lib/auth/auth-context";
-import { clearPendingInvite, getPendingInvite } from "@/lib/auth/session";
+import {
+  clearPendingInvite,
+  getDeviceId,
+  getPendingInvite,
+  setDeviceId,
+} from "@/lib/auth/session";
 import { useGoogleSignIn } from "@/lib/auth/google";
 import { useCSSVariable } from "uniwind";
 
 const SUPPORT_EMAIL = "pregame_acid_9o@icloud.com";
 const googleLogo = require("../../assets/images/google-g.png");
 
-type Action = "google" | "register";
+type Action = "google" | "register" | "restore";
 
 export default function LoginScreen() {
   const { registerDevice, loginWithDeviceId, loginWithGoogle } = useAuth();
@@ -34,6 +39,10 @@ export default function LoginScreen() {
   const [busy, setBusy] = useState<Action | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lostOpen, setLostOpen] = useState(false);
+
+  // Module state, not reactive — fine here: it only changes via this screen's own
+  // actions (404 → cleared), and those set state, so the re-render re-reads it.
+  const storedDeviceId = getDeviceId();
 
   // Reached via the invite deep link: join/[code] stashes the code (in-memory) and
   // redirects here, so the whole logged-out join is one screen. Show the group inline.
@@ -109,6 +118,29 @@ export default function LoginScreen() {
               })
             }
           />
+
+          {/* A device account signed out involuntarily (failed token refresh)
+              keeps its stored deviceId — offer the way back in before "start
+              fresh" creates a second account. A dead credential (account
+              deleted server-side → 404) is dropped so the button disappears. */}
+          {storedDeviceId ? (
+            <Button
+              variant="secondary"
+              disabled={busy !== null}
+              onPress={() =>
+                run("restore", async () => {
+                  try {
+                    await loginWithDeviceId(storedDeviceId);
+                  } catch (e) {
+                    if (e instanceof ApiError && e.status === 404) await setDeviceId(null);
+                    throw e;
+                  }
+                })
+              }
+            >
+              <Text>{busy === "restore" ? "Restoring…" : "Restore previous account"}</Text>
+            </Button>
+          ) : null}
 
           <Button
             variant="secondary"
