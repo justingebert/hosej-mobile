@@ -15,7 +15,7 @@ import {
 // after these moved to ./errors. See errors.ts for why they live there.
 export { ApiError, getErrorMessage };
 
-const DEV_QUERY_DELAY_MS = __DEV__ ? 2000 : 0;
+const DEV_QUERY_DELAY_MS = __DEV__ ? 0 : 0;
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (shouldDelayQuery(options)) {

@@ -40,12 +40,10 @@ export function QuestionResultsScreen() {
 
           <QuestionRatingBadges rating={question.rating} />
 
-          {question.options && question.options.length > 0 ? (
-            <QuestionOptionsList
-              options={question.options}
-              questionType={question.questionType}
-            />
-          ) : null}
+          <QuestionOptionsList
+            options={question.options ?? []}
+            questionType={question.questionType}
+          />
 
           <QuestionResults groupId={groupId} questionId={questionId} />
 

@@ -62,7 +62,7 @@ export default function SetupNameScreen() {
   const initial = (username || "?").slice(0, 1).toUpperCase();
 
   return (
-    <Screen contentContainerClassName="grow justify-center gap-8 p-6">
+    <Screen avoidKeyboard contentContainerClassName="grow justify-center gap-8 p-6">
       <View className="items-center gap-2">
         <Text variant="h2" className="text-center">
           Choose a name!

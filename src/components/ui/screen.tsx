@@ -7,6 +7,8 @@ type ScreenProps = {
   onRefresh?: () => void;
   /** Wire to a query's `isRefetching`. */
   refreshing?: boolean;
+  /** iOS: inset + scroll so a focused input stays above the keyboard. */
+  avoidKeyboard?: boolean;
   contentContainerClassName?: string;
 };
 
@@ -16,7 +18,13 @@ type ScreenProps = {
  * a ScrollView + RefreshControl in every screen.
  */
 export const Screen = forwardRef<ScrollView, ScreenProps>(function Screen(
-  { children, onRefresh, refreshing = false, contentContainerClassName = "grow gap-6 p-4" },
+  {
+    children,
+    onRefresh,
+    refreshing = false,
+    avoidKeyboard = false,
+    contentContainerClassName = "grow gap-6 p-4",
+  },
   ref
 ) {
   return (
@@ -25,6 +33,7 @@ export const Screen = forwardRef<ScrollView, ScreenProps>(function Screen(
       className="flex-1 bg-background"
       contentContainerClassName={contentContainerClassName}
       contentInsetAdjustmentBehavior="automatic"
+      automaticallyAdjustKeyboardInsets={avoidKeyboard}
       keyboardShouldPersistTaps="handled"
       refreshControl={
         onRefresh ? (

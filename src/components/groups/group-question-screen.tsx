@@ -38,6 +38,8 @@ export function GroupQuestionScreen() {
   const voteMutation = useVoteOnQuestion(groupId);
   const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(null);
   const [draftResponse, setDraftResponse] = useState<VoteResponseValue | null>(null);
+  // The question voted on this session — its rating sheet auto-opens once.
+  const [justVotedId, setJustVotedId] = useState<string | null>(null);
 
   const flatQuestions = useMemo(
     () => buildFlatQuestionList(data?.questions ?? []),
@@ -67,14 +69,18 @@ export function GroupQuestionScreen() {
 
   useEffect(() => {
     setDraftResponse(null);
+    // Switching questions clears the just-voted flag so revisiting the voted
+    // question doesn't re-pop its rating sheet.
+    setJustVotedId(null);
   }, [loadedQuestion?.question._id]);
 
   const submitVote = () => {
     if (!loadedQuestion || !submittableResponse) return;
-    voteMutation.mutate({
-      questionId: loadedQuestion.question._id,
-      response: submittableResponse,
-    });
+    const votedId = loadedQuestion.question._id;
+    voteMutation.mutate(
+      { questionId: votedId, response: submittableResponse },
+      { onSuccess: () => setJustVotedId(votedId) }
+    );
   };
 
   return (
@@ -119,6 +125,7 @@ export function GroupQuestionScreen() {
               question={loadedQuestion.question}
               response={draftResponse}
               onResponseChange={setDraftResponse}
+              justVoted={loadedQuestion.question._id === justVotedId}
             />
           ) : null}
         </Screen>

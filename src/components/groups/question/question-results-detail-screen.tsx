@@ -1,7 +1,14 @@
-import { useMemo, useState } from "react";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useLocalSearchParams } from "expo-router";
 import { useGroupId } from "@/lib/group-id";
-import { Modal, Pressable, ScrollView, View } from "react-native";
+import { Pressable, View } from "react-native";
+import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Check, Filter, X } from "lucide-react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -9,11 +16,13 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorCard } from "@/components/ui/error-card";
 import { Icon } from "@/components/ui/icon";
 import { Screen } from "@/components/ui/screen";
+import { Sheet, type SheetHandle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { useGroup } from "@/lib/api/groups";
 import type { GroupMemberDTO } from "@/lib/api/types/group";
-import { useQuestionResults } from "@/lib/api/questions";
+import { useQuestion, useQuestionResults } from "@/lib/api/questions";
+import { QuestionOptionsList } from "./question-options-list";
 import {
   QuestionType,
   type PairingResultDTO,
@@ -33,13 +42,18 @@ type MemberFilterOption = SelectedMember & {
   voted: boolean;
 };
 
+type MemberFilterSheetHandle = { present: () => void };
+
 export function QuestionResultsDetailScreen() {
   const groupId = useGroupId();
   const { questionId } = useLocalSearchParams<{ questionId: string }>();
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
-  const [memberFilterOpen, setMemberFilterOpen] = useState(false);
+  const memberFilterRef = useRef<MemberFilterSheetHandle>(null);
   const resultsQuery = useQuestionResults(groupId, questionId);
   const groupQuery = useGroup(groupId);
+  // Supplementary (Tier 2): the full option set, so options nobody voted for —
+  // which are absent from the aggregated results — are still visible here.
+  const questionQuery = useQuestion(groupId, questionId);
   const { data } = resultsQuery;
 
   const isPairing = data?.questionType === QuestionType.Pairing;
@@ -83,7 +97,6 @@ export function QuestionResultsDetailScreen() {
   const selectUser = (user: QuestionResultUserDTO) => setSelectedMemberId(user.userId);
   const selectMember = (userId: string | null) => {
     setSelectedMemberId(userId);
-    setMemberFilterOpen(false);
   };
 
   return (
@@ -104,7 +117,7 @@ export function QuestionResultsDetailScreen() {
           <MemberFilterBar
             selectedMember={selectedMember}
             onClear={() => setSelectedMemberId(null)}
-            onOpen={() => setMemberFilterOpen(true)}
+            onOpen={() => memberFilterRef.current?.present()}
           />
 
           {selectedMember ? (
@@ -140,11 +153,19 @@ export function QuestionResultsDetailScreen() {
             </View>
           )}
 
+          {questionQuery.data ? (
+            <QuestionOptionsList
+              className="mt-3"
+              options={questionQuery.data.options ?? []}
+              questionType={questionQuery.data.questionType}
+              title="All options"
+            />
+          ) : null}
+
           <MemberFilterSheet
+            ref={memberFilterRef}
             members={memberOptions}
             selectedMemberId={selectedMemberId}
-            visible={memberFilterOpen}
-            onClose={() => setMemberFilterOpen(false)}
             onSelect={selectMember}
           />
         </View>
@@ -384,79 +405,74 @@ function MemberFilterBar({
   onOpen: () => void;
 }) {
   return (
-    <View className="flex-row gap-2">
-      <Button
-        variant={selectedMember ? "outline" : "secondary"}
-        className="shrink-0"
-        onPress={onClear}
-      >
-        <Text>All votes</Text>
-      </Button>
       <Button variant="outline" className="flex-1 justify-between" onPress={onOpen}>
         <Icon as={Filter} className="size-4" />
         <Text numberOfLines={1} className="flex-1">
           {selectedMember ? selectedMember.name : "Filter by member"}
         </Text>
-        {selectedMember ? <Icon as={X} className="size-4" /> : null}
+        {selectedMember ? (
+          <Button variant="ghost" size="icon" onPress={onClear}>
+            <Icon as={X} className="size-4" />
+          </Button>
+          )
+          : null
+        }
       </Button>
-    </View>
   );
 }
 
-function MemberFilterSheet({
-  members,
-  onClose,
-  onSelect,
-  selectedMemberId,
-  visible,
-}: {
+const MemberFilterSheet = forwardRef<
+  MemberFilterSheetHandle,
+  {
   members: MemberFilterOption[];
-  onClose: () => void;
   onSelect: (userId: string | null) => void;
   selectedMemberId: string | null;
-  visible: boolean;
-}) {
+  }
+>(function MemberFilterSheet({ members, onSelect, selectedMemberId }, ref) {
+  const modalRef = useRef<SheetHandle>(null);
+
+  useImperativeHandle(ref, () => ({ present: () => modalRef.current?.present() }), []);
+
+  const dismiss = () => modalRef.current?.dismiss();
+  const select = (userId: string | null) => {
+    onSelect(userId);
+    dismiss();
+  };
+
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable className="flex-1 justify-end bg-black/40" onPress={onClose}>
-        <Pressable className="gap-4 rounded-t-3xl bg-background p-5" onPress={() => {}}>
-          <View className="items-center">
-            <View className="h-1 w-10 rounded-full bg-muted" />
+    <Sheet ref={modalRef}>
+      <Text variant="large">Filter by member</Text>
+
+      <BottomSheetScrollView style={{ maxHeight: 420 }}>
+        <MemberFilterRow
+          label="All votes"
+          selected={selectedMemberId == null}
+          status="Clear filter"
+          onPress={() => select(null)}
+        />
+
+        {members.length === 0 ? (
+          <Text variant="muted" className="mt-3">
+            No members
+          </Text>
+        ) : (
+          <View className="mt-3 gap-2">
+            {members.map((member) => (
+              <MemberFilterRow
+                key={member.userId}
+                avatarUrl={member.avatarUrl}
+                label={member.name}
+                selected={selectedMemberId === member.userId}
+                status={member.voted ? "Voted" : "No vote"}
+                onPress={() => select(member.userId)}
+              />
+            ))}
           </View>
-          <Text variant="large">Filter by member</Text>
-
-          <ScrollView style={{ maxHeight: 420 }} className="grow-0">
-            <MemberFilterRow
-              label="All votes"
-              selected={selectedMemberId == null}
-              status="Clear filter"
-              onPress={() => onSelect(null)}
-            />
-
-            {members.length === 0 ? (
-              <Text variant="muted" className="mt-3">
-                No members
-              </Text>
-            ) : (
-              <View className="mt-3 gap-2">
-                {members.map((member) => (
-                  <MemberFilterRow
-                    key={member.userId}
-                    avatarUrl={member.avatarUrl}
-                    label={member.name}
-                    selected={selectedMemberId === member.userId}
-                    status={member.voted ? "Voted" : "No vote"}
-                    onPress={() => onSelect(member.userId)}
-                  />
-                ))}
-              </View>
-            )}
-          </ScrollView>
-        </Pressable>
-      </Pressable>
-    </Modal>
+        )}
+      </BottomSheetScrollView>
+    </Sheet>
   );
-}
+});
 
 function MemberFilterRow({
   avatarUrl,

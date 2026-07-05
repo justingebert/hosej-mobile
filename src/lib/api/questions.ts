@@ -1,12 +1,15 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "./client";
 import { toastInfo } from "@/lib/toast";
+import { useAuth } from "@/lib/auth/auth-context";
 import type {
   ActiveQuestionsResponseDTO,
   CreateQuestionInput,
   GroupHistoryResponseDTO,
   QuestionDTO,
   QuestionResultsResponseDTO,
+  QuestionWithUserStateDTO,
+  UserRating,
   VoteResponseValue,
 } from "./types/question";
 
@@ -106,6 +109,72 @@ export function useVoteOnQuestion(groupId: string) {
       ]);
     },
   });
+}
+
+// Rate the question itself (👎 bad / 👌 ok / 👍 good) — meta feedback, separate
+// from the vote. Optimistic: moves the current user between rating buckets in the
+// active-questions cache so the sheet/summary reflect the tap instantly, then
+// invalidates to reconcile. Mutation error surfaces as a toast (see meta).
+export function useRateQuestion(groupId: string) {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const userId = user?.id;
+
+  return useMutation({
+    mutationFn: ({
+      questionId,
+      rating,
+    }: {
+      questionId: string;
+      rating: Exclude<UserRating, null>;
+    }) =>
+      apiFetch(`/api/groups/${groupId}/question/${questionId}/rate`, {
+        method: "POST",
+        body: JSON.stringify({ rating }),
+      }),
+    meta: {
+      errorToastTitle: "Could not rate question",
+    },
+    onMutate: async ({ questionId, rating }) => {
+      await queryClient.cancelQueries({ queryKey: questionKeys.active(groupId) });
+      const previous = queryClient.getQueryData<ActiveQuestionsResponseDTO>(
+        questionKeys.active(groupId)
+      );
+      if (previous && userId) {
+        queryClient.setQueryData<ActiveQuestionsResponseDTO>(questionKeys.active(groupId), {
+          ...previous,
+          questions: previous.questions.map((question) =>
+            question._id === questionId ? applyRating(question, userId, rating) : question
+          ),
+        });
+      }
+      return { previous };
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(questionKeys.active(groupId), context.previous);
+      }
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: questionKeys.active(groupId) });
+    },
+  });
+}
+
+// Pure cache transform: drop the user from whichever bucket they were in, add
+// them to the new one, and reflect their pick in userRating.
+function applyRating(
+  question: QuestionWithUserStateDTO,
+  userId: string,
+  rating: Exclude<UserRating, null>
+): QuestionWithUserStateDTO {
+  const buckets = {
+    good: question.rating.good.filter((id) => id !== userId),
+    ok: question.rating.ok.filter((id) => id !== userId),
+    bad: question.rating.bad.filter((id) => id !== userId),
+  };
+  buckets[rating] = [...buckets[rating], userId];
+  return { ...question, rating: buckets, userRating: rating };
 }
 
 export function useQuestionResults(groupId: string, questionId: string) {

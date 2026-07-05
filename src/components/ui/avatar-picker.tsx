@@ -1,16 +1,10 @@
-import { useCallback, useRef } from "react";
+import { useRef } from "react";
 import { ActivityIndicator, Pressable, View } from "react-native";
-import {
-  BottomSheetBackdrop,
-  BottomSheetModal,
-  BottomSheetView,
-  type BottomSheetBackdropProps,
-} from "@gorhom/bottom-sheet";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { Camera, ImagePlus, Pencil, Trash2, type LucideIcon } from "lucide-react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
+import { Sheet, type SheetHandle } from "@/components/ui/sheet";
 import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/utils";
 import type { PickedAvatar } from "@/lib/api/user";
@@ -53,8 +47,7 @@ export function AvatarPicker({
   onPick,
   onRemove,
 }: AvatarPickerProps) {
-  const sheetRef = useRef<BottomSheetModal>(null);
-  const insets = useSafeAreaInsets();
+  const sheetRef = useRef<SheetHandle>(null);
 
   const handleResult = (result: ImagePicker.ImagePickerResult) => {
     if (result.canceled) return;
@@ -78,13 +71,6 @@ export function AvatarPicker({
     sheetRef.current?.dismiss();
     onRemove();
   };
-
-  const renderBackdrop = useCallback(
-    (props: BottomSheetBackdropProps) => (
-      <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} />
-    ),
-    []
-  );
 
   return (
     <>
@@ -110,47 +96,28 @@ export function AvatarPicker({
         )}
       </Pressable>
 
-      <BottomSheetModal
-        ref={sheetRef}
-        enableDynamicSizing
-        handleComponent={null}
-        backgroundStyle={SHEET_TRANSPARENT}
-        backdropComponent={renderBackdrop}
-      >
-        {/* gorhom views take `style`; the inner core-RN views carry className.
-            The card bg must fill the bottom safe-area inset too, otherwise the
-            backdrop shows through below it as a black/grey strip. */}
-        <BottomSheetView>
-          <View
-            className="gap-3 rounded-t-3xl bg-card px-4 pt-3"
-            style={{ paddingBottom: insets.bottom + 12 }}
-          >
-            <View className="mb-1 h-1 w-10 self-center rounded-full bg-muted-foreground/30" />
-            <View className="overflow-hidden rounded-2xl bg-background">
-              <SheetAction icon={Camera} label="Take Photo" onPress={takePhoto} />
+      <Sheet ref={sheetRef} className="gap-3">
+        <View className="overflow-hidden rounded-2xl bg-card">
+          <SheetAction icon={Camera} label="Take Photo" onPress={takePhoto} />
+          <View className="h-px bg-border" />
+          <SheetAction icon={ImagePlus} label="Choose Photo" onPress={choosePhoto} />
+          {imageUri ? (
+            <>
               <View className="h-px bg-border" />
-              <SheetAction icon={ImagePlus} label="Choose Photo" onPress={choosePhoto} />
-              {imageUri ? (
-                <>
-                  <View className="h-px bg-border" />
-                  <SheetAction icon={Trash2} label="Remove Photo" destructive onPress={removePhoto} />
-                </>
-              ) : null}
-            </View>
-            <Pressable
-              className="items-center rounded-2xl bg-background p-4 active:opacity-70"
-              onPress={() => sheetRef.current?.dismiss()}
-            >
-              <Text className="font-semibold text-foreground">Cancel</Text>
-            </Pressable>
-          </View>
-        </BottomSheetView>
-      </BottomSheetModal>
+              <SheetAction icon={Trash2} label="Remove Photo" destructive onPress={removePhoto} />
+            </>
+          ) : null}
+        </View>
+        <Pressable
+          className="items-center rounded-2xl bg-card p-4 active:opacity-70"
+          onPress={() => sheetRef.current?.dismiss()}
+        >
+          <Text className="font-semibold text-foreground">Cancel</Text>
+        </Pressable>
+      </Sheet>
     </>
   );
 }
-
-const SHEET_TRANSPARENT = { backgroundColor: "transparent" } as const;
 
 function SheetAction({
   icon,

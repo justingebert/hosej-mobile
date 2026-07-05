@@ -1,18 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
   Linking,
-  Modal,
-  Platform,
   Pressable,
-  TextInput,
   View,
 } from "react-native";
+import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
 import * as WebBrowser from "expo-web-browser";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/button";
+import { Sheet, type SheetHandle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { API_URL } from "@/lib/config";
@@ -32,13 +36,14 @@ const SUPPORT_EMAIL = "pregame_acid_9o@icloud.com";
 const googleLogo = require("../../assets/images/google-g.png");
 
 type Action = "google" | "register" | "restore";
+type LostAccountModalHandle = { present: () => void };
 
 export default function LoginScreen() {
   const { registerDevice, loginWithDeviceId, loginWithGoogle } = useAuth();
 
   const [busy, setBusy] = useState<Action | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [lostOpen, setLostOpen] = useState(false);
+  const lostAccountRef = useRef<LostAccountModalHandle>(null);
 
   // Module state, not reactive — fine here: it only changes via this screen's own
   // actions (404 → cleared), and those set state, so the re-render re-reads it.
@@ -147,10 +152,10 @@ export default function LoginScreen() {
             disabled={busy !== null}
             onPress={() => run("register", () => registerDevice())}
           >
-            <Text>{busy === "register" ? "Creating…" : "Start without account"}</Text>
+            <Text>{busy === "register" ? "Creating…" : "Start with on-device account"}</Text>
           </Button>
 
-          <Pressable className="self-center py-1" onPress={() => setLostOpen(true)}>
+          <Pressable className="self-center py-1" onPress={() => lostAccountRef.current?.present()}>
             <Text className="text-sm text-muted-foreground underline">Lost your account?</Text>
           </Pressable>
         </View>
@@ -159,8 +164,7 @@ export default function LoginScreen() {
       <ConsentFooter />
 
       <LostAccountModal
-        visible={lostOpen}
-        onClose={() => setLostOpen(false)}
+        ref={lostAccountRef}
         onRecover={loginWithDeviceId}
       />
     </View>
@@ -225,25 +229,23 @@ const RECOVERY_MAX_ATTEMPTS = 5;
 // Bottom-sheet modal mirroring the webapp's "Lost your account?" drawer: paste a
 // device ID to restore, or mail support. Client-side rate-limited on top of the
 // server's auth limiter.
-function LostAccountModal({
-  visible,
-  onClose,
-  onRecover,
-}: {
-  visible: boolean;
-  onClose: () => void;
+const LostAccountModal = forwardRef<LostAccountModalHandle, {
   onRecover: (deviceId: string) => Promise<void>;
-}) {
+}>(function LostAccountModal({ onRecover }, ref) {
+  const modalRef = useRef<SheetHandle>(null);
   const [deviceId, setDeviceId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const attemptsRef = useRef<number[]>([]);
 
-  const close = () => {
+  useImperativeHandle(ref, () => ({ present: () => modalRef.current?.present() }), []);
+
+  const reset = () => {
     setDeviceId("");
     setError(null);
-    onClose();
   };
+
+  const close = () => modalRef.current?.dismiss();
 
   const canAttempt = () => {
     const now = Date.now();
@@ -272,52 +274,50 @@ function LostAccountModal({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
-      <KeyboardAvoidingView
-        className="flex-1 justify-end"
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <Pressable className="absolute inset-0 bg-black/50" onPress={close} />
-        <View className="gap-4 rounded-t-3xl bg-card p-6 pb-10">
-          <View className="gap-1">
-            <Text variant="h3">Lost your account?</Text>
-            <Text className="text-sm text-muted-foreground">
-              Device accounts live on this device. Paste your device ID to restore, or reach out
-              to{" "}
-              <Text
-                className="text-sm text-muted-foreground underline"
-                onPress={() =>
-                  Linking.openURL(
-                    `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("HoseJ — Lost account")}`
-                  )
-                }
-              >
-                {SUPPORT_EMAIL}
-              </Text>
-              .
-            </Text>
-          </View>
+    <Sheet
+      ref={modalRef}
+      onDismiss={reset}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
+      android_keyboardInputMode="adjustResize"
+    >
+      <View className="gap-1">
+        <Text variant="h3">Lost your account?</Text>
+        <Text className="text-sm text-muted-foreground">
+          Device accounts live on this device. Paste your device ID to restore, or reach out
+          to{" "}
+          <Text
+            className="text-sm text-muted-foreground underline"
+            onPress={() =>
+              Linking.openURL(
+                `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent("HoseJ — Lost account")}`
+              )
+            }
+          >
+            {SUPPORT_EMAIL}
+          </Text>
+          .
+        </Text>
+      </View>
 
-          <TextInput
-            autoCapitalize="none"
-            autoCorrect={false}
-            spellCheck={false}
-            placeholder="Device ID"
-            value={deviceId}
-            onChangeText={setDeviceId}
-            className="rounded-xl border border-border bg-background p-4 text-foreground"
-          />
+      <BottomSheetTextInput
+        autoCapitalize="none"
+        autoCorrect={false}
+        spellCheck={false}
+        placeholder="Device ID"
+        value={deviceId}
+        onChangeText={setDeviceId}
+        className="rounded-xl border border-border bg-background p-4 text-foreground"
+      />
 
-          {error ? <Text className="text-sm text-destructive">{error}</Text> : null}
+      {error ? <Text className="text-sm text-destructive">{error}</Text> : null}
 
-          <Button disabled={!deviceId.trim() || submitting} onPress={() => void handleRestore()}>
-            <Text>{submitting ? "Restoring…" : "Restore"}</Text>
-          </Button>
-          <Button variant="ghost" onPress={close}>
-            <Text>Close</Text>
-          </Button>
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
+      <Button disabled={!deviceId.trim() || submitting} onPress={() => void handleRestore()}>
+        <Text>{submitting ? "Restoring…" : "Restore"}</Text>
+      </Button>
+      <Button variant="ghost" onPress={close}>
+        <Text>Close</Text>
+      </Button>
+    </Sheet>
   );
-}
+});

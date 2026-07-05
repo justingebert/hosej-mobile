@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, Pressable, RefreshControl, TextInput, View } from "react-native";
 import { router, type Href } from "expo-router";
 import { ChevronRight, Search, SlidersHorizontal, X } from "lucide-react-native";
@@ -8,7 +8,10 @@ import { ErrorCard } from "@/components/ui/error-card";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
-import { GroupHistoryFilterSheet } from "@/components/groups/group-history-filter-sheet";
+import {
+  GroupHistoryFilterSheet,
+  type GroupHistoryFilterSheetRef,
+} from "@/components/groups/group-history-filter-sheet";
 import { useGroup } from "@/lib/api/groups";
 import { useGroupHistory } from "@/lib/api/questions";
 import { QuestionType, type HistoryQuestionDTO } from "@/lib/api/types/question";
@@ -51,7 +54,7 @@ export function GroupHistoryScreen() {
   const search = useDebouncedValue(searchInput.trim());
   const [questionType, setQuestionType] = useState<string[]>([]);
   const [submittedBy, setSubmittedBy] = useState<string[]>([]);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const filterSheetRef = useRef<GroupHistoryFilterSheetRef>(null);
 
   const { data: group } = useGroup(groupId);
   const memberOptions = useMemo(
@@ -105,7 +108,7 @@ export function GroupHistoryScreen() {
 
         <View className="flex-row items-center justify-between">
           <Pressable
-            onPress={() => setSheetOpen(true)}
+            onPress={() => filterSheetRef.current?.present()}
             className="flex-row items-center gap-2 rounded-md border border-border px-3 py-2 active:opacity-60"
           >
             <Icon as={SlidersHorizontal} className="size-4 text-foreground" />
@@ -167,8 +170,7 @@ export function GroupHistoryScreen() {
       )}
 
       <GroupHistoryFilterSheet
-        visible={sheetOpen}
-        onClose={() => setSheetOpen(false)}
+        ref={filterSheetRef}
         typeOptions={TYPE_OPTIONS}
         memberOptions={memberOptions}
         selectedTypes={questionType}
@@ -176,7 +178,6 @@ export function GroupHistoryScreen() {
         onApply={({ questionType: nextTypes, submittedBy: nextMembers }) => {
           setQuestionType(nextTypes);
           setSubmittedBy(nextMembers);
-          setSheetOpen(false);
         }}
       />
     </View>

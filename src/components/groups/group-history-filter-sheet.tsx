@@ -1,9 +1,16 @@
-import { useState } from "react";
-import { Modal, Pressable, ScrollView, View } from "react-native";
+import {
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
+import { Pressable, View } from "react-native";
+import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Check } from "lucide-react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
+import { Sheet, type SheetHandle } from "@/components/ui/sheet";
 import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/utils";
 
@@ -11,8 +18,6 @@ type Option = { label: string; value: string };
 type MemberOption = Option & { avatarUrl?: string };
 
 type Props = {
-  visible: boolean;
-  onClose: () => void;
   typeOptions: Option[];
   memberOptions: MemberOption[];
   selectedTypes: string[];
@@ -20,20 +25,32 @@ type Props = {
   onApply: (next: { questionType: string[]; submittedBy: string[] }) => void;
 };
 
-export function GroupHistoryFilterSheet({ visible, onClose, ...rest }: Props) {
-  return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      {/* Backdrop closes on tap; the sheet is its own Pressable so taps inside
-          don't fall through. Body is mounted only while open so its staged
-          state re-seeds from the committed filters each time. */}
-      <Pressable className="flex-1 justify-end bg-black/40" onPress={onClose}>
-        <Pressable className="gap-4 rounded-t-3xl bg-background p-5" onPress={() => {}}>
-          {visible ? <SheetBody onClose={onClose} {...rest} /> : null}
-        </Pressable>
-      </Pressable>
-    </Modal>
+export type GroupHistoryFilterSheetRef = { present: () => void };
+
+export const GroupHistoryFilterSheet = forwardRef<GroupHistoryFilterSheetRef, Props>(
+  function GroupHistoryFilterSheet(props, ref) {
+  const modalRef = useRef<SheetHandle>(null);
+  const [openKey, setOpenKey] = useState(0);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      present: () => {
+        setOpenKey((key) => key + 1);
+        modalRef.current?.present();
+      },
+    }),
+    []
   );
-}
+
+  const dismiss = () => modalRef.current?.dismiss();
+
+  return (
+    <Sheet ref={modalRef}>
+      <SheetBody key={openKey} onClose={dismiss} {...props} />
+    </Sheet>
+  );
+});
 
 function SheetBody({
   onClose,
@@ -42,7 +59,7 @@ function SheetBody({
   selectedTypes,
   selectedMembers,
   onApply,
-}: Omit<Props, "visible">) {
+}: Props & { onClose: () => void }) {
   const [types, setTypes] = useState<string[]>(selectedTypes);
   const [members, setMembers] = useState<string[]>(selectedMembers);
 
@@ -58,12 +75,9 @@ function SheetBody({
 
   return (
     <>
-      <View className="items-center">
-        <View className="h-1 w-10 rounded-full bg-muted" />
-      </View>
       <Text variant="large">Filters</Text>
 
-      <ScrollView style={{ maxHeight: 380 }} className="grow-0">
+      <BottomSheetScrollView style={{ maxHeight: 380 }}>
         <Text variant="muted" className="mb-2">
           Type
         </Text>
@@ -95,7 +109,7 @@ function SheetBody({
             ))}
           </View>
         )}
-      </ScrollView>
+      </BottomSheetScrollView>
 
       <View className="flex-row gap-3 pt-1">
         <Button
