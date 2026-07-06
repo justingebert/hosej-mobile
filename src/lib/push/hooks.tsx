@@ -16,7 +16,7 @@ import {
  * (once) and re-registers the push token whenever the user is authed (launch,
  * login, account switch). Never prompts for permission — that's the Settings row.
  */
-export function usePushBridge() {
+function usePushBridge() {
   const { status, needsNameSetup } = useAuth();
   // App launched by a notification tap. Held in state (not routed immediately):
   // it resolves while auth is still "loading", when RootNavigator renders no

@@ -49,7 +49,7 @@ async function setStoredRegisteredToken(token: string | null): Promise<void> {
   }
 }
 
-export async function getPermissionGranted(): Promise<boolean> {
+async function getPermissionGranted(): Promise<boolean> {
   const { status } = await Notifications.getPermissionsAsync();
   return status === "granted";
 }

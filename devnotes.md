@@ -17,6 +17,7 @@
 - it really used a lot of the docu which was nice
 - really like
 - grill -> handoff/plan -> implement -> test manual -> review
+- use fallow to improve quality
 
 ## AI problems:
 - goood UI
@@ -28,15 +29,24 @@
 - too much ocntextg switching => fatigue
 - not trusting with auth stuff
 - rsolving dpendenciy stuff
+- slop loop -> wasteing time
 
 ## Ai the good stuff:
 - wirte boilterpalte really quick
 - i liek the jetbrains integration
 - good for building loading skeletons
+-
 
 ---
 
 # Worklog
+
+## 2026-06-30 - 2026-07-06
+- pariting questiontype
+- refactoing
+- increasem maintanblity
+- testlflight internal test
+- prepare testlfight external test
 
 ## 2026-06-30
 - error, empty and loading state definitions + imeplementation

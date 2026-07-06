@@ -4,33 +4,17 @@ export type NotificationLanguage = (typeof NOTIFICATION_LANGUAGES)[number];
 export const NOTIFICATION_STYLES = ["default", "chaos"] as const;
 export type NotificationStyle = (typeof NOTIFICATION_STYLES)[number];
 
-export const DEFAULT_NOTIFICATION_LANGUAGE: NotificationLanguage = "en";
-export const DEFAULT_NOTIFICATION_STYLE: NotificationStyle = "default";
-
-export const NOTIFICATION_PREF_KEYS = [
-  "questionUnanswered",
-  "rallySubmitDeadline",
-  "rallyVoteDeadline",
-  "rallyFirstSubmission",
-  "jukeboxSubmit",
-  "jukeboxRate",
+export type NotificationPrefKey =
+  | "questionUnanswered"
+  | "rallySubmitDeadline"
+  | "rallyVoteDeadline"
+  | "rallyFirstSubmission"
+  | "jukeboxSubmit"
+  | "jukeboxRate"
   // Mobile push (Expo). Web FCM ignores these.
-  "questionNew",
-  "chatMessage",
-] as const;
-export type NotificationPrefKey = (typeof NOTIFICATION_PREF_KEYS)[number];
+  | "questionNew"
+  | "chatMessage";
 export type NotificationPrefs = Record<NotificationPrefKey, boolean>;
-
-export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
-  questionUnanswered: true,
-  rallySubmitDeadline: true,
-  rallyVoteDeadline: true,
-  rallyFirstSubmission: true,
-  jukeboxSubmit: true,
-  jukeboxRate: true,
-  questionNew: true,
-  chatMessage: true,
-};
 
 export interface UserDTO {
   _id: string;

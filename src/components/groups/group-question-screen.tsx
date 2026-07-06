@@ -162,27 +162,58 @@ function getSubmittableResponse(
   question: QuestionWithUserStateDTO | undefined,
   response: VoteResponseValue | null
 ) {
-  if (!question || !response) return null;
+  if (!question) return null;
+  if (!response) return null;
 
-  if (question.questionType === QuestionType.Text) {
-    if (!Array.isArray(response)) return null;
+  return responseResolvers[question.questionType](question, response);
+}
 
-    const trimmedValue = response[0]?.trim();
-    return trimmedValue ? [trimmedValue] : null;
-  }
+type ResponseResolver = (
+  question: QuestionWithUserStateDTO,
+  response: VoteResponseValue
+) => VoteResponseValue | null;
 
-  if (question.questionType === QuestionType.Pairing) {
-    // Pairing requires every key matched before it can be submitted.
-    if (Array.isArray(response)) return null;
-    const keys = question.pairing?.keys ?? [];
-    const allMatched =
-      keys.length > 0 && keys.every((key) => response[key] !== undefined);
-    return allMatched ? response : null;
-  }
+const responseResolvers: Record<QuestionType, ResponseResolver> = {
+  [QuestionType.Text]: getTextResponse,
+  [QuestionType.Pairing]: getPairingResponse,
+  [QuestionType.Users]: getOptionResponse,
+  [QuestionType.Custom]: getOptionResponse,
+  [QuestionType.Image]: getOptionResponse,
+  [QuestionType.Rating]: getOptionResponse,
+};
 
-  if (Array.isArray(response)) {
-    return response.length > 0 ? response : null;
-  }
+function getTextResponse(
+  _question: QuestionWithUserStateDTO,
+  response: VoteResponseValue
+) {
+  if (!Array.isArray(response)) return null;
+  const trimmedValue = response[0]?.trim();
+  if (!trimmedValue) return null;
+  return [trimmedValue];
+}
 
+function getPairingResponse(
+  question: QuestionWithUserStateDTO,
+  response: VoteResponseValue
+) {
+  // Pairing requires every key matched before it can be submitted.
+  const recordResponse = Array.isArray(response) ? null : response;
+  if (!recordResponse) return null;
+  const keys = question.pairing?.keys ?? [];
+  return hasCompletePairingResponse(keys, recordResponse) ? recordResponse : null;
+}
+
+function hasCompletePairingResponse(
+  keys: string[],
+  response: Record<string, string>
+) {
+  return keys.length > 0 && keys.every((key) => response[key] !== undefined);
+}
+
+function getOptionResponse(
+  _question: QuestionWithUserStateDTO,
+  response: VoteResponseValue
+) {
+  if (Array.isArray(response)) return response.length > 0 ? response : null;
   return Object.keys(response).length > 0 ? response : null;
 }

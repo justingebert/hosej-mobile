@@ -13,7 +13,7 @@ import type {
   VoteResponseValue,
 } from "./types/question";
 
-export const HISTORY_PAGE_SIZE = 25;
+const HISTORY_PAGE_SIZE = 25;
 
 export type GroupHistoryFilters = {
   search?: string;

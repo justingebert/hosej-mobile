@@ -1,5 +1,5 @@
 import { Link, type Href } from "expo-router";
-import { Camera, MessageSquareText, Radio, type LucideIcon } from "lucide-react-native";
+import { Camera, Radio, type LucideIcon } from "lucide-react-native";
 import { Pressable, View } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { useGroupId } from "@/lib/group-id";
@@ -77,19 +77,17 @@ export function GroupDashboardScreen() {
         </Link>
       )}
 
-      <ComingSoonFeatureCard icon={Camera} eyebrow="Photo Rallies" title="Rally" />
-      <ComingSoonFeatureCard icon={Radio} eyebrow="Group Playlist" title="Jukebox" />
+      <ComingSoonFeatureCard icon={Camera} title="Rally" />
+      <ComingSoonFeatureCard icon={Radio} title="Jukebox" />
     </Screen>
   );
 }
 
 function ComingSoonFeatureCard({
   icon,
-  eyebrow,
   title,
 }: {
   icon: LucideIcon;
-  eyebrow: string;
   title: string;
 }) {
   return (
@@ -102,7 +100,7 @@ function ComingSoonFeatureCard({
     >
       <View className="flex-1 gap-2">
         <View className="flex-row flex-wrap items-center gap-2">
-        <Text className="text-2xl font-extrabold text-card-foreground">{title}</Text>
+          <Text className="text-2xl font-extrabold text-card-foreground">{title}</Text>
           <View className="rounded-full bg-secondary px-2.5 py-1">
             <Text className="text-xs font-bold uppercase tracking-wider text-secondary-foreground">
               Coming soon

@@ -20,7 +20,6 @@
     "@react-navigation/native": "^7.1.33",
     "@rn-primitives/avatar": "^1.4.0",
     "@rn-primitives/checkbox": "^1.4.0",
-    "@rn-primitives/select": "^1.4.0",
     "@rn-primitives/slot": "^1.4.0",
     "@rn-primitives/tabs": "^1.4.0",
     "@shopify/react-native-skia": "2.4.18",
@@ -28,8 +27,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "expo": "~55.0.27",
-    "expo-auth-session": "~55.0.17",
-    "expo-blur": "~55.0.15",
     "expo-build-properties": "~55.0.15",
     "expo-clipboard": "~55.0.14",
     "expo-constants": "~55.0.16",
@@ -41,7 +38,6 @@
     "expo-glass-effect": "~55.0.11",
     "expo-image": "~55.0.11",
     "expo-image-picker": "~55.0.21",
-    "expo-linear-gradient": "~55.0.15",
     "expo-linking": "~55.0.16",
     "expo-notifications": "~55.0.24",
     "expo-router": "~55.0.16",
@@ -49,7 +45,6 @@
     "expo-splash-screen": "~55.0.22",
     "expo-status-bar": "~55.0.6",
     "expo-symbols": "~55.0.9",
-    "expo-system-ui": "~55.0.19",
     "expo-web-browser": "~55.0.17",
     "lucide-react-native": "^1.17.0",
     "react": "19.2.0",
@@ -76,6 +71,5 @@
     "eslint-config-expo": "~55.0.1",
     "typescript": "~5.9.2"
   },
-  "private": true,
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "private": true
 }

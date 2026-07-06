@@ -6,7 +6,7 @@ import { CircleHelp, User, X } from "lucide-react-native";
 import { useJoinByCode } from "@/lib/api/groups";
 import { useAuth } from "@/lib/auth/auth-context";
 import { clearPendingInvite, getPendingInvite } from "@/lib/auth/session";
-import { GroupHeaderButton, GroupHeaderTitle, } from "@/components/groups/group-header";
+import { GroupHeaderButton, GroupHeaderTitle } from "@/components/groups/group-header";
 import { Icon } from "@/components/ui/icon";
 import { ConnectionRequiredScreen } from "@/components/navigation/connection-required-screen";
 
@@ -16,6 +16,30 @@ export function RootNavigator() {
   const join = useJoinByCode();
   const scheme = useColorScheme();
   const sheetBackground = scheme === "dark" ? "#0a0a0a" : "#ffffff";
+  const sharedHeaderOptions = {
+    headerShown: true,
+    headerShadowVisible: false,
+    headerStyle: { backgroundColor: sheetBackground },
+    headerTitleAlign: "center" as const,
+  };
+  const modalHeaderOptions = (title: string) => ({
+    ...sharedHeaderOptions,
+    presentation: "modal" as const,
+    contentStyle: { backgroundColor: sheetBackground },
+    headerTitle: () => <GroupHeaderTitle>{title}</GroupHeaderTitle>,
+    headerBackVisible: false,
+    headerRight: () => (
+      <GroupHeaderButton onPress={router.back}>
+        <Icon as={X} className="size-5" />
+      </GroupHeaderButton>
+    ),
+  });
+  const formSheetOptions = {
+    presentation: "formSheet" as const,
+    sheetAllowedDetents: "fitToContents" as const,
+    sheetGrabberVisible: true,
+    contentStyle: { backgroundColor: sheetBackground },
+  };
 
   useEffect(() => {
     if (status !== "loading") SplashScreen.hideAsync().catch(() => {});
@@ -55,22 +79,16 @@ export function RootNavigator() {
         <Stack.Screen
           name="setup-name"
           options={{
-            headerShown: true,
-            headerShadowVisible: false,
-            headerStyle: { backgroundColor: sheetBackground },
+            ...sharedHeaderOptions,
             headerTitle: () => <GroupHeaderTitle>Profile</GroupHeaderTitle>,
-            headerTitleAlign: "center",
             headerBackVisible: false,
           }}
         />
         <Stack.Screen
           name="index"
           options={{
-            headerShown: true,
-            headerShadowVisible: false,
-            headerStyle: { backgroundColor: sheetBackground },
+            ...sharedHeaderOptions,
             headerTitle: () => <GroupHeaderTitle>Groups</GroupHeaderTitle>,
-            headerTitleAlign: "center",
             headerLeft: () => (
               <Link href="/help" asChild>
                 <GroupHeaderButton>
@@ -89,58 +107,14 @@ export function RootNavigator() {
         />
         <Stack.Screen
           name="help"
-          options={{
-            presentation: "modal",
-            headerShown: true,
-            headerShadowVisible: false,
-            headerStyle: { backgroundColor: sheetBackground },
-            contentStyle: { backgroundColor: sheetBackground },
-            headerTitle: () => <GroupHeaderTitle>Help</GroupHeaderTitle>,
-            headerTitleAlign: "center",
-            headerBackVisible: false,
-            headerRight: () => (
-              <GroupHeaderButton onPress={router.back}>
-                <Icon as={X} className="size-5" />
-              </GroupHeaderButton>
-            ),
-          }}
+          options={modalHeaderOptions("Help")}
         />
         <Stack.Screen
           name="settings"
-          options={{
-            presentation: "modal",
-            headerShown: true,
-            headerShadowVisible: false,
-            headerStyle: { backgroundColor: sheetBackground },
-            contentStyle: { backgroundColor: sheetBackground },
-            headerTitle: () => <GroupHeaderTitle>Settings</GroupHeaderTitle>,
-            headerTitleAlign: "center",
-            headerBackVisible: false,
-            headerRight: () => (
-              <GroupHeaderButton onPress={router.back}>
-                <Icon as={X} className="size-5" />
-              </GroupHeaderButton>
-            )
-          }}
+          options={modalHeaderOptions("Settings")}
         />
-        <Stack.Screen
-          name="groups/create"
-          options={{
-            presentation: "formSheet",
-            sheetAllowedDetents: "fitToContents",
-            sheetGrabberVisible: true,
-            contentStyle: { backgroundColor: sheetBackground },
-          }}
-        />
-        <Stack.Screen
-          name="groups/join"
-          options={{
-            presentation: "formSheet",
-            sheetAllowedDetents: "fitToContents",
-            sheetGrabberVisible: true,
-            contentStyle: { backgroundColor: sheetBackground },
-          }}
-        />
+        <Stack.Screen name="groups/create" options={formSheetOptions} />
+        <Stack.Screen name="groups/join" options={formSheetOptions} />
         <Stack.Screen name="groups/[groupId]" />
       </Stack.Protected>
       <Stack.Protected guard={status !== "authed"}>
