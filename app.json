@@ -67,7 +67,15 @@
       ],
       "expo-image",
       "expo-web-browser",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "hosej-app",
+          "organization": "justingebert-ez"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

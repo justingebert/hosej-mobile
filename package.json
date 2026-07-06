@@ -22,6 +22,7 @@
     "@rn-primitives/checkbox": "^1.4.0",
     "@rn-primitives/slot": "^1.4.0",
     "@rn-primitives/tabs": "^1.4.0",
+    "@sentry/react-native": "^8.16.0",
     "@shopify/react-native-skia": "2.4.18",
     "@tanstack/react-query": "^5.100.14",
     "class-variance-authority": "^0.7.1",
