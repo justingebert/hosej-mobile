@@ -8,9 +8,10 @@ import { useAuth } from "@/lib/auth/auth-context";
 import { clearPendingInvite, getPendingInvite } from "@/lib/auth/session";
 import { GroupHeaderButton, GroupHeaderTitle, } from "@/components/groups/group-header";
 import { Icon } from "@/components/ui/icon";
+import { ConnectionRequiredScreen } from "@/components/navigation/connection-required-screen";
 
 export function RootNavigator() {
-  const { needsNameSetup, status } = useAuth();
+  const { isRetryingSession, needsNameSetup, retrySession, signOut, status } = useAuth();
   const router = useRouter();
   const join = useJoinByCode();
   const scheme = useColorScheme();
@@ -34,6 +35,16 @@ export function RootNavigator() {
   }, [status, needsNameSetup, join, router]);
 
   if (status === "loading") return null;
+
+  if (status === "offline") {
+    return (
+      <ConnectionRequiredScreen
+        isRetrying={isRetryingSession}
+        onRetry={() => void retrySession()}
+        onSignOut={() => void signOut()}
+      />
+    );
+  }
 
   // Screens are declared inline: expo-router's <Stack> only recognises literal
   // <Stack.Screen> / <Stack.Protected> children, so the authed group must NOT be

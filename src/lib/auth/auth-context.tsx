@@ -27,18 +27,20 @@ import {
   setUnauthorizedHandler,
 } from "@/lib/auth/session";
 
-type AuthStatus = "loading" | "authed" | "unauthed";
+type AuthStatus = "loading" | "authed" | "unauthed" | "offline";
 
 type AuthContextValue = {
   status: AuthStatus;
   user: AuthUser | null;
   deviceId: string | null;
   needsNameSetup: boolean;
+  isRetryingSession: boolean;
   completeNameSetup: (username: string) => void;
   registerDevice: () => Promise<void>;
   loginWithDeviceId: (deviceId: string) => Promise<void>;
   loginWithGoogle: (idToken: string) => Promise<void>;
   linkGoogle: (idToken: string) => Promise<void>;
+  retrySession: () => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -54,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [deviceId, setDeviceIdState] = useState<string | null>(null);
   const [needsNameSetup, setNeedsNameSetup] = useState(false);
+  const [isRetryingSession, setIsRetryingSession] = useState(false);
 
   // Apply a successful auth response: persist the token pair, set the user, go
   // authed. Every auth/refresh endpoint returns this same shape.
@@ -77,12 +80,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setDeviceIdState(null);
       setNeedsNameSetup(false);
+      setIsRetryingSession(false);
       setUser(null);
       setStatus("unauthed");
       // Drop the previous account's cached data so switching accounts is clean.
       queryClient.clear();
     },
     [queryClient]
+  );
+
+  const restoreStoredSession = useCallback(
+    async ({
+      isActive = () => true,
+      markRetrying = false,
+    }: {
+      isActive?: () => boolean;
+      markRetrying?: boolean;
+    } = {}) => {
+      if (markRetrying) setIsRetryingSession(true);
+      await loadTokens();
+      if (!isActive()) return;
+      setDeviceIdState(getDeviceId());
+      const rt = getRefreshToken();
+      if (!rt) {
+        setStatus("unauthed");
+        if (markRetrying) setIsRetryingSession(false);
+        return;
+      }
+      try {
+        const res = await refreshTokens(rt);
+        if (!isActive()) return;
+        await applyAuth(res);
+      } catch (error) {
+        if (!isActive()) return;
+        if (isTerminalRefreshError(error)) {
+          await reset(true);
+        } else {
+          setStatus("offline");
+        }
+      } finally {
+        if (markRetrying && isActive()) setIsRetryingSession(false);
+      }
+    },
+    [applyAuth, reset]
   );
 
   const signOut = useCallback(async () => {
@@ -101,29 +141,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
     (async () => {
-      await loadTokens();
-      if (active) setDeviceIdState(getDeviceId());
-      const rt = getRefreshToken();
-      if (!rt) {
-        if (active) setStatus("unauthed");
-        return;
-      }
-      try {
-        const res = await refreshTokens(rt);
-        if (active) await applyAuth(res);
-      } catch (error) {
-        if (!active) return;
-        if (isTerminalRefreshError(error)) {
-          await reset(true);
-        } else {
-          setStatus("authed");
-        }
-      }
+      await restoreStoredSession({ isActive: () => active });
     })();
     return () => {
       active = false;
     };
-  }, [applyAuth, reset]);
+  }, [restoreStoredSession]);
+
+  const retrySession = useCallback(
+    () => restoreStoredSession({ markRetrying: true }),
+    [restoreStoredSession]
+  );
 
   // Let the request layer force a sign-out when a 401 can't be refreshed. It has
   // already cleared the tokens; this clears remaining local auth state. Keeps the
@@ -207,11 +235,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         deviceId,
         needsNameSetup,
+        isRetryingSession,
         completeNameSetup,
         registerDevice,
         loginWithDeviceId,
         loginWithGoogle,
         linkGoogle,
+        retrySession,
         signOut,
       }}
     >
