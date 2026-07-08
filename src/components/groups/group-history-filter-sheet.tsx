@@ -4,7 +4,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, useWindowDimensions, View } from "react-native";
 import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Check } from "lucide-react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -25,12 +25,16 @@ type Props = {
   onApply: (next: { questionType: string[]; submittedBy: string[] }) => void;
 };
 
+const FILTER_SHEET_HEIGHT = 540;
+
 export type GroupHistoryFilterSheetRef = { present: () => void };
 
 export const GroupHistoryFilterSheet = forwardRef<GroupHistoryFilterSheetRef, Props>(
   function GroupHistoryFilterSheet(props, ref) {
   const modalRef = useRef<SheetHandle>(null);
   const [openKey, setOpenKey] = useState(0);
+  const { height } = useWindowDimensions();
+  const sheetHeight = Math.min(FILTER_SHEET_HEIGHT, Math.round(height * 0.82));
 
   useImperativeHandle(
     ref,
@@ -46,7 +50,7 @@ export const GroupHistoryFilterSheet = forwardRef<GroupHistoryFilterSheetRef, Pr
   const dismiss = () => modalRef.current?.dismiss();
 
   return (
-    <Sheet ref={modalRef}>
+    <Sheet ref={modalRef} height={sheetHeight}>
       <SheetBody key={openKey} onClose={dismiss} {...props} />
     </Sheet>
   );
@@ -77,7 +81,7 @@ function SheetBody({
     <>
       <Text variant="large">Filters</Text>
 
-      <BottomSheetScrollView style={{ maxHeight: 380 }}>
+      <BottomSheetScrollView style={{ flex: 1 }}>
         <Text variant="muted" className="mb-2">
           Type
         </Text>

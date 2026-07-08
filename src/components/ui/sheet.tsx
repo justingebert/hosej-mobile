@@ -24,6 +24,8 @@ type SheetProps = {
   children: ReactNode;
   /** Extra classes on the padded content container (e.g. a tighter `gap-3`). */
   className?: string;
+  /** Fixed sheet height. Use for sheets that contain gorhom scrollables. */
+  height?: number;
 } & Pick<
   BottomSheetModalProps,
   | "onDismiss"
@@ -35,21 +37,22 @@ type SheetProps = {
 /**
  * The one bottom-sheet chrome for the app: solid themed background, backdrop,
  * grabber, bottom safe-area inset, and `present()` / `dismiss()` via ref.
- * Auto-sizes to its content (`enableDynamicSizing`); for a long body, drop a
- * `BottomSheetScrollView` (capped with `maxHeight`) inside.
+ * Auto-sizes simple content. Pass `height` for sheets that contain a gorhom
+ * scrollable, so scrollable content sizing cannot race the static chrome.
  *
  * Content sits directly in `BottomSheetView` — no wrapper view. An extra wrapper
  * breaks dynamic-size measurement on the New Arch, leaving a gap below the
  * content (gorhom #1573/#2051), so the classes are resolved to a style instead.
  */
 export const Sheet = forwardRef<SheetHandle, SheetProps>(function Sheet(
-  { children, className, ...modalProps },
+  { children, className, height, ...modalProps },
   ref
 ) {
   const modalRef = useRef<BottomSheetModal>(null);
   const insets = useSafeAreaInsets();
   const background = useCSSVariable("--color-background") as string;
   const contentStyle = useResolveClassNames(cn("gap-4 px-5 pt-3", className));
+  const snapPoints = useMemo(() => (height == null ? undefined : [height]), [height]);
 
   useImperativeHandle(
     ref,
@@ -79,13 +82,20 @@ export const Sheet = forwardRef<SheetHandle, SheetProps>(function Sheet(
   return (
     <BottomSheetModal
       ref={modalRef}
-      enableDynamicSizing
+      enableDynamicSizing={height == null}
+      snapPoints={snapPoints}
       handleComponent={null}
       backgroundStyle={backgroundStyle}
       backdropComponent={renderBackdrop}
       {...modalProps}
     >
-      <BottomSheetView style={[contentStyle, { paddingBottom: insets.bottom + 12 }]}>
+      <BottomSheetView
+        style={[
+          contentStyle,
+          height == null ? null : { height },
+          { paddingBottom: insets.bottom + 12 },
+        ]}
+      >
         <View className="h-1 w-10 self-center rounded-full bg-muted-foreground/30" />
         {children}
       </BottomSheetView>

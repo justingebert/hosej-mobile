@@ -7,7 +7,7 @@ import {
 } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { useGroupId } from "@/lib/group-id";
-import { Pressable, View } from "react-native";
+import { Pressable, useWindowDimensions, View } from "react-native";
 import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Check, Filter, X } from "lucide-react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -43,6 +43,8 @@ type MemberFilterOption = SelectedMember & {
 };
 
 type MemberFilterSheetHandle = { present: () => void };
+
+const MEMBER_FILTER_SHEET_HEIGHT = 520;
 
 export function QuestionResultsDetailScreen() {
   const groupId = useGroupId();
@@ -430,6 +432,8 @@ const MemberFilterSheet = forwardRef<
   }
 >(function MemberFilterSheet({ members, onSelect, selectedMemberId }, ref) {
   const modalRef = useRef<SheetHandle>(null);
+  const { height } = useWindowDimensions();
+  const sheetHeight = Math.min(MEMBER_FILTER_SHEET_HEIGHT, Math.round(height * 0.82));
 
   useImperativeHandle(ref, () => ({ present: () => modalRef.current?.present() }), []);
 
@@ -440,10 +444,10 @@ const MemberFilterSheet = forwardRef<
   };
 
   return (
-    <Sheet ref={modalRef}>
+    <Sheet ref={modalRef} height={sheetHeight}>
       <Text variant="large">Filter by member</Text>
 
-      <BottomSheetScrollView style={{ maxHeight: 420 }}>
+      <BottomSheetScrollView style={{ flex: 1 }}>
         <MemberFilterRow
           label="All votes"
           selected={selectedMemberId == null}
