@@ -20,6 +20,7 @@
     },
     "production": {
       "autoIncrement": true,
+      "environment": "production",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://www.hosej.app",
         "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "122042371392-i6j166f6j2kdk0pqrkouadjvd4fdffem.apps.googleusercontent.com",

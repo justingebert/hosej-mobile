@@ -1,7 +1,8 @@
 import { TextClassContext } from "@/components/ui/text";
+import { haptics, type HapticStyle } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
-import { Platform, Pressable } from "react-native";
+import { Platform, Pressable, type GestureResponderEvent } from "react-native";
 
 const buttonVariants = cva(
   cn(
@@ -90,14 +91,23 @@ const buttonTextVariants = cva(
 
 type ButtonProps = React.ComponentProps<typeof Pressable> &
   React.RefAttributes<typeof Pressable> &
-  VariantProps<typeof buttonVariants>;
+  VariantProps<typeof buttonVariants> & {
+    /** Haptic fired on press. Defaults to "light"; pass false to disable. */
+    haptic?: HapticStyle | false;
+  };
 
-function Button({ className, variant, size, ...props }: ButtonProps) {
+function Button({ className, variant, size, haptic = "light", onPress, ...props }: ButtonProps) {
+  function handlePress(event: GestureResponderEvent) {
+    if (haptic) haptics[haptic]();
+    onPress?.(event);
+  }
+
   return (
     <TextClassContext.Provider value={buttonTextVariants({ variant, size })}>
       <Pressable
         className={cn(props.disabled && "opacity-50", buttonVariants({ variant, size }), className)}
         role="button"
+        onPress={handlePress}
         {...props}
       />
     </TextClassContext.Provider>

@@ -1,6 +1,6 @@
 import { Link, type Href } from "expo-router";
 import { Camera, Radio, type LucideIcon } from "lucide-react-native";
-import { Pressable, View } from "react-native";
+import { Alert, Pressable, View } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { useGroupId } from "@/lib/group-id";
 import { useActiveQuestions } from "@/lib/api/questions";
@@ -91,8 +91,11 @@ function ComingSoonFeatureCard({
   title: string;
 }) {
   return (
-    <View
-      className="flex-row items-center justify-between gap-4 overflow-hidden rounded-2xl border border-border bg-card px-5 py-5"
+    <Pressable
+      onPress={() =>
+        Alert.alert(`${title} is coming soon`, `${title} isn't on mobile yet, use it on the web for now.`)
+      }
+      className="flex-row items-center justify-between gap-4 overflow-hidden rounded-2xl border border-border bg-card px-5 py-5 active:opacity-80"
       style={{
         borderCurve: "continuous",
         boxShadow: "0 1px 3px rgba(0, 0, 0, 0.06)",
@@ -101,8 +104,8 @@ function ComingSoonFeatureCard({
       <View className="flex-1 gap-2">
         <View className="flex-row flex-wrap items-center gap-2">
           <Text className="text-2xl font-extrabold text-card-foreground">{title}</Text>
-          <View className="rounded-full bg-secondary px-2.5 py-1">
-            <Text className="text-xs font-bold uppercase tracking-wider text-secondary-foreground">
+          <View className="rounded-full bg-info px-2.5 py-1">
+            <Text className="text-xs font-bold uppercase tracking-wider text-info-foreground">
               Coming soon
             </Text>
           </View>
@@ -115,7 +118,7 @@ function ComingSoonFeatureCard({
       <View className="size-[84px] items-center justify-center rounded-full bg-primary/5">
         <Icon as={icon} className="size-10 text-primary" />
       </View>
-    </View>
+    </Pressable>
   );
 }
 

@@ -1,5 +1,6 @@
 import { useRef } from "react";
-import { ActivityIndicator, Pressable, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
+import { HapticPressable } from "@/components/ui/haptic-pressable";
 import * as ImagePicker from "expo-image-picker";
 import { Camera, ImagePlus, Pencil, Trash2, type LucideIcon } from "lucide-react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -74,7 +75,8 @@ export function AvatarPicker({
 
   return (
     <>
-      <Pressable
+      <HapticPressable
+        haptic="light"
         className="relative self-center"
         disabled={busy}
         onPress={() => sheetRef.current?.present()}
@@ -94,7 +96,7 @@ export function AvatarPicker({
             <Icon as={Pencil} className="size-3.5 text-primary-foreground" />
           </View>
         )}
-      </Pressable>
+      </HapticPressable>
 
       <Sheet ref={sheetRef} className="gap-3">
         <View className="overflow-hidden rounded-2xl bg-card">
@@ -108,12 +110,12 @@ export function AvatarPicker({
             </>
           ) : null}
         </View>
-        <Pressable
+        <HapticPressable
           className="items-center rounded-2xl bg-card p-4 active:opacity-70"
           onPress={() => sheetRef.current?.dismiss()}
         >
           <Text className="font-semibold text-foreground">Cancel</Text>
-        </Pressable>
+        </HapticPressable>
       </Sheet>
     </>
   );
@@ -131,11 +133,11 @@ function SheetAction({
   onPress: () => void;
 }) {
   return (
-    <Pressable className="flex-row items-center gap-3 p-4 active:bg-muted" onPress={onPress}>
+    <HapticPressable className="flex-row items-center gap-3 p-4 active:bg-muted" onPress={onPress}>
       <Icon as={icon} className={cn("size-5", destructive ? "text-destructive" : "text-foreground")} />
       <Text className={cn("text-base", destructive ? "text-destructive" : "text-foreground")}>
         {label}
       </Text>
-    </Pressable>
+    </HapticPressable>
   );
 }

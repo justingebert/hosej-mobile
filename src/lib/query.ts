@@ -1,5 +1,6 @@
 import { MutationCache, QueryClient } from "@tanstack/react-query";
 import { getErrorMessage } from "@/lib/api/client";
+import { haptics } from "@/lib/haptics";
 import { toastError } from "@/lib/toast";
 
 type MutationToastMeta = {
@@ -20,6 +21,7 @@ export const queryClient = new QueryClient({
 
       if (meta.suppressErrorToast) return;
 
+      haptics.error();
       toastError(
         meta.errorToastTitle ?? "Action failed",
         meta.errorToastMessage ?? getErrorMessage(error)

@@ -1,7 +1,8 @@
 import { TextClassContext } from '@/components/ui/text';
+import { haptics } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 import * as TabsPrimitive from '@rn-primitives/tabs';
-import { Platform } from 'react-native';
+import { Platform, type GestureResponderEvent } from 'react-native';
 
 function Tabs({
                 className,
@@ -31,6 +32,10 @@ function TabsTrigger({
                        ...props
                      }: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
   const { value } = TabsPrimitive.useRootContext();
+  function handlePress(event: GestureResponderEvent) {
+    if (props.value !== value) haptics.selection();
+    props.onPress?.(event);
+  }
   return (
     <TextClassContext.Provider
       value={cn(
@@ -48,6 +53,7 @@ function TabsTrigger({
           className
         )}
         {...props}
+        onPress={handlePress}
       />
     </TextClassContext.Provider>
   );

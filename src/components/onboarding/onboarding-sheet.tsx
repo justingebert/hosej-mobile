@@ -29,9 +29,17 @@ import { ChatStep } from "./steps/chat-step";
 import { CreateStep } from "./steps/create-step";
 import { DailyQuestionsStep } from "./steps/daily-questions-step";
 import { HistoryStatsStep } from "./steps/history-stats-step";
+import { NotificationsStep } from "./steps/notifications-step";
 import { WelcomeStep } from "./steps/welcome-step";
 
-const STEPS = [WelcomeStep, DailyQuestionsStep, CreateStep, ChatStep, HistoryStatsStep];
+const STEPS = [
+  WelcomeStep,
+  DailyQuestionsStep,
+  CreateStep,
+  ChatStep,
+  HistoryStatsStep,
+  NotificationsStep,
+];
 
 // Fits the tallest step's content + sheet chrome (grabber, indicator, footer).
 const SHEET_HEIGHT = 560;

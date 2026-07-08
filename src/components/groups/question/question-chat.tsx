@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { TextInput, View } from "react-native";
+import { HapticPressable } from "@/components/ui/haptic-pressable";
 import { useFocusEffect } from "expo-router";
 import { ArrowUp } from "lucide-react-native";
 import { useCSSVariable } from "uniwind";
@@ -142,7 +143,8 @@ export function QuestionChatComposer({
         multiline
         className="max-h-28 flex-1 py-1 text-base text-foreground"
       />
-      <Pressable
+      <HapticPressable
+        haptic="light"
         onPress={send}
         disabled={!trimmed || addMessage.isPending}
         hitSlop={8}
@@ -155,7 +157,7 @@ export function QuestionChatComposer({
           as={ArrowUp}
           className={trimmed ? "text-primary-foreground" : "text-muted-foreground"}
         />
-      </Pressable>
+      </HapticPressable>
     </View>
   );
 }

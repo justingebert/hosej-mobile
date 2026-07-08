@@ -1,5 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "./client";
+import { haptics } from "@/lib/haptics";
 import { toastInfo } from "@/lib/toast";
 import { useAuth } from "@/lib/auth/auth-context";
 import type {
@@ -101,6 +102,7 @@ export function useVoteOnQuestion(groupId: string) {
       errorToastTitle: "Could not submit vote",
     },
     onSuccess: async (_data, variables) => {
+      haptics.success();
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: questionKeys.active(groupId) }),
         queryClient.invalidateQueries({

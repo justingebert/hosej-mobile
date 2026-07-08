@@ -1,4 +1,5 @@
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
+import { HapticPressable } from "@/components/ui/haptic-pressable";
 import { Text } from "@/components/ui/text";
 
 export function Segmented<T extends string>({
@@ -15,7 +16,7 @@ export function Segmented<T extends string>({
       {options.map((opt) => {
         const active = opt.value === value;
         return (
-          <Pressable
+          <HapticPressable
             key={opt.value}
             onPress={() => onChange(opt.value)}
             className={
@@ -27,7 +28,7 @@ export function Segmented<T extends string>({
             <Text className={active ? "font-bold text-foreground" : "text-muted-foreground"}>
               {opt.label}
             </Text>
-          </Pressable>
+          </HapticPressable>
         );
       })}
     </View>
