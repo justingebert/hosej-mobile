@@ -38,8 +38,17 @@ export function UserSettingsScreen() {
   const [isLinkingGoogle, setIsLinkingGoogle] = useState(false);
   const [linkGoogleError, setLinkGoogleError] = useState<string | null>(null);
 
-  const questionNew = user?.notificationPrefs?.questionNew ?? true;
-  const chatMessage = user?.notificationPrefs?.chatMessage ?? true;
+  // What the user has opted into (defaults on). Used only to decide whether to
+  // surface the "Allow notifications" prompt below.
+  const wantsQuestionNew = user?.notificationPrefs?.questionNew ?? true;
+  const wantsChatMessage = user?.notificationPrefs?.chatMessage ?? true;
+  const wantsAny = wantsQuestionNew || wantsChatMessage;
+
+  // OS permission gates *delivery*, so show the toggles as off until it's
+  // granted — an "on" switch that delivers nothing is misleading. Flipping one
+  // on while ungranted still chases OS permission (see togglePrefs).
+  const questionNew = pushGranted && wantsQuestionNew;
+  const chatMessage = pushGranted && wantsChatMessage;
   const anyPushOn = questionNew || chatMessage;
 
   // OS permission only gates *delivery* — it can be granted from here but never
@@ -191,7 +200,7 @@ export function UserSettingsScreen() {
                   onValueChange={(value) => togglePrefs({ chatMessage: value })}
                 />
               </SettingsRow>
-              {anyPushOn && !pushGranted ? (
+              {wantsAny && !pushGranted ? (
                 <SettingsRow
                   label={pushCanAskAgain ? "Allow notifications" : "Turned off in iOS Settings"}
                   description={
