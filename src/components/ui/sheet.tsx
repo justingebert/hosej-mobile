@@ -15,7 +15,7 @@ import {
   type BottomSheetModalProps,
 } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useCSSVariable } from "uniwind";
+import { useCSSVariable, useResolveClassNames } from "uniwind";
 import { cn } from "@/lib/utils";
 
 export type SheetHandle = { present: () => void; dismiss: () => void };
@@ -33,13 +33,14 @@ type SheetProps = {
 >;
 
 /**
- * The one bottom-sheet chrome for the app. Owns everything every sheet was
- * hand-rolling: a **solid** themed background with rounded top (so the sheet
- * paints its own surface flush to the bottom — a content-measurement mismatch
- * can never show the backdrop through as a gap), the backdrop, the grabber, the
- * bottom safe-area inset, and `present()` / `dismiss()` via ref. Callers supply
- * only content. Auto-sizes to that content (`enableDynamicSizing`); for a long
- * body, drop a `BottomSheetScrollView` (capped with `maxHeight`) inside.
+ * The one bottom-sheet chrome for the app: solid themed background, backdrop,
+ * grabber, bottom safe-area inset, and `present()` / `dismiss()` via ref.
+ * Auto-sizes to its content (`enableDynamicSizing`); for a long body, drop a
+ * `BottomSheetScrollView` (capped with `maxHeight`) inside.
+ *
+ * Content sits directly in `BottomSheetView` — no wrapper view. An extra wrapper
+ * breaks dynamic-size measurement on the New Arch, leaving a gap below the
+ * content (gorhom #1573/#2051), so the classes are resolved to a style instead.
  */
 export const Sheet = forwardRef<SheetHandle, SheetProps>(function Sheet(
   { children, className, ...modalProps },
@@ -48,6 +49,7 @@ export const Sheet = forwardRef<SheetHandle, SheetProps>(function Sheet(
   const modalRef = useRef<BottomSheetModal>(null);
   const insets = useSafeAreaInsets();
   const background = useCSSVariable("--color-background") as string;
+  const contentStyle = useResolveClassNames(cn("gap-4 px-5 pt-3", className));
 
   useImperativeHandle(
     ref,
@@ -83,14 +85,9 @@ export const Sheet = forwardRef<SheetHandle, SheetProps>(function Sheet(
       backdropComponent={renderBackdrop}
       {...modalProps}
     >
-      <BottomSheetView>
-        <View
-          className={cn("gap-4 px-5 pt-3", className)}
-          style={{ paddingBottom: insets.bottom + 12 }}
-        >
-          <View className="h-1 w-10 self-center rounded-full bg-muted-foreground/30" />
-          {children}
-        </View>
+      <BottomSheetView style={[contentStyle, { paddingBottom: insets.bottom + 12 }]}>
+        <View className="h-1 w-10 self-center rounded-full bg-muted-foreground/30" />
+        {children}
       </BottomSheetView>
     </BottomSheetModal>
   );
