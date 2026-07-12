@@ -444,7 +444,7 @@ const MemberFilterSheet = forwardRef<
   };
 
   return (
-    <Sheet ref={modalRef} height={sheetHeight}>
+    <Sheet ref={modalRef} snapPoint={sheetHeight}>
       <Text variant="large">Filter by member</Text>
 
       <BottomSheetScrollView style={{ flex: 1 }}>

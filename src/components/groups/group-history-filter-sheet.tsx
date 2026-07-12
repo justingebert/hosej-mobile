@@ -50,7 +50,7 @@ export const GroupHistoryFilterSheet = forwardRef<GroupHistoryFilterSheetRef, Pr
   const dismiss = () => modalRef.current?.dismiss();
 
   return (
-    <Sheet ref={modalRef} height={sheetHeight}>
+    <Sheet ref={modalRef} snapPoint={sheetHeight}>
       <SheetBody key={openKey} onClose={dismiss} {...props} />
     </Sheet>
   );

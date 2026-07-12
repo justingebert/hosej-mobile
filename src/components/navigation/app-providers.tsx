@@ -11,6 +11,7 @@ import Toast from "react-native-toast-message";
 import { toastConfig } from "@/components/ui/toast";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import { PushBridge } from "@/lib/push/hooks";
+import { HeartbeatBridge } from "@/lib/presence/heartbeat";
 import { queryClient } from "@/lib/query";
 
 export function AppProviders({ children }: { children: ReactNode }) {
@@ -21,6 +22,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
           <QueryClientProvider client={queryClient}>
             <AuthProvider>
               <PushBridge />
+              <HeartbeatBridge />
               {children}
             </AuthProvider>
             <StatusBar style="auto" />
