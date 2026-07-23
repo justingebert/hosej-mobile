@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useGroupId } from "@/lib/group-id";
 import { KeyboardAvoidingView, Platform, Pressable, TextInput, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useHeaderHeight } from "@react-navigation/elements";
 import { ArrowLeftRight, List, ListChecks, type LucideIcon, Plus, Star, Trash, Type, Users } from "lucide-react-native";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -60,7 +60,10 @@ export function CreateQuestionScreen() {
   const { data: group, isPending: groupPending, isError: groupError } = useGroup(groupId);
   const { data: user } = useUser();
   const createQuestion = useCreateQuestion(groupId);
-  const insets = useSafeAreaInsets();
+  // This tab sits below the group's native Stack header, so KeyboardAvoidingView
+  // must offset by the header height — otherwise the footer under-lifts and the
+  // Create button hides behind the keyboard.
+  const headerHeight = useHeaderHeight();
 
   const [type, setType] = useState<QuestionType | null>(null);
   const [question, setQuestion] = useState("");
@@ -177,10 +180,12 @@ export function CreateQuestionScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1"
+      className="flex-1 bg-background"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={headerHeight}
     >
-      <Screen contentContainerClassName="grow gap-6 px-4 pt-4 pb-28">
+      <View className="flex-1">
+      <Screen contentContainerClassName="grow gap-6 px-4 pt-4 pb-4">
       <View className="gap-3">
         <Text className="text-2xl font-extrabold text-foreground">Create a new question</Text>
 
@@ -316,13 +321,11 @@ export function CreateQuestionScreen() {
       ) : null}
       </Screen>
 
-      <View
-        className="absolute inset-x-0 bottom-0 bg-background px-4 pt-3"
-        style={{ paddingBottom: insets.bottom + 12 }}
-      >
+      <View className="bg-background px-4 pb-3 pt-3">
         <Button onPress={handleSubmit} disabled={!canSubmit}>
           <Text>{createQuestion.isPending ? "Creating…" : "Create question"}</Text>
         </Button>
+      </View>
       </View>
     </KeyboardAvoidingView>
   );

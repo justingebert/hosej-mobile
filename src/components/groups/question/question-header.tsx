@@ -1,6 +1,6 @@
 import { Pressable, View } from "react-native";
 import { Text } from "@/components/ui/text";
-import { StyledImage } from "./styled-image";
+import { AspectImage } from "./aspect-image";
 
 // Question text + optional image. Shared by the daily-question tab and the
 // standalone results page so both render the prompt identically. When `onPress`
@@ -18,7 +18,7 @@ export function QuestionHeader({
   onPress?: () => void;
 }) {
   const prompt = (
-    <Text selectable className="text-center text-2xl font-extrabold">
+    <Text selectable className="text-center text-lg font-extrabold">
       {question}
     </Text>
   );
@@ -37,10 +37,10 @@ export function QuestionHeader({
       )}
 
       {imageUrl ? (
-        <StyledImage
+        <AspectImage
           uri={imageUrl}
           cacheKey={imageCacheKey}
-          className="h-56 w-full rounded-xl"
+          className="rounded-xl"
         />
       ) : null}
     </View>
