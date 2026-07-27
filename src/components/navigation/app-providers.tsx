@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { StatusBar } from "expo-status-bar";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import {
   SafeAreaProvider,
@@ -17,19 +18,21 @@ import { queryClient } from "@/lib/query";
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-        <BottomSheetModalProvider>
-          <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-              <PushBridge />
-              <HeartbeatBridge />
-              {children}
-            </AuthProvider>
-            <StatusBar style="auto" />
-          </QueryClientProvider>
-          <Toast config={toastConfig} topOffset={60} />
-        </BottomSheetModalProvider>
-      </SafeAreaProvider>
+      <KeyboardProvider>
+        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+          <BottomSheetModalProvider>
+            <QueryClientProvider client={queryClient}>
+              <AuthProvider>
+                <PushBridge />
+                <HeartbeatBridge />
+                {children}
+              </AuthProvider>
+              <StatusBar style="auto" />
+            </QueryClientProvider>
+            <Toast config={toastConfig} topOffset={60} />
+          </BottomSheetModalProvider>
+        </SafeAreaProvider>
+      </KeyboardProvider>
     </GestureHandlerRootView>
   );
 }

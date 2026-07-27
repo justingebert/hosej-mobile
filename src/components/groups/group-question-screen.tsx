@@ -84,8 +84,14 @@ export function GroupQuestionScreen() {
   };
 
   return (
+    // The home-indicator inset lives on this outer wrapper — *outside* the
+    // KeyboardAvoidingView — so the footer clears it when the keyboard is closed
+    // but hugs the keyboard (no leftover gap) when it's open. The KAV gets
+    // bg-background so its padding strip doesn't leak white behind the keyboard's
+    // rounded corners.
+    <View className="flex-1 bg-background" style={{ paddingBottom: insets.bottom }}>
     <KeyboardAvoidingView
-      className="flex-1"
+      className="flex-1 bg-background"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={headerHeight}
     >
@@ -131,10 +137,7 @@ export function GroupQuestionScreen() {
         </Screen>
 
         {showSubmitFooter ? (
-          <View
-            className="border-border bg-background px-4 pt-3"
-            style={{ paddingBottom: insets.bottom + 1 }}
-          >
+          <View className="border-border bg-background px-4 pb-2 pt-3">
             <QuestionSubmitButton
               canSubmit={!!submittableResponse}
               isSubmitting={voteMutation.isPending}
@@ -142,10 +145,7 @@ export function GroupQuestionScreen() {
             />
           </View>
         ) : composerChatId ? (
-          <View
-            className="border-t border-border bg-background px-4 pt-3"
-            style={{ paddingBottom: insets.bottom }}
-          >
+          <View className="border-t border-border bg-background px-4 pb-2 pt-3">
             <QuestionChatComposer
               groupId={groupId}
               chatId={composerChatId}
@@ -155,6 +155,7 @@ export function GroupQuestionScreen() {
         ) : null}
       </View>
     </KeyboardAvoidingView>
+    </View>
   );
 }
 
