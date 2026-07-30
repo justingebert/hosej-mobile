@@ -5,6 +5,7 @@ import { useCSSVariable } from "uniwind";
 import { useGroupId } from "@/lib/group-id";
 import { useActiveQuestions } from "@/lib/api/questions";
 import { ErrorCard } from "@/components/ui/error-card";
+import { HapticPressable } from "@/components/ui/haptic-pressable";
 import { Icon } from "@/components/ui/icon";
 import { RadialProgress } from "@/components/ui/radial-progress";
 import { Screen } from "@/components/ui/screen";
@@ -78,8 +79,46 @@ export function GroupDashboardScreen() {
       )}
 
       <ComingSoonFeatureCard icon={Camera} title="Rally" />
-      <ComingSoonFeatureCard icon={Radio} title="Jukebox" />
+      <FeatureLinkCard
+        icon={Radio}
+        title="Jukebox"
+        subtitle="drop a track, rate the rest →"
+        href={`/groups/${groupId}/jukebox` as Href}
+      />
     </Screen>
+  );
+}
+
+function FeatureLinkCard({
+  icon,
+  title,
+  subtitle,
+  href,
+}: {
+  icon: LucideIcon;
+  title: string;
+  subtitle: string;
+  href: Href;
+}) {
+  return (
+    <Link href={href} asChild>
+      <HapticPressable
+        className="flex-row items-center justify-between gap-4 overflow-hidden rounded-2xl border border-border bg-card px-5 py-5 active:opacity-80"
+        style={{
+          borderCurve: "continuous",
+          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.06)",
+        }}
+      >
+        <View className="flex-1 gap-1">
+          <Text className="text-2xl font-extrabold text-card-foreground">{title}</Text>
+          <Text className="text-sm text-muted-foreground">{subtitle}</Text>
+        </View>
+
+        <View className="size-[84px] items-center justify-center rounded-full bg-primary/5">
+          <Icon as={icon} className="size-10 text-primary" />
+        </View>
+      </HapticPressable>
+    </Link>
   );
 }
 
