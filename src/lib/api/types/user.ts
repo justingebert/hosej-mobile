@@ -4,17 +4,8 @@ export type NotificationLanguage = (typeof NOTIFICATION_LANGUAGES)[number];
 export const NOTIFICATION_STYLES = ["default", "chaos"] as const;
 export type NotificationStyle = (typeof NOTIFICATION_STYLES)[number];
 
-export type NotificationPrefKey =
-  | "questionUnanswered"
-  | "rallySubmitDeadline"
-  | "rallyVoteDeadline"
-  | "rallyFirstSubmission"
-  | "jukeboxSubmit"
-  | "jukeboxRate"
-  // Mobile push (Expo). Web FCM ignores these.
-  | "questionNew"
-  | "jukeboxNew"
-  | "chatMessage";
+// Mobile push (Expo) opt-outs. Web FCM ignores these.
+export type NotificationPrefKey = "questionNew" | "jukeboxNew" | "rallyNew" | "chatMessage";
 export type NotificationPrefs = Record<NotificationPrefKey, boolean>;
 
 export interface UserDTO {

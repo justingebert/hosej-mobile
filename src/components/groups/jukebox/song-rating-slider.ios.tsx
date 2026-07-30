@@ -14,7 +14,6 @@ export function SongRatingSlider({
         value={value}
         min={MIN_SONG_RATING}
         max={MAX_SONG_RATING}
-        step={1}
         onValueChange={(next) => onValueChange(Math.round(next))}
       />
     </Host>

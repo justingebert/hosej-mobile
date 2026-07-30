@@ -42,16 +42,19 @@ export function UserSettingsScreen() {
   // surface the "Allow notifications" prompt below.
   const wantsQuestionNew = user?.notificationPrefs?.questionNew ?? true;
   const wantsJukeboxNew = user?.notificationPrefs?.jukeboxNew ?? true;
+  const wantsRallyNew = user?.notificationPrefs?.rallyNew ?? true;
   const wantsChatMessage = user?.notificationPrefs?.chatMessage ?? true;
-  const wantsAny = wantsQuestionNew || wantsJukeboxNew || wantsChatMessage;
+  const wantsAny =
+    wantsQuestionNew || wantsJukeboxNew || wantsRallyNew || wantsChatMessage;
 
   // OS permission gates *delivery*, so show the toggles as off until it's
   // granted — an "on" switch that delivers nothing is misleading. Flipping one
   // on while ungranted still chases OS permission (see togglePrefs).
   const questionNew = pushGranted && wantsQuestionNew;
   const jukeboxNew = pushGranted && wantsJukeboxNew;
+  const rallyNew = pushGranted && wantsRallyNew;
   const chatMessage = pushGranted && wantsChatMessage;
-  const anyPushOn = questionNew || jukeboxNew || chatMessage;
+  const anyPushOn = questionNew || jukeboxNew || rallyNew || chatMessage;
 
   // OS permission only gates *delivery* — it can be granted from here but never
   // revoked (iOS routes that to Settings). Best-effort: simulators and builds
@@ -187,6 +190,7 @@ export function UserSettingsScreen() {
                     togglePrefs({
                       questionNew: value,
                       jukeboxNew: value,
+                      rallyNew: value,
                       chatMessage: value,
                     })
                   }
@@ -204,6 +208,13 @@ export function UserSettingsScreen() {
                   value={jukeboxNew}
                   disabled={pushBusy}
                   onValueChange={(value) => togglePrefs({ jukeboxNew: value })}
+                />
+              </SettingsRow>
+              <SettingsRow label="New rallies" className="pl-8">
+                <Switch
+                  value={rallyNew}
+                  disabled={pushBusy}
+                  onValueChange={(value) => togglePrefs({ rallyNew: value })}
                 />
               </SettingsRow>
               <SettingsRow label="Chat messages" className="pl-8">

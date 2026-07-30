@@ -19,8 +19,8 @@ export interface GroupMemberDTO {
   lastOnline?: string;
 }
 
+// Every group runs every feature — these carry settings only, no on/off flag.
 export interface GroupQuestionsFeatureDTO {
-  enabled: boolean;
   settings: {
     questionCount: number;
     lastQuestionDate: string | null;
@@ -29,7 +29,6 @@ export interface GroupQuestionsFeatureDTO {
 }
 
 export interface GroupRalliesFeatureDTO {
-  enabled: boolean;
   settings: {
     rallyCount: number;
     rallyGapDays: number;
@@ -37,7 +36,6 @@ export interface GroupRalliesFeatureDTO {
 }
 
 export interface GroupJukeboxFeatureDTO {
-  enabled: boolean;
   settings: {
     concurrent: string[];
     activationDays: number[];
