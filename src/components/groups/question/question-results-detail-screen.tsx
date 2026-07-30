@@ -10,7 +10,6 @@ import { useGroupId } from "@/lib/group-id";
 import { Pressable, useWindowDimensions, View } from "react-native";
 import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Check, Filter, X } from "lucide-react-native";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorCard } from "@/components/ui/error-card";
@@ -19,6 +18,7 @@ import { Screen } from "@/components/ui/screen";
 import { Sheet, type SheetHandle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { useGroup } from "@/lib/api/groups";
 import type { GroupMemberDTO } from "@/lib/api/types/group";
 import { useQuestion, useQuestionResults } from "@/lib/api/questions";
@@ -355,7 +355,7 @@ function FocusedPairingResult({
   return (
     <View className="gap-3 rounded-xl border border-border bg-card p-4">
       <View className="items-center gap-2">
-        <MemberAvatar member={member} sizeClassName="size-10" />
+        <UserAvatar name={member.name} avatarUrl={member.avatarUrl} className="size-10" />
         <Text className="w-full text-center text-lg font-black text-card-foreground">
           {member.name}
           {"'s matchup"}
@@ -406,20 +406,27 @@ function MemberFilterBar({
   onClear: () => void;
   onOpen: () => void;
 }) {
+  // The clear-X is a sibling, not a child: nesting a Button inside a Button gives
+  // undefined hit-priority across platforms and reads as a button within a button.
   return (
+    <View className="flex-row items-center gap-2">
       <Button variant="outline" className="flex-1 justify-between" onPress={onOpen}>
         <Icon as={Filter} className="size-4" />
         <Text numberOfLines={1} className="flex-1">
           {selectedMember ? selectedMember.name : "Filter by member"}
         </Text>
-        {selectedMember ? (
-          <Button variant="ghost" size="icon" onPress={onClear}>
-            <Icon as={X} className="size-4" />
-          </Button>
-          )
-          : null
-        }
       </Button>
+      {selectedMember ? (
+        <Button
+          variant="ghost"
+          size="icon"
+          onPress={onClear}
+          accessibilityLabel="Clear member filter"
+        >
+          <Icon as={X} className="size-4" />
+        </Button>
+      ) : null}
+    </View>
   );
 }
 
@@ -491,8 +498,6 @@ function MemberFilterRow({
   selected: boolean;
   status: string;
 }) {
-  const initial = label.slice(0, 1).toUpperCase();
-
   return (
     <Pressable
       onPress={onPress}
@@ -501,12 +506,7 @@ function MemberFilterRow({
         selected ? "border-primary bg-primary/10" : "border-border bg-background"
       )}
     >
-      <Avatar alt={`${label} avatar`} className="size-8">
-        {avatarUrl ? <AvatarImage source={{ uri: avatarUrl }} /> : null}
-        <AvatarFallback>
-          <Text className="text-xs font-extrabold text-foreground">{initial}</Text>
-        </AvatarFallback>
-      </Avatar>
+      <UserAvatar name={label} avatarUrl={avatarUrl} className="size-8" />
       <View className="flex-1">
         <Text numberOfLines={1} className="font-semibold text-foreground">
           {label}
@@ -528,14 +528,7 @@ function ResultUserChip({
   const displayName = user.username || "Unknown";
   const content = (
     <>
-      <MemberAvatar
-        member={{
-          userId: user.userId,
-          name: displayName,
-          avatarUrl: user.avatarUrl,
-        }}
-        sizeClassName="h-6 w-6"
-      />
+      <UserAvatar name={displayName} avatarUrl={user.avatarUrl} className="size-6" />
       <Text numberOfLines={1} className="max-w-32 text-sm font-semibold text-secondary">
         {displayName}
       </Text>
@@ -557,25 +550,6 @@ function ResultUserChip({
     <View className="max-w-44 flex-row items-center gap-2 rounded-full border border-border bg-primary px-2 py-1.5">
       {content}
     </View>
-  );
-}
-
-function MemberAvatar({
-  member,
-  sizeClassName = "size-8",
-}: {
-  member: SelectedMember;
-  sizeClassName?: string;
-}) {
-  const initial = member.name.slice(0, 1).toUpperCase();
-
-  return (
-    <Avatar alt={`${member.name} avatar`} className={sizeClassName}>
-      {member.avatarUrl ? <AvatarImage source={{ uri: member.avatarUrl }} /> : null}
-      <AvatarFallback>
-        <Text className="text-[10px] font-extrabold text-foreground">{initial}</Text>
-      </AvatarFallback>
-    </Avatar>
   );
 }
 

@@ -33,6 +33,12 @@ export function ConnectionRequiredScreen({
           <Icon as={RefreshCw} className="size-4" />
           <Text>{isRetrying ? "Checking..." : "Try again"}</Text>
         </Button>
+        {/* The only way off this screen when retrying can't succeed (e.g. the
+            stored session is bound to an account that's gone). */}
+        <Button variant="ghost" onPress={onSignOut} disabled={isRetrying}>
+          <Icon as={LogOut} className="size-4" />
+          <Text>Log out</Text>
+        </Button>
       </View>
     </Screen>
   );

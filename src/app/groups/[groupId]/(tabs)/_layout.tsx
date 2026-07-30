@@ -1,8 +1,11 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
+import { useCSSVariable } from "uniwind";
 
 export default function GroupTabsLayout() {
+  const tintColor = useCSSVariable("--color-foreground") as string;
+
   return (
-    <NativeTabs tintColor="#111111" labelVisibilityMode="labeled">
+    <NativeTabs tintColor={tintColor} labelVisibilityMode="labeled">
       <NativeTabs.Trigger name="dashboard">
         <NativeTabs.Trigger.Icon
           sf={{ default: "house", selected: "house.fill" }}

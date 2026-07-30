@@ -15,13 +15,7 @@ import {
 // after these moved to ./errors. See errors.ts for why they live there.
 export { ApiError, getErrorMessage };
 
-const DEV_QUERY_DELAY_MS = __DEV__ ? 0 : 0;
-
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  if (shouldDelayQuery(options)) {
-    await delay(DEV_QUERY_DELAY_MS);
-  }
-
   let res = await rawFetch(path, options, getAccessToken());
 
   // The access token is short-lived (~15 min). On 401, mint a fresh one from the
@@ -54,15 +48,6 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   }
 
   return body as T;
-}
-
-function shouldDelayQuery(options: RequestInit) {
-  const method = options.method?.toUpperCase() ?? "GET";
-  return DEV_QUERY_DELAY_MS > 0 && method === "GET";
-}
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function rawFetch(

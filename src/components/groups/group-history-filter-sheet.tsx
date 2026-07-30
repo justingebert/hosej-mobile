@@ -7,11 +7,11 @@ import {
 import { Pressable, useWindowDimensions, View } from "react-native";
 import { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { Check } from "lucide-react-native";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Sheet, type SheetHandle } from "@/components/ui/sheet";
 import { Text } from "@/components/ui/text";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { cn } from "@/lib/utils";
 
 type Option = { label: string; value: string };
@@ -174,7 +174,6 @@ function MemberChip({
   selected: boolean;
   onPress: () => void;
 }) {
-  const initial = option.label.slice(0, 1).toUpperCase();
   return (
     <Pressable
       onPress={onPress}
@@ -183,12 +182,7 @@ function MemberChip({
         selected ? "border-primary bg-primary" : "border-border bg-background"
       )}
     >
-      <Avatar alt={`${option.label} avatar`} className="size-6">
-        {option.avatarUrl ? <AvatarImage source={{ uri: option.avatarUrl }} /> : null}
-        <AvatarFallback>
-          <Text className="text-[10px] font-extrabold text-foreground">{initial}</Text>
-        </AvatarFallback>
-      </Avatar>
+      <UserAvatar name={option.label} avatarUrl={option.avatarUrl} className="size-6" />
       <Text
         numberOfLines={1}
         className={cn(

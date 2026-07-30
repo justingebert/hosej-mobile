@@ -271,7 +271,7 @@ export function CreateQuestionScreen() {
                 </View>
               ) : groupError ? (
                 <Text className="text-sm text-muted-foreground">
-                  Couldn`&apos;`t load members. Pull to refresh.
+                  Couldn’t load members. Pull to refresh.
                 </Text>
               ) : members.length === 0 ? (
                 <Text className="text-sm text-muted-foreground">

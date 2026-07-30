@@ -1,4 +1,3 @@
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useGroupId } from "@/lib/group-id";
 import { DoorOpen, RefreshCw, Share, Trash, UserRoundMinus } from "lucide-react-native";
@@ -12,6 +11,7 @@ import { Screen } from "@/components/ui/screen";
 import { Segmented } from "@/components/ui/segmented";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import {
   buildInviteLink,
   useDeleteGroup,
@@ -219,7 +219,12 @@ function GroupSettingsContent({
           {members.map((member) => (
             <View key={member.user} className="flex-row items-center justify-between gap-3">
               <View className="flex-1 flex-row items-center gap-3">
-                <MemberAvatar member={member} />
+                <UserAvatar
+                  name={member.name}
+                  avatarUrl={member.avatarUrl}
+                  className="size-10"
+                  fallbackClassName="text-sm font-bold"
+                />
                 <View className="flex-1">
                   <Text numberOfLines={1} className="font-medium text-foreground">
                     {member.name}
@@ -266,24 +271,6 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <Text className="text-muted-foreground">{label}</Text>
       <Text numberOfLines={1} className="flex-1 text-right text-foreground">
         {value}
-      </Text>
-    </View>
-  );
-}
-
-function MemberAvatar({ member }: { member: GroupMemberDTO }) {
-  if (member.avatarUrl) {
-    return (
-      <Image
-        source={{ uri: member.avatarUrl }}
-        style={{ width: 40, height: 40, borderRadius: 20 }}
-      />
-    );
-  }
-  return (
-    <View className="h-10 w-10 items-center justify-center rounded-full bg-muted">
-      <Text className="font-bold text-foreground">
-        {(member.name || "?").slice(0, 1).toUpperCase()}
       </Text>
     </View>
   );

@@ -1,11 +1,11 @@
 import { View } from "react-native";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorCard } from "@/components/ui/error-card";
 import { Screen } from "@/components/ui/screen";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { useGroup } from "@/lib/api/groups";
 import type { GroupMemberDTO } from "@/lib/api/types/group";
 import { useGroupId } from "@/lib/group-id";
@@ -41,16 +41,10 @@ export function GroupLeaderboardScreen() {
 }
 
 function LeaderboardRow({ rank, member }: { rank: number; member: GroupMemberDTO }) {
-  const initial = (member.name || "?").slice(0, 1).toUpperCase();
   return (
     <View className="flex-row items-center gap-3 py-2">
       <Text className="w-6 text-center font-medium text-muted-foreground">{rank}</Text>
-      <Avatar alt={`${member.name} avatar`} className="size-9">
-        {member.avatarUrl ? <AvatarImage source={{ uri: member.avatarUrl }} /> : null}
-        <AvatarFallback>
-          <Text className="text-xs font-extrabold text-foreground">{initial}</Text>
-        </AvatarFallback>
-      </Avatar>
+      <UserAvatar name={member.name} avatarUrl={member.avatarUrl} className="size-9" />
       <Text className="flex-1 font-medium" numberOfLines={1}>
         {member.name}
       </Text>
