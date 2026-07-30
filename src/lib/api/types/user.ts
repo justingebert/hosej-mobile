@@ -13,6 +13,7 @@ export type NotificationPrefKey =
   | "jukeboxRate"
   // Mobile push (Expo). Web FCM ignores these.
   | "questionNew"
+  | "jukeboxNew"
   | "chatMessage";
 export type NotificationPrefs = Record<NotificationPrefKey, boolean>;
 

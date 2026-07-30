@@ -4,11 +4,12 @@ import { useAuth } from "@/lib/auth/auth-context";
 import {
   addResponseListener,
   addTokenRotationListener,
-  getColdStartTargetGroupId,
+  getColdStartTarget,
   getPermissionState,
-  routeToGroupQuestion,
+  routeToPushTarget,
   setupForegroundHandler,
   syncPushRegistration,
+  type PushTarget,
 } from "./push";
 
 /**
@@ -21,13 +22,13 @@ function usePushBridge() {
   // App launched by a notification tap. Held in state (not routed immediately):
   // it resolves while auth is still "loading", when RootNavigator renders no
   // Stack yet — routing then would be dropped.
-  const [coldStartGroupId, setColdStartGroupId] = useState<string | null>(null);
+  const [coldStartTarget, setColdStartTarget] = useState<PushTarget | null>(null);
 
   useEffect(() => {
     setupForegroundHandler();
     const tokenSub = addTokenRotationListener();
     const responseSub = addResponseListener();
-    void getColdStartTargetGroupId().then(setColdStartGroupId);
+    void getColdStartTarget().then(setColdStartTarget);
     return () => {
       tokenSub.remove();
       responseSub.remove();
@@ -35,17 +36,17 @@ function usePushBridge() {
   }, []);
 
   useEffect(() => {
-    if (!coldStartGroupId) return;
+    if (!coldStartTarget) return;
     if (status === "unauthed") {
       // No session to open the group with — drop it so it can't fire after a
       // later login as a stale navigation.
-      setColdStartGroupId(null);
+      setColdStartTarget(null);
       return;
     }
     if (status !== "authed" || needsNameSetup) return;
-    setColdStartGroupId(null);
-    routeToGroupQuestion(coldStartGroupId);
-  }, [coldStartGroupId, status, needsNameSetup]);
+    setColdStartTarget(null);
+    routeToPushTarget(coldStartTarget);
+  }, [coldStartTarget, status, needsNameSetup]);
 
   useEffect(() => {
     if (status === "authed") void syncPushRegistration();

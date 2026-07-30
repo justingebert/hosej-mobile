@@ -41,15 +41,17 @@ export function UserSettingsScreen() {
   // What the user has opted into (defaults on). Used only to decide whether to
   // surface the "Allow notifications" prompt below.
   const wantsQuestionNew = user?.notificationPrefs?.questionNew ?? true;
+  const wantsJukeboxNew = user?.notificationPrefs?.jukeboxNew ?? true;
   const wantsChatMessage = user?.notificationPrefs?.chatMessage ?? true;
-  const wantsAny = wantsQuestionNew || wantsChatMessage;
+  const wantsAny = wantsQuestionNew || wantsJukeboxNew || wantsChatMessage;
 
   // OS permission gates *delivery*, so show the toggles as off until it's
   // granted — an "on" switch that delivers nothing is misleading. Flipping one
   // on while ungranted still chases OS permission (see togglePrefs).
   const questionNew = pushGranted && wantsQuestionNew;
+  const jukeboxNew = pushGranted && wantsJukeboxNew;
   const chatMessage = pushGranted && wantsChatMessage;
-  const anyPushOn = questionNew || chatMessage;
+  const anyPushOn = questionNew || jukeboxNew || chatMessage;
 
   // OS permission only gates *delivery* — it can be granted from here but never
   // revoked (iOS routes that to Settings). Best-effort: simulators and builds
@@ -182,7 +184,11 @@ export function UserSettingsScreen() {
                   value={anyPushOn}
                   disabled={pushBusy}
                   onValueChange={(value) =>
-                    togglePrefs({ questionNew: value, chatMessage: value })
+                    togglePrefs({
+                      questionNew: value,
+                      jukeboxNew: value,
+                      chatMessage: value,
+                    })
                   }
                 />
               </SettingsRow>
@@ -191,6 +197,13 @@ export function UserSettingsScreen() {
                   value={questionNew}
                   disabled={pushBusy}
                   onValueChange={(value) => togglePrefs({ questionNew: value })}
+                />
+              </SettingsRow>
+              <SettingsRow label="New jukebox" className="pl-8">
+                <Switch
+                  value={jukeboxNew}
+                  disabled={pushBusy}
+                  onValueChange={(value) => togglePrefs({ jukeboxNew: value })}
                 />
               </SettingsRow>
               <SettingsRow label="Chat messages" className="pl-8">

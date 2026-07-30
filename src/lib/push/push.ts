@@ -155,16 +155,32 @@ export function setupForegroundHandler() {
   });
 }
 
-// v1: land on the group's active question — chat read-write lives there and a
-// new-question push is about that screen. Per-question/chat routing is a follow-up.
-export function routeToGroupQuestion(groupId: string) {
+// Where a tapped push lands. Routing is per-feature, not per-entity: a push
+// opens the feature screen for its group, not a specific question or song.
+export type PushTarget = { groupId: string; feature: "question" | "jukebox" };
+
+// `type` is set by the sender (see the backend's notify() data payload).
+// Anything unrecognised — including pushes sent before a type existed — falls
+// back to the question screen, which is where chat lives too.
+export function readPushTarget(
+  data: Record<string, unknown> | undefined
+): PushTarget | null {
+  const groupId = typeof data?.groupId === "string" ? data.groupId : null;
+  if (!groupId) return null;
+  return { groupId, feature: data?.type === "jukeboxNew" ? "jukebox" : "question" };
+}
+
+export function routeToPushTarget({ groupId, feature }: PushTarget) {
+  if (feature === "jukebox") {
+    router.push({ pathname: "/groups/[groupId]/jukebox", params: { groupId } });
+    return;
+  }
   router.push({ pathname: "/groups/[groupId]/question", params: { groupId } });
 }
 
 function handleResponse(data: Record<string, unknown> | undefined) {
-  const groupId = typeof data?.groupId === "string" ? data.groupId : null;
-  if (!groupId) return;
-  routeToGroupQuestion(groupId);
+  const target = readPushTarget(data);
+  if (target) routeToPushTarget(target);
 }
 
 export function addResponseListener() {
@@ -190,10 +206,10 @@ export function addTokenRotationListener() {
  * still resolving and RootNavigator renders null, so a router.push here would
  * fire before any Stack is mounted and be dropped.
  */
-export async function getColdStartTargetGroupId(): Promise<string | null> {
+export async function getColdStartTarget(): Promise<PushTarget | null> {
   const response = await Notifications.getLastNotificationResponseAsync();
   const data = response?.notification.request.content.data as
     | Record<string, unknown>
     | undefined;
-  return typeof data?.groupId === "string" ? data.groupId : null;
+  return readPushTarget(data);
 }
