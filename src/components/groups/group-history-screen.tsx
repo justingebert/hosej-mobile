@@ -88,7 +88,7 @@ export function GroupHistoryScreen() {
     <View className="flex-1 bg-background">
       {/* Toolbar is pinned above the list (not a ListHeaderComponent) so the
           search TextInput keeps focus across list re-renders. */}
-      <View className="gap-2 px-4 pb-2 pt-3">
+      <View className="gap-2 px-4 py-2">
         <View className="flex-row items-center gap-2 rounded-md border border-border bg-background px-3">
           <Icon as={Search} className="size-4 text-muted-foreground" />
           <TextInput

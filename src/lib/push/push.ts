@@ -157,7 +157,13 @@ export function setupForegroundHandler() {
 
 // Where a tapped push lands. Routing is per-feature, not per-entity: a push
 // opens the feature screen for its group, not a specific question or song.
-export type PushTarget = { groupId: string; feature: "question" | "jukebox" };
+export type PushTarget = { groupId: string; feature: "question" | "jukebox" | "rally" };
+
+// The sender's `type` maps 1:1 onto a feature screen.
+const FEATURE_BY_PUSH_TYPE: Record<string, PushTarget["feature"]> = {
+  jukeboxNew: "jukebox",
+  rallyNew: "rally",
+};
 
 // `type` is set by the sender (see the backend's notify() data payload).
 // Anything unrecognised — including pushes sent before a type existed — falls
@@ -167,12 +173,17 @@ export function readPushTarget(
 ): PushTarget | null {
   const groupId = typeof data?.groupId === "string" ? data.groupId : null;
   if (!groupId) return null;
-  return { groupId, feature: data?.type === "jukeboxNew" ? "jukebox" : "question" };
+  const type = typeof data?.type === "string" ? data.type : "";
+  return { groupId, feature: FEATURE_BY_PUSH_TYPE[type] ?? "question" };
 }
 
 export function routeToPushTarget({ groupId, feature }: PushTarget) {
   if (feature === "jukebox") {
     router.push({ pathname: "/groups/[groupId]/jukebox", params: { groupId } });
+    return;
+  }
+  if (feature === "rally") {
+    router.push({ pathname: "/groups/[groupId]/rally", params: { groupId } });
     return;
   }
   router.push({ pathname: "/groups/[groupId]/question", params: { groupId } });

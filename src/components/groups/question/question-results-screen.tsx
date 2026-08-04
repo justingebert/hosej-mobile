@@ -9,7 +9,7 @@ import { QuestionHeader } from "./question-header";
 import { QuestionRatingBadges } from "./question-rating-badges";
 import { QuestionOptionsList } from "./question-options-list";
 import { QuestionResults } from "./question-results";
-import { QuestionChatMessages } from "./question-chat";
+import { ChatMessages } from "@/components/chat/chat";
 
 // Standalone results page for a single question: the prompt, its rating, its
 // options, and the aggregated vote bars (which drill into the detailed view).
@@ -48,7 +48,7 @@ export function QuestionResultsScreen() {
           <QuestionResults groupId={groupId} questionId={questionId} />
 
           {question.chat ? (
-            <QuestionChatMessages groupId={groupId} chatId={question.chat} />
+            <ChatMessages groupId={groupId} chatId={question.chat} />
           ) : null}
         </View>
       )}

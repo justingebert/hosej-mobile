@@ -34,6 +34,7 @@ export function AspectImage({
         source={{ uri, cacheKey: cacheKey ?? uri }}
         style={imageStyle}
         contentFit="contain"
+        transition={150}
         onLoad={({ source }) => {
           if (source?.width && source?.height) {
             setAspectRatio(source.width / source.height);

@@ -8,7 +8,7 @@ import { Icon } from "@/components/ui/icon";
 import { Sheet, type SheetHandle } from "@/components/ui/sheet";
 import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/utils";
-import type { PickedAvatar } from "@/lib/api/user";
+import type { PickedImage } from "@/lib/api/upload";
 
 // Square crop, modest quality — same shape the avatar upload has always used.
 const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
@@ -28,7 +28,7 @@ type AvatarPickerProps = {
   /** Overrides the avatar size, e.g. "size-28". */
   className?: string;
   alt?: string;
-  onPick: (asset: PickedAvatar) => void;
+  onPick: (asset: PickedImage) => void;
   onRemove: () => void;
 };
 

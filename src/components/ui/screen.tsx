@@ -23,7 +23,7 @@ export const Screen = forwardRef<ScrollView, ScreenProps>(function Screen(
     onRefresh,
     refreshing = false,
     avoidKeyboard = false,
-    contentContainerClassName = "grow gap-6 p-4",
+    contentContainerClassName = "grow gap-6 px-4 py-2",
   },
   ref
 ) {

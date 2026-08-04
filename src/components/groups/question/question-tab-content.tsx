@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { View } from "react-native";
 import type { QuestionWithUserStateDTO, VoteResponseValue } from "@/lib/api/types/question";
 import { QuestionResults } from "./question-results";
-import { QuestionChatMessages } from "./question-chat";
+import { ChatMessages } from "@/components/chat/chat";
 import { QuestionOptions } from "./question-options";
 import { QuestionHeader } from "./question-header";
 import { QuestionRating, type QuestionRatingHandle } from "./question-rating";
@@ -40,7 +40,7 @@ export function QuestionTabContent({
           <QuestionResults groupId={question.groupId} questionId={question._id} />
           <QuestionRating ref={ratingRef} question={question} autoOpen={justVoted} />
           {question.chat ? (
-            <QuestionChatMessages groupId={question.groupId} chatId={question.chat} />
+            <ChatMessages groupId={question.groupId} chatId={question.chat} />
           ) : null}
         </>
       ) : (

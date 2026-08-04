@@ -44,7 +44,7 @@ export function JukeboxSearch({ jukebox }: { jukebox: JukeboxDTO }) {
       <View className="gap-1">
         <Text variant="large">Add your song</Text>
         <Text className="text-sm text-muted-foreground">
-          One track each. You&apos;ll see everyone else&apos;s once you&apos;ve picked yours.
+          You&apos;ll see everyone else&apos;s once you&apos;ve picked yours.
         </Text>
       </View>
 
@@ -96,10 +96,6 @@ export function JukeboxSearch({ jukebox }: { jukebox: JukeboxDTO }) {
                 {selectedTrack.artists.map((artist) => artist.name).join(", ")}
               </Text>
             </View>
-
-            <Text className="text-center text-xs text-muted-foreground">
-              This is your song for {jukebox.title ?? "this jukebox"} and can&apos;t be changed.
-            </Text>
 
             <Button disabled={addSong.isPending} onPress={submit}>
               <Text>{addSong.isPending ? "Adding…" : "Add this song"}</Text>

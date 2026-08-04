@@ -14,8 +14,9 @@ import { setActiveChat } from "@/lib/push/push";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-// Inline, read-only message list.
-export function QuestionChatMessages({
+// Inline, read-only message list. Feature-agnostic: questions, rallies and the
+// jukebox all mount it with their own entity's chat id.
+export function ChatMessages({
   groupId,
   chatId,
 }: {
@@ -102,9 +103,10 @@ function ChatMessagesSkeleton() {
   );
 }
 
-// Write-side compose bar. Pinned as the active question's footer (read-only
-// history has no composer). `onSent` lets the host scroll the message into view.
-export function QuestionChatComposer({
+// Write-side compose bar. Pinned as the host screen's footer once the user has
+// participated (read-only history has no composer). `onSent` lets the host
+// scroll the new message into view.
+export function ChatComposer({
   groupId,
   chatId,
   onSent,

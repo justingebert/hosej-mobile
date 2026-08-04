@@ -1,5 +1,5 @@
-import { CreateQuestionScreen } from "@/components/groups/question/create-question-screen";
+import { CreateScreen } from "@/components/groups/create-screen";
 
 export default function CreateRoute() {
-  return <CreateQuestionScreen />;
+  return <CreateScreen />;
 }

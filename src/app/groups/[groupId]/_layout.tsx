@@ -79,6 +79,13 @@ export default function GroupLayout() {
           }}
         />
         <Stack.Screen
+          name="rally"
+          options={{
+            ...backHeaderOptions("Rallies"),
+            animation: "fade_from_bottom",
+          }}
+        />
+        <Stack.Screen
           name="question/[questionId]/index"
           options={backHeaderOptions("Results")}
         />

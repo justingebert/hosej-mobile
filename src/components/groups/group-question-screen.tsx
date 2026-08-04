@@ -15,7 +15,7 @@ import {
   type VoteResponseValue,
 } from "@/lib/api/types/question";
 import { QuestionSubmitButton } from "@/components/groups/question/question-submit-button";
-import { QuestionChatComposer } from "@/components/groups/question/question-chat";
+import { ChatComposer } from "@/components/chat/chat";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
 
@@ -97,7 +97,7 @@ export function GroupQuestionScreen() {
     >
       <View className="flex-1 bg-background">
         {loadedQuestion ? (
-          <View className="bg-background px-4 pb-3 pt-4">
+          <View className="bg-background px-4 pb-3 pt-2">
             <QuestionTabs
               activeQuestionId={loadedQuestion.question._id}
               questions={flatQuestions}
@@ -146,7 +146,7 @@ export function GroupQuestionScreen() {
           </View>
         ) : composerChatId ? (
           <View className="border-t border-border bg-background px-4 pb-2 pt-3">
-            <QuestionChatComposer
+            <ChatComposer
               groupId={groupId}
               chatId={composerChatId}
               onSent={scrollChatToEnd}

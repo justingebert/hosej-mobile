@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Screen } from "@/components/ui/screen";
 import { Text } from "@/components/ui/text";
 import { getErrorMessage } from "@/lib/api/client";
-import { useUpdateUser, useUploadAvatar, type PickedAvatar } from "@/lib/api/user";
+import { useUpdateUser, useUploadAvatar } from "@/lib/api/user";
+import type { PickedImage } from "@/lib/api/upload";
 import { useAuth } from "@/lib/auth/auth-context";
 import { getPendingInvite } from "@/lib/auth/session";
 import { toastError } from "@/lib/toast";
@@ -19,7 +20,7 @@ export default function SetupNameScreen() {
   const [username, setUsername] = useState(
     user?.username === "New user" ? "" : (user?.username ?? "")
   );
-  const [avatar, setAvatar] = useState<PickedAvatar | null>(null);
+  const [avatar, setAvatar] = useState<PickedImage | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const saving = updateUser.isPending || uploadAvatar.isPending;
