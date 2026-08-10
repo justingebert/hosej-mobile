@@ -55,7 +55,7 @@ export function NotificationsStep() {
       <View className="flex-row items-start gap-2 rounded-xl bg-secondary/30 px-3 py-2">
         <Icon as={Settings2} className="mt-0.5 size-3.5 text-muted-foreground" />
         <Text className="flex-1 text-[11px] text-muted-foreground">
-          No spam — just your group. Choose exactly what pings you in Settings, anytime.
+          No spam, just your group. Choose exactly what pings you in Settings.
         </Text>
       </View>
 

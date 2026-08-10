@@ -29,12 +29,18 @@ import { ChatStep } from "./steps/chat-step";
 import { CreateStep } from "./steps/create-step";
 import { DailyQuestionsStep } from "./steps/daily-questions-step";
 import { HistoryStatsStep } from "./steps/history-stats-step";
+import { JukeboxStep } from "./steps/jukebox-step";
 import { NotificationsStep } from "./steps/notifications-step";
+import { RallyStep } from "./steps/rally-step";
 import { WelcomeStep } from "./steps/welcome-step";
 
+// The three group features first, in dashboard order, then the things that cut
+// across them (create, chat, history) and finally the permission ask.
 const STEPS = [
   WelcomeStep,
   DailyQuestionsStep,
+  RallyStep,
+  JukeboxStep,
   CreateStep,
   ChatStep,
   HistoryStatsStep,
@@ -42,7 +48,7 @@ const STEPS = [
 ];
 
 // Fits the tallest step's content + sheet chrome (grabber, indicator, footer).
-const SHEET_HEIGHT = 560;
+const SHEET_HEIGHT = 600;
 
 export type OnboardingSheetRef = { present: () => void };
 
@@ -50,8 +56,9 @@ export const OnboardingSheet = forwardRef<OnboardingSheetRef>(function Onboardin
   const modalRef = useRef<BottomSheetModal>(null);
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
-  // Fixed height tuned to fit the tallest step (History & Stats) so the sheet
-  // never resizes between steps; capped so it always fits the screen. The body is
+  // Fixed height tuned to fit the tallest steps (Welcome's feature grid, Rally's
+  // phase timeline) so the sheet never resizes between steps; capped so it always
+  // fits the screen — on short phones the cap wins and the tall steps scroll. The body is
   // top-aligned (see contentContainerStyle) so every step's StepHeader lands at the
   // same place; shorter steps just leave space below. Nudge SHEET_HEIGHT if step
   // content changes.

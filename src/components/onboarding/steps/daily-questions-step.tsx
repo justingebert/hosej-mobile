@@ -65,7 +65,7 @@ export function DailyQuestionsStep() {
 
       {submitted ? (
         <Text className="text-center text-xs text-muted-foreground">
-          See how your group voted, in real time.
+          A chat is attached to every interaction to discuss results and hot takes.
         </Text>
       ) : null}
     </View>

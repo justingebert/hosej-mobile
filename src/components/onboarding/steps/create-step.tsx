@@ -1,25 +1,57 @@
 import { View } from "react-native";
-import { MessageSquareText, Plus, Settings2 } from "lucide-react-native";
+import { Camera, MessageSquareText, Plus, Settings2, type LucideIcon } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { StepHeader } from "../step-header";
+
+// The two tabs on the create screen. Jukeboxes aren't here — they open on their
+// own, nobody creates one.
+const creations: {
+  icon: LucideIcon;
+  label: string;
+  hint: string;
+  bg: string;
+  fg: string;
+}[] = [
+  {
+    icon: MessageSquareText,
+    label: "Questions",
+    hint: "Ask anything, any format",
+    bg: "bg-chart-5/10",
+    fg: "text-chart-5",
+  },
+  {
+    icon: Camera,
+    label: "Rallies",
+    hint: "Set a photo challenge",
+    bg: "bg-chart-9/10",
+    fg: "text-chart-9",
+  },
+];
 
 export function CreateStep() {
   return (
     <View className="gap-5 py-2">
       <StepHeader
         title="Make It Yours"
-        subtitle="Your group thrives on the questions you create."
+        subtitle="Your group thrives on what you put into it."
       />
 
-      <View className="flex-row items-center gap-3 rounded-2xl bg-secondary/40 p-3">
-        <View className="size-10 items-center justify-center rounded-full bg-chart-5/10">
-          <Icon as={MessageSquareText} className="size-5 text-chart-5" />
-        </View>
-        <View className="flex-1">
-          <Text className="text-sm font-semibold">Questions</Text>
-          <Text className="text-xs text-muted-foreground">Ask anything, any format</Text>
-        </View>
+      <View className="gap-2">
+        {creations.map(({ icon, label, hint, bg, fg }) => (
+          <View
+            key={label}
+            className="flex-row items-center gap-3 rounded-2xl bg-secondary/40 p-3"
+          >
+            <View className={`size-10 items-center justify-center rounded-full ${bg}`}>
+              <Icon as={icon} className={`size-5 ${fg}`} />
+            </View>
+            <View className="flex-1">
+              <Text className="text-sm font-semibold">{label}</Text>
+              <Text className="text-xs text-muted-foreground">{hint}</Text>
+            </View>
+          </View>
+        ))}
       </View>
 
       <View className="flex-row items-center justify-center gap-1.5">

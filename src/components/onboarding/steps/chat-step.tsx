@@ -14,7 +14,10 @@ const messages = [
 export function ChatStep() {
   return (
     <View className="gap-4 py-2">
-      <StepHeader title="Chat" subtitle="Every Question has its own chat thread." />
+      <StepHeader
+        title="Chat"
+        subtitle="Questions, rallies and jukeboxes each get their own thread."
+      />
 
       <View className="gap-3 rounded-2xl bg-secondary/30 p-4">
         <View className="flex-row items-center gap-2">
@@ -46,7 +49,7 @@ export function ChatStep() {
       </View>
 
       <Text className="text-center text-xs text-muted-foreground">
-        React and discuss results together.
+        It unlocks once you&rsquo;ve taken part, vote or drop your song first, then discuss.
       </Text>
     </View>
   );
