@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import * as Crypto from "expo-crypto";
 import { useQueryClient } from "@tanstack/react-query";
@@ -89,6 +89,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [queryClient]
   );
 
+  const recoveryInFlight = useRef<Promise<boolean> | null>(null);
+  const recoverDeviceSession = useCallback((): Promise<boolean> => {
+    if (!recoveryInFlight.current) {
+      recoveryInFlight.current = (async () => {
+        const storedDeviceId = getDeviceId();
+        if (!storedDeviceId) return false;
+        try {
+          await applyAuth(await apiLoginWithDeviceId(storedDeviceId), storedDeviceId);
+          return true;
+        } catch {
+          return false;
+        }
+      })().finally(() => {
+        recoveryInFlight.current = null;
+      });
+    }
+    return recoveryInFlight.current;
+  }, [applyAuth]);
+
   const restoreStoredSession = useCallback(
     async ({
       isActive = () => true,
@@ -103,7 +122,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setDeviceIdState(getDeviceId());
       const rt = getRefreshToken();
       if (!rt) {
-        setStatus("unauthed");
+        // No refresh token but a device credential still on file means the
+        // session was lost involuntarily (a rotation that never persisted, a
+        // failed keychain write) — an explicit signOut clears the deviceId. A
+        // fresh install has neither, so this costs it no launch latency.
+        const recovered = await recoverDeviceSession();
+        if (!isActive()) return;
+        if (!recovered) setStatus("unauthed");
         if (markRetrying) setIsRetryingSession(false);
         return;
       }
@@ -114,7 +139,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         if (!isActive()) return;
         if (isTerminalRefreshError(error)) {
-          await reset(true);
+          const recovered = await recoverDeviceSession();
+          if (!isActive()) return;
+          if (!recovered) await reset(true);
         } else {
           setStatus("offline");
         }
@@ -122,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (markRetrying && isActive()) setIsRetryingSession(false);
       }
     },
-    [applyAuth, reset]
+    [applyAuth, recoverDeviceSession, reset]
   );
 
   const signOut = useCallback(async () => {
@@ -154,14 +181,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   // Let the request layer force a sign-out when a 401 can't be refreshed. It has
-  // already cleared the tokens; this clears remaining local auth state. Keeps the
-  // stored deviceId (involuntary — see the boot handler above).
+  // already cleared the tokens; this re-authenticates a device account if it can,
+  // and otherwise clears the remaining local auth state. Keeps the stored
+  // deviceId (involuntary — see the boot handler above).
   useEffect(() => {
     setUnauthorizedHandler(() => {
-      void reset(false);
+      void (async () => {
+        if (await recoverDeviceSession()) return;
+        await reset(false);
+      })();
     });
     return () => setUnauthorizedHandler(null);
-  }, [reset]);
+  }, [recoverDeviceSession, reset]);
 
   const registerDevice = useCallback(
     async () => {
