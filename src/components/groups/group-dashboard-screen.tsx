@@ -4,6 +4,8 @@ import { Pressable, View } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { useGroupId } from "@/lib/group-id";
 import { useActiveQuestions } from "@/lib/api/questions";
+import { useMissedActivity } from "@/lib/api/activity";
+import { ActivityBadge } from "@/components/ui/activity-badge";
 import { ErrorCard } from "@/components/ui/error-card";
 import { HapticPressable } from "@/components/ui/haptic-pressable";
 import { Icon } from "@/components/ui/icon";
@@ -16,6 +18,10 @@ export function GroupDashboardScreen() {
   const groupId = useGroupId();
   const questionHref = `/groups/${groupId}/question` as Href;
   const { data, error, isError, isPending, isRefetching, refetch } = useActiveQuestions(groupId);
+
+  // Decoration, not a data region: an absent/failed result just renders no dot,
+  // so this gets no pending/error branch of its own.
+  const { data: missed } = useMissedActivity(groupId);
 
   // Traffic-light ring (web parity): red < 33 < orange < 66 < green.
   // useCSSVariable resolves to a hex string on native; cast for the SVG stroke.
@@ -46,36 +52,46 @@ export function GroupDashboardScreen() {
           isRetrying={isRefetching}
         />
       ) : (
-        <Link href={questionHref} asChild>
-          <Pressable
-            className="flex-row items-center justify-between gap-4 overflow-hidden rounded-2xl border border-border bg-card px-5 py-5 active:opacity-80"
-            style={{
-              borderCurve: "continuous",
-              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.06)",
-            }}
-          >
-            <View className="flex-1 gap-1">
-              <Text className="text-2xl font-extrabold text-card-foreground">
-                Daily Question
-              </Text>
-              <Text className="text-sm text-muted-foreground">
-                {total > 0 ? `you: ${answered}/${total} · ` : ""}tap to answer
-              </Text>
-            </View>
-
-            <RadialProgress
-              value={completion}
-              color={ringColor}
-              trackColor={track}
-              size={84}
-              strokeWidth={9}
+        // The card is overflow-hidden, so the corner badge hangs off this wrapper.
+        <View className="relative">
+          <Link href={questionHref} asChild>
+            <Pressable
+              className="flex-row items-center justify-between gap-4 overflow-hidden rounded-2xl border border-border bg-card px-5 py-5 active:opacity-80"
+              style={{
+                borderCurve: "continuous",
+                boxShadow: "0 1px 3px rgba(0, 0, 0, 0.06)",
+              }}
             >
-              <Text className="text-base font-extrabold text-card-foreground">
-                {completion}%
-              </Text>
-            </RadialProgress>
-          </Pressable>
-        </Link>
+              <View className="flex-1 gap-1">
+                <Text className="text-2xl font-extrabold text-card-foreground">
+                  Daily Question
+                </Text>
+                <Text className="text-sm text-muted-foreground">
+                  {total > 0 ? `you: ${answered}/${total} · ` : ""}tap to answer
+                </Text>
+              </View>
+
+              <RadialProgress
+                value={completion}
+                color={ringColor}
+                trackColor={track}
+                size={84}
+                strokeWidth={9}
+              >
+                <Text className="text-base font-extrabold text-card-foreground">
+                  {completion}%
+                </Text>
+              </RadialProgress>
+            </Pressable>
+          </Link>
+
+          {(missed?.question ?? 0) > 0 ? (
+            <ActivityBadge
+              count={missed?.question ?? 0}
+              className="absolute -right-1 -top-1"
+            />
+          ) : null}
+        </View>
       )}
 
       <FeatureLinkCard
@@ -83,12 +99,14 @@ export function GroupDashboardScreen() {
         title="Rally"
         subtitle="submit a photo, vote on the rest"
         href={`/groups/${groupId}/rally` as Href}
+        activityCount={missed?.rally ?? 0}
       />
       <FeatureLinkCard
         icon={Radio}
         title="Jukebox"
         subtitle="drop a track, rate the rest"
         href={`/groups/${groupId}/jukebox` as Href}
+        activityCount={missed?.jukebox ?? 0}
       />
     </Screen>
   );
@@ -99,31 +117,40 @@ function FeatureLinkCard({
   title,
   subtitle,
   href,
+  activityCount,
 }: {
   icon: LucideIcon;
   title: string;
   subtitle: string;
   href: Href;
+  activityCount: number;
 }) {
   return (
-    <Link href={href} asChild>
-      <HapticPressable
-        className="flex-row items-center justify-between gap-4 overflow-hidden rounded-2xl border border-border bg-card px-5 py-5 active:opacity-80"
-        style={{
-          borderCurve: "continuous",
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.06)",
-        }}
-      >
-        <View className="flex-1 gap-1">
-          <Text className="text-2xl font-extrabold text-card-foreground">{title}</Text>
-          <Text className="text-sm text-muted-foreground">{subtitle}</Text>
-        </View>
+    // The card is overflow-hidden, so the corner badge hangs off this wrapper.
+    <View className="relative">
+      <Link href={href} asChild>
+        <HapticPressable
+          className="flex-row items-center justify-between gap-4 overflow-hidden rounded-2xl border border-border bg-card px-5 py-5 active:opacity-80"
+          style={{
+            borderCurve: "continuous",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.06)",
+          }}
+        >
+          <View className="flex-1 gap-1">
+            <Text className="text-2xl font-extrabold text-card-foreground">{title}</Text>
+            <Text className="text-sm text-muted-foreground">{subtitle}</Text>
+          </View>
 
-        <View className="size-[84px] items-center justify-center rounded-full bg-primary/5">
-          <Icon as={icon} className="size-10 text-primary" />
-        </View>
-      </HapticPressable>
-    </Link>
+          <View className="size-[84px] items-center justify-center rounded-full bg-primary/5">
+            <Icon as={icon} className="size-10 text-primary" />
+          </View>
+        </HapticPressable>
+      </Link>
+
+      {activityCount > 0 ? (
+        <ActivityBadge count={activityCount} className="absolute -right-1.5 -top-1.5" />
+      ) : null}
+    </View>
   );
 }
 

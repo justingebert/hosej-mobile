@@ -8,6 +8,7 @@ import { Screen } from "@/components/ui/screen";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Text } from "@/components/ui/text";
+import { useMarkFeatureSeen } from "@/lib/api/activity";
 import { useActiveRallies } from "@/lib/api/rally";
 import { useAuth } from "@/lib/auth/auth-context";
 import { useGroupId } from "@/lib/group-id";
@@ -36,6 +37,7 @@ export function GroupRallyScreen() {
   const headerHeight = useHeaderHeight();
   const scrollRef = useRef<ScrollView>(null);
   const groupId = useGroupId();
+  useMarkFeatureSeen(groupId, "rally");
   const { user } = useAuth();
   const { data, error, isError, isPending, isRefetching, refetch } = useActiveRallies(groupId);
   const [selectedId, setSelectedId] = useState<string | null>(null);

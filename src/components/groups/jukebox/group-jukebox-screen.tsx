@@ -3,6 +3,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGroupId } from "@/lib/group-id";
+import { useMarkFeatureSeen } from "@/lib/api/activity";
 import { useActiveJukeboxes } from "@/lib/api/jukebox";
 import { ChatComposer, ChatMessages } from "@/components/chat/chat";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -23,6 +24,7 @@ export function GroupJukeboxScreen() {
   const headerHeight = useHeaderHeight();
   const scrollRef = useRef<ScrollView>(null);
   const groupId = useGroupId();
+  useMarkFeatureSeen(groupId, "jukebox");
   const { data, error, isError, isPending, isRefetching, refetch } =
     useActiveJukeboxes(groupId);
   const [selectedId, setSelectedId] = useState<string | null>(null);

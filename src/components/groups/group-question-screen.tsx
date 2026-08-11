@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGroupId } from "@/lib/group-id";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { useActiveQuestions, useVoteOnQuestion } from "@/lib/api/questions";
+import { useMarkFeatureSeen } from "@/lib/api/activity";
 import { QuestionTabContent } from "@/components/groups/question/question-tab-content";
 import { QuestionEmptyGuide } from "@/components/groups/question/question-empty-guide";
 import { QuestionSkeleton } from "@/components/groups/question/question-states";
@@ -27,6 +28,7 @@ export function GroupQuestionScreen() {
   const headerHeight = useHeaderHeight();
   const scrollRef = useRef<ScrollView>(null);
   const groupId = useGroupId();
+  useMarkFeatureSeen(groupId, "question");
   const {
     data,
     error,

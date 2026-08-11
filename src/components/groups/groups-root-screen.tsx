@@ -4,11 +4,13 @@ import { Platform, Pressable, Share as RNShare, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import { useGroupsActivity } from "@/lib/api/activity";
 import { buildInviteLink, fetchInviteCode, useGroups } from "@/lib/api/groups";
 import { toastError } from "@/lib/toast";
 import type { GroupDTO } from "@/lib/api/types/group";
 import { Share, Star } from "lucide-react-native";
 import { Icon } from "@/components/ui/icon";
+import { ActivityBadge } from "@/components/ui/activity-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorCard } from "@/components/ui/error-card";
 import { Screen } from "@/components/ui/screen";
@@ -31,6 +33,10 @@ const GROUP_VIBES = [
 export function GroupsRootScreen() {
   const { data, error, isError, isPending, isRefetching, refetch } = useGroups();
   const groups = useMemo(() => data?.groups ?? [], [data?.groups]);
+
+  // Decoration, not a data region: the dot is additive, so an absent/failed
+  // result is a valid render (no dot). Hence no pending/error branch of its own.
+  const { data: groupsActivity } = useGroupsActivity();
 
   const onboardingRef = useRef<OnboardingSheetRef>(null);
   useAutoPresentOnboarding(onboardingRef);
@@ -70,7 +76,12 @@ export function GroupsRootScreen() {
           ) : (
             <View className="gap-3">
               {groups.map((group) => (
-                <GroupCard key={group._id} group={group} vibe={vibesByGroup[group._id]} />
+                <GroupCard
+                  key={group._id}
+                  group={group}
+                  vibe={vibesByGroup[group._id]}
+                  activityCount={groupsActivity?.[group._id] ?? 0}
+                />
               ))}
             </View>
           )}
@@ -102,7 +113,15 @@ export function GroupsRootScreen() {
   );
 }
 
-function GroupCard({ group, vibe }: { group: GroupDTO; vibe: string }) {
+function GroupCard({
+  group,
+  vibe,
+  activityCount,
+}: {
+  group: GroupDTO;
+  vibe: string;
+  activityCount: number;
+}) {
   const dashboardHref = `/groups/${group._id}/dashboard` as Href;
 
   const handleShare = async () => {
@@ -128,31 +147,41 @@ function GroupCard({ group, vibe }: { group: GroupDTO; vibe: string }) {
   };
 
   return (
-    <Link href={dashboardHref} asChild>
-      <Pressable
-        className="overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm"
-        style={{
-          borderCurve: "continuous",
-        }}
-      >
-        <View className="absolute bottom-4 left-0 top-4 w-1 rounded-r-full bg-accent" />
-        <View className="flex-row items-center justify-between gap-4 pl-1">
-          <View className="flex-1 gap-1">
-            <Text numberOfLines={1} className="text-xl font-extrabold text-card-foreground">
-              {group.name}
-            </Text>
-            <Text className="text-sm text-muted-foreground">{vibe}</Text>
-          </View>
+    <View className="relative">
+      <Link href={dashboardHref} asChild>
+        <Pressable
+          className="overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm"
+          style={{
+            borderCurve: "continuous",
+          }}
+        >
+          <View className="absolute bottom-4 left-0 top-4 w-1 rounded-r-full bg-accent" />
+          <View className="flex-row items-center justify-between gap-4 pl-1">
+            <View className="flex-1 gap-1">
+              <Text numberOfLines={1} className="text-xl font-extrabold text-card-foreground">
+                {group.name}
+              </Text>
+              <Text className="text-sm text-muted-foreground">{vibe}</Text>
+            </View>
 
-          <View className="flex-row items-center gap-4">
-            <Icon as={Star} className="size-6" />
-            <Pressable onPress={handleShare} hitSlop={8} accessibilityLabel={`Share ${group.name}`}>
-              <Icon as={Share} className="size-5" />
-            </Pressable>
+            <View className="flex-row items-center gap-4">
+              <Icon as={Star} className="size-6" />
+              <Pressable
+                onPress={handleShare}
+                hitSlop={8}
+                accessibilityLabel={`Share ${group.name}`}
+              >
+                <Icon as={Share} className="size-5" />
+              </Pressable>
+            </View>
           </View>
-        </View>
-      </Pressable>
-    </Link>
+        </Pressable>
+      </Link>
+
+      {activityCount > 0 ? (
+        <ActivityBadge count={activityCount} className="absolute -right-1 -top-1" />
+      ) : null}
+    </View>
   );
 }
 
