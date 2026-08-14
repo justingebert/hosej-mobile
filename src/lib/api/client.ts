@@ -70,9 +70,10 @@ async function rawFetch(
   }
 }
 
-// Single-flight refresh: the refresh token ROTATES (the server invalidates the
-// old one on use), so concurrent 401s must share ONE refresh — otherwise the
-// second call sends an already-spent token and spuriously signs the user out.
+// Single-flight refresh: concurrent 401s share ONE refresh so a screenful of
+// queries doesn't fire a dozen identical requests. Correctness no longer depends
+// on it — the refresh token doesn't rotate, so overlapping refreshes are
+// harmless — but it keeps the stampede down.
 // Returns stale when logout/account switch changed local auth state while the
 // refresh request was in flight.
 type RefreshResult =

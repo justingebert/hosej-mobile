@@ -1,7 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 
 // Mobile auth uses a short-lived access token (~15 min, sent as Bearer) plus a
-// rotating refresh token (exchanged for a new pair). Keep the access token in
+// long-lived refresh token that does not rotate. Keep the access token in
 // memory; persist only long-lived credentials in Keychain/Keystore.
 const ACCESS_KEY = "hosej.accessToken";
 const REFRESH_KEY = "hosej.refreshToken";

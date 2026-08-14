@@ -11,7 +11,8 @@ export type AuthUser = {
 };
 
 // Every auth endpoint (register / login / google / refresh) returns this token
-// pair. The access token is short-lived; the refresh token rotates on every use.
+// pair. The access token is short-lived; the refresh token is long-lived and
+// stable — see refreshTokens below.
 export type AuthResponse = {
   accessToken: string;
   refreshToken: string;
@@ -65,9 +66,10 @@ export function loginWithGoogleIdToken(idToken: string) {
 }
 
 /**
- * Exchange a refresh token for a fresh token pair. The server ROTATES the refresh
- * token (the old one is invalidated on use), so the caller MUST persist the
- * returned refreshToken. 401 if the refresh token is expired/spent → re-auth.
+ * Exchange a refresh token for a fresh access token. The refresh token does NOT
+ * rotate — the server returns the same one back, so this is idempotent and safe
+ * to retry after a lost response. 401 means the session is genuinely gone
+ * (revoked, expired, or idle too long) → re-auth.
  */
 export function refreshTokens(refreshToken: string) {
   return authPost("/api/auth/mobile/refresh", { refreshToken });
