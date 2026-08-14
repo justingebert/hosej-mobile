@@ -17,8 +17,10 @@ import {
   QuestionType,
   type PairingConfig,
 } from "@/lib/api/types/question";
+import type { PickedImage } from "@/lib/api/upload";
 import { toastSuccess } from "@/lib/toast";
 import { PairingConfigForm } from "./pairing-config";
+import { QuestionImagePicker } from "./question-image-picker";
 
 type TypeMeta = {
   type: QuestionType;
@@ -62,6 +64,7 @@ export function CreateQuestionScreen() {
 
   const [type, setType] = useState<QuestionType | null>(null);
   const [question, setQuestion] = useState("");
+  const [image, setImage] = useState<PickedImage | null>(null);
   const [options, setOptions] = useState<string[]>(["", ""]);
   const [multiSelect, setMultiSelect] = useState(false);
   const [pairing, setPairing] = useState<PairingConfig | null>(null);
@@ -148,6 +151,7 @@ export function CreateQuestionScreen() {
         questionType: type,
         question: question.trim(),
         submittedBy: user._id,
+        imageAsset: image,
         multiSelect,
         options: type === QuestionType.Custom ? trimmedOptions : [],
         pairing:
@@ -164,6 +168,7 @@ export function CreateQuestionScreen() {
         onSuccess: () => {
           setType(null);
           setQuestion("");
+          setImage(null);
           setOptions(["", ""]);
           setMultiSelect(false);
           setPairing(null);
@@ -193,6 +198,8 @@ export function CreateQuestionScreen() {
           className="min-h-24 rounded-xl bg-card px-4 py-3 text-base text-foreground placeholder:text-muted-foreground"
           style={{ textAlignVertical: "top" }}
         />
+
+        <QuestionImagePicker image={image} onChange={setImage} />
       </View>
 
       <View className="flex-row flex-wrap gap-3">

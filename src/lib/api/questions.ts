@@ -1,5 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import * as Crypto from "expo-crypto";
 import { apiFetch } from "./client";
+import { uploadImage, type PickedImage } from "./upload";
 import { haptics } from "@/lib/haptics";
 import { toastInfo } from "@/lib/toast";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -48,11 +50,26 @@ export function useCreateQuestion(groupId: string) {
   // (daily), so they don't show up in the active-questions list immediately —
   // there's no cached query to invalidate on success yet.
   return useMutation({
-    mutationFn: (input: CreateQuestionInput) =>
-      apiFetch(`/api/groups/${groupId}/question`, {
+    mutationFn: async ({
+      imageAsset,
+      ...input
+    }: CreateQuestionInput & { imageAsset?: PickedImage | null }) => {
+      // The image is uploaded before the question exists, so — like the web app —
+      // it's filed under a throwaway entity id; only the returned key is stored.
+      const image = imageAsset
+        ? await uploadImage(imageAsset, {
+            groupId,
+            entity: "question",
+            entityId: Crypto.randomUUID(),
+            userId: input.submittedBy,
+          })
+        : undefined;
+
+      return apiFetch(`/api/groups/${groupId}/question`, {
         method: "POST",
-        body: JSON.stringify(input),
-      }),
+        body: JSON.stringify({ ...input, image }),
+      });
+    },
     meta: {
       errorToastTitle: "Could not create question",
     },

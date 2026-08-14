@@ -124,14 +124,17 @@ export interface QuestionResultsResponseDTO {
 }
 
 // POST /api/groups/:groupId/question
-// Image questions still aren't creatable on mobile (needs an upload pipeline);
-// every other type — the text-option types and pairing — is supported.
+// The `image` question *type* (image options) still isn't creatable on mobile;
+// every other type — the text-option types and pairing — is supported, and any
+// of them can carry an attached image.
 export interface CreateQuestionInput {
   category: string;
   questionType: QuestionType;
   question: string;
   submittedBy: string;
   multiSelect: boolean;
+  // S3 key of an attached image, uploaded before the question is created.
+  image?: string;
   // Sent only for `custom`; the backend fills options for `users`/`rating`.
   options?: string[];
   // Sent only for `pairing`.
