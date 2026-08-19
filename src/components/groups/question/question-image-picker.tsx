@@ -62,9 +62,10 @@ export function QuestionImagePicker({
           accessibilityLabel="Change attached image"
           onPress={() => sheetRef.current?.present()}
         >
-          {/* Capped so a tall photo doesn't push the form off screen; the image
-              letterboxes inside instead (AspectImage uses contentFit="contain"). */}
-          <AspectImage uri={image.uri} className="max-h-64 rounded-xl" />
+          {/* No height cap: `maxHeight` next to AspectImage's `aspectRatio` makes
+              Yoga shrink the width back to keep the ratio, so a portrait photo
+              rendered narrower than the form. Tall photos just scroll. */}
+          <AspectImage uri={image.uri} className="rounded-xl" />
         </HapticPressable>
       ) : (
         <Button variant="outline" onPress={() => sheetRef.current?.present()}>

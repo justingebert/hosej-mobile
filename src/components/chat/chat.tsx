@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { TextInput, View } from "react-native";
+import { Pressable, TextInput, View } from "react-native";
 import { HapticPressable } from "@/components/ui/haptic-pressable";
 import { useFocusEffect } from "expo-router";
 import { ArrowUp } from "lucide-react-native";
@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { useAddMessage, useChat } from "@/lib/api/chat";
 import { useAuth } from "@/lib/auth/auth-context";
+import { useReportAction } from "@/lib/moderation";
 import { setActiveChat } from "@/lib/push/push";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ export function ChatMessages({
 }) {
   const { user } = useAuth();
   const { data, isPending, isError, refetch } = useChat(groupId, chatId);
+  const reportContent = useReportAction();
 
   // Web parity: revalidate when you return to the screen (no polling). Skip the
   // first focus — the query already fetches on mount. While focused, mark this chat
@@ -63,22 +65,46 @@ export function ChatMessages({
       ) : (
         messages.map((msg, index) => {
           const mine = !!user && msg.user?._id === user.id;
+          const author = msg.user;
+          const bubble = (
+            <View
+              className={`max-w-[80%] rounded-2xl px-3 py-2 ${
+                mine ? "bg-primary" : "bg-secondary"
+              }`}
+            >
+              {!mine ? (
+                <Text className="mb-0.5 text-xs font-bold text-muted-foreground">
+                  {author?.username ?? "Unknown"}
+                </Text>
+              ) : null}
+              <Text className={mine ? "text-primary-foreground" : "text-secondary-foreground"}>
+                {msg.message}
+              </Text>
+            </View>
+          );
           return (
             <View key={index} className={mine ? "items-end" : "items-start"}>
-              <View
-                className={`max-w-[80%] rounded-2xl px-3 py-2 ${
-                  mine ? "bg-primary" : "bg-secondary"
-                }`}
-              >
-                {!mine ? (
-                  <Text className="mb-0.5 text-xs font-bold text-muted-foreground">
-                    {msg.user?.username ?? "Unknown"}
-                  </Text>
-                ) : null}
-                <Text className={mine ? "text-primary-foreground" : "text-secondary-foreground"}>
-                  {msg.message}
-                </Text>
-              </View>
+              {mine || !author ? (
+                bubble
+              ) : (
+                // Long-press is the platform idiom for "act on this message" — a
+                // visible report button on every bubble would be noise. Messages
+                // have no id of their own, so the chat + timestamp locates one.
+                <Pressable
+                  accessibilityHint="Long press to report this message"
+                  onLongPress={() =>
+                    reportContent("message", {
+                      targetType: "message",
+                      targetId: `${chatId}:${msg.createdAt}`,
+                      reportedUser: author._id,
+                      groupId,
+                      content: msg.message,
+                    })
+                  }
+                >
+                  {bubble}
+                </Pressable>
+              )}
             </View>
           );
         })

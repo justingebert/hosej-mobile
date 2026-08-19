@@ -4,8 +4,10 @@ import { apiFetch } from "./client";
 import type {
   CreateGroupInput,
   GroupDTO,
+  GroupFeaturesDTO,
   GroupInviteDTO,
   GroupListResponseDTO,
+  GroupQuestionPackDTO,
   GroupWithAdminDTO,
   InvitePreviewDTO,
   JoinByCodeResponseDTO,
@@ -15,6 +17,10 @@ import type {
 export const groupKeys = {
   all: ["groups"] as const,
   detail: (id: string) => ["groups", id] as const,
+};
+
+export const packKeys = {
+  list: (groupId: string) => ["groups", groupId, "question-packs"] as const,
 };
 
 export const inviteKeys = {
@@ -110,6 +116,18 @@ export function fetchInviteCode(groupId: string): Promise<GroupInviteDTO> {
   return apiFetch<GroupInviteDTO>(`/api/groups/${groupId}/invite`);
 }
 
+/**
+ * Settings writes. Optimistic, because the settings sheets close the instant you
+ * hit Save — without this the disclosure row behind them keeps showing the old
+ * value until the PUT and its refetch round-trip, and a failure reverts silently.
+ *
+ * Send only the setting keys you're changing. The server merges per key
+ * (`applyFeatureUpdates` does `group.set("features.x.settings.y", value)`) and
+ * the Zod schema is `.partial()` at both the feature and settings level, so a
+ * narrow patch is the correct shape — never spread the whole feature in. Doing
+ * so would write back stale siblings, and `packs` in particular is mutated by
+ * its own endpoint, so a stale copy here silently un-adds a question pack.
+ */
 export function useUpdateGroup(groupId: string) {
   const queryClient = useQueryClient();
 
@@ -122,8 +140,92 @@ export function useUpdateGroup(groupId: string) {
     meta: {
       errorToastTitle: "Could not save settings",
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) }),
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: groupKeys.detail(groupId) });
+      const previous = queryClient.getQueryData<GroupWithAdminDTO>(groupKeys.detail(groupId));
+      if (previous) {
+        queryClient.setQueryData<GroupWithAdminDTO>(
+          groupKeys.detail(groupId),
+          applyGroupPatch(previous, input)
+        );
+      }
+      return { previous };
+    },
+    onError: (_error, _input, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(groupKeys.detail(groupId), context.previous);
+      }
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
+    },
   });
+}
+
+// Packs visible to the group, each flagged `added`. Any member may read this;
+// the settings sheet shows the list to everyone and gates the Add button.
+export function useGroupPacks(groupId: string) {
+  return useQuery({
+    queryKey: packKeys.list(groupId),
+    queryFn: () =>
+      apiFetch<GroupQuestionPackDTO[]>(`/api/groups/${groupId}/question-packs`),
+    enabled: !!groupId,
+  });
+}
+
+/**
+ * Add a pack's questions to the group's pool. Admin-only server-side, and
+ * **irreversible** — there is no remove-pack endpoint — so the caller confirms
+ * first. Not optimistic for the same reason: nothing here should look done
+ * before the server says it is.
+ */
+export function useAddQuestionPack(groupId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (packId: string) =>
+      apiFetch(`/api/groups/${groupId}/question-packs`, {
+        method: "POST",
+        body: JSON.stringify({ packId }),
+      }),
+    meta: {
+      errorToastTitle: "Could not add pack",
+    },
+    onSuccess: async () => {
+      // The group's `features.questions.settings.packs` changed too, so the
+      // detail query is stale alongside the pack list.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: packKeys.list(groupId) }),
+        queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) }),
+      ]);
+    },
+  });
+}
+
+/** Mirrors the server's per-settings-key merge onto the cached group. */
+function applyGroupPatch(group: GroupWithAdminDTO, input: UpdateGroupInput): GroupWithAdminDTO {
+  const patch = input.features;
+  const features: GroupFeaturesDTO = patch
+    ? {
+        questions: mergeSettings(group.features.questions, patch.questions),
+        rallies: mergeSettings(group.features.rallies, patch.rallies),
+        jukebox: mergeSettings(group.features.jukebox, patch.jukebox),
+      }
+    : group.features;
+
+  return {
+    ...group,
+    ...(input.name === undefined ? {} : { name: input.name }),
+    features,
+  };
+}
+
+function mergeSettings<T extends { settings: object }>(
+  feature: T,
+  patch?: { settings?: Partial<T["settings"]> }
+): T {
+  if (!patch?.settings) return feature;
+  return { ...feature, settings: { ...feature.settings, ...patch.settings } };
 }
 
 export function useRemoveMember(groupId: string) {

@@ -20,17 +20,17 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <KeyboardProvider>
         <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-          <BottomSheetModalProvider>
-            <QueryClientProvider client={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <BottomSheetModalProvider>
               <AuthProvider>
                 <PushBridge />
                 <HeartbeatBridge />
                 {children}
               </AuthProvider>
               <StatusBar style="auto" />
-            </QueryClientProvider>
-            <Toast config={toastConfig} topOffset={60} />
-          </BottomSheetModalProvider>
+              <Toast config={toastConfig} topOffset={60} />
+            </BottomSheetModalProvider>
+          </QueryClientProvider>
         </SafeAreaProvider>
       </KeyboardProvider>
     </GestureHandlerRootView>

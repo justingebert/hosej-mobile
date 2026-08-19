@@ -8,6 +8,7 @@ export function Segmented<T extends string>({
   value,
   onChange,
   stretch = false,
+  disabled = false,
 }: {
   options: { label: string; value: T }[];
   value: T;
@@ -16,14 +17,22 @@ export function Segmented<T extends string>({
   // the segments get `flex-1` (flexBasis 0), which collapses the whole control
   // when it sits content-sized next to a label in a row.
   stretch?: boolean;
+  // Read-only: the selection still reads, taps do nothing.
+  disabled?: boolean;
 }) {
   return (
-    <View className="flex-row rounded-lg border border-border bg-muted p-1">
+    <View
+      className={cn(
+        "flex-row rounded-lg border border-border bg-muted p-1",
+        disabled && "opacity-50"
+      )}
+    >
       {options.map((opt) => {
         const active = opt.value === value;
         return (
           <HapticPressable
             key={opt.value}
+            disabled={disabled}
             onPress={() => onChange(opt.value)}
             className={cn(
               "items-center rounded-md px-3 py-1.5",

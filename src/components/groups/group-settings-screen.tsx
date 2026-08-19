@@ -1,17 +1,42 @@
+import { useRef } from "react";
 import { useRouter } from "expo-router";
 import { useGroupId } from "@/lib/group-id";
-import { DoorOpen, RefreshCw, Share, Trash, UserRoundMinus } from "lucide-react-native";
+import {
+  Camera,
+  ChevronRight,
+  DoorOpen,
+  Flag,
+  type LucideIcon,
+  MessageSquare, MessageSquareWarning,
+  Radio,
+  RefreshCw,
+  Share,
+  Trash,
+  UserRoundMinus,
+} from "lucide-react-native";
 import { Alert, Platform, Share as RNShare, View } from "react-native";
 
+import { SettingsGroup, SettingsRow } from "@/components/settings/settings-group";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ErrorCard } from "@/components/ui/error-card";
+import { HapticPressable } from "@/components/ui/haptic-pressable";
 import { Icon } from "@/components/ui/icon";
 import { Screen } from "@/components/ui/screen";
-import { Segmented } from "@/components/ui/segmented";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import {
+  JukeboxSettingsSheet,
+  type JukeboxSettingsSheetRef,
+} from "@/components/groups/jukebox-settings-sheet";
+import {
+  QuestionSettingsSheet,
+  type QuestionSettingsSheetRef,
+} from "@/components/groups/question-settings-sheet";
+import {
+  RallySettingsSheet,
+  type RallySettingsSheetRef,
+} from "@/components/groups/rally-settings-sheet";
 import {
   buildInviteLink,
   useDeleteGroup,
@@ -22,11 +47,15 @@ import {
   useResetInvite,
   useUpdateGroup,
 } from "@/lib/api/groups";
-import type { GroupMemberDTO, GroupWithAdminDTO } from "@/lib/api/types/group";
+import type {
+  GroupFeaturesDTO,
+  GroupFeaturesPatch,
+  GroupMemberDTO,
+  GroupWithAdminDTO,
+} from "@/lib/api/types/group";
 import { useUser } from "@/lib/api/user";
+import { useReportAction } from "@/lib/moderation";
 import { toastSuccess } from "@/lib/toast";
-
-const QUESTION_COUNTS = [1, 2, 3];
 
 export function GroupSettingsScreen() {
   const groupId = useGroupId();
@@ -34,7 +63,7 @@ export function GroupSettingsScreen() {
   const { data: user } = useUser();
 
   return (
-    <Screen onRefresh={refetch} refreshing={isRefetching}>
+    <Screen onRefresh={refetch} refreshing={isRefetching} avoidKeyboard>
       {isPending ? (
         <SettingsSkeleton />
       ) : isError ? (
@@ -61,15 +90,28 @@ function GroupSettingsContent({
   const router = useRouter();
   const updateGroup = useUpdateGroup(group._id);
   const removeMember = useRemoveMember(group._id);
+  const reportContent = useReportAction();
   const leaveGroup = useLeaveGroup(group._id);
   const deleteGroup = useDeleteGroup(group._id);
   const { data: invite } = useGroupInvite(group._id);
   const resetInvite = useResetInvite(group._id);
 
+  const questionSheet = useRef<QuestionSettingsSheetRef>(null);
+  const rallySheet = useRef<RallySettingsSheetRef>(null);
+  const jukeboxSheet = useRef<JukeboxSettingsSheetRef>(null);
+
   const { userIsAdmin, members } = group;
   const yourName = members.find((m) => m.user === currentUserId)?.name ?? "You";
   const adminName = members.find((m) => m.user === group.admin)?.name ?? "N/A";
-  const questionCount = group.features.questions.settings.questionCount;
+  const { questions, rallies, jukebox } = group.features;
+
+  // Only the keys that changed — the server merges per settings key, so
+  // spreading the whole feature in would write back stale siblings (see
+  // useUpdateGroup). `packs` especially: its own endpoint owns it.
+  const saveFeature = <K extends keyof GroupFeaturesDTO>(
+    key: K,
+    settings: Partial<GroupFeaturesDTO[K]["settings"]>
+  ) => updateGroup.mutate({ features: { [key]: { settings } } as GroupFeaturesPatch });
 
   const shareInvite = async () => {
     if (!invite?.code) return;
@@ -100,18 +142,6 @@ function GroupSettingsContent({
         },
       ],
     );
-
-  // Send the complete questions object: the server shallow-merges by feature
-  // key, so a partial here would drop lastQuestionDate / packs.
-  const setQuestionCount = (count: number) =>
-    updateGroup.mutate({
-      features: {
-        questions: {
-          ...group.features.questions,
-          settings: { ...group.features.questions.settings, questionCount: count },
-        },
-      },
-    });
 
   const confirmKick = (member: GroupMemberDTO) =>
     Alert.alert("Remove member", `Remove ${member.name} from the group?`, [
@@ -158,17 +188,21 @@ function GroupSettingsContent({
     ]);
 
   return (
-    <View className="gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Group Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <InfoRow label="Your name" value={yourName} />
-          <InfoRow label="Admin" value={adminName} />
-          <InfoRow label="Created" value={new Date(group.createdAt).toLocaleDateString()} />
-          <View className="flex-row items-center justify-between gap-3 py-3">
-            <Text className="text-muted-foreground">Invite</Text>
+    <View className="flex-1 justify-between gap-8">
+      <View className="gap-6">
+        <SettingsGroup title="Group">
+          <SettingsRow label="Your name">
+            <Text className="text-muted-foreground">{yourName}</Text>
+          </SettingsRow>
+          <SettingsRow label="Admin">
+            <Text className="text-muted-foreground">{adminName}</Text>
+          </SettingsRow>
+          <SettingsRow label="Created">
+            <Text className="text-muted-foreground">
+              {new Date(group.createdAt).toLocaleDateString()}
+            </Text>
+          </SettingsRow>
+          <SettingsRow label="Invite">
             <View className="flex-row items-center gap-2">
               {userIsAdmin ? (
                 <Button
@@ -181,43 +215,40 @@ function GroupSettingsContent({
                   <Icon as={RefreshCw} className="size-4" />
                 </Button>
               ) : null}
-              <Button
-                size="sm"
-                variant="outline"
-                onPress={shareInvite}
-                disabled={!invite?.code}
-              >
+              <Button size="sm" variant="outline" onPress={shareInvite} disabled={!invite?.code}>
                 <Icon as={Share} className="size-4" />
                 <Text>Share link</Text>
               </Button>
             </View>
-          </View>
-        </CardContent>
-      </Card>
+          </SettingsRow>
+        </SettingsGroup>
 
-      {userIsAdmin ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Questions</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-row items-center justify-between gap-4">
-            <Text className="text-foreground">Questions per day</Text>
-            <Segmented
-              options={QUESTION_COUNTS.map((n) => ({ label: String(n), value: String(n) }))}
-              value={String(questionCount)}
-              onChange={(v) => setQuestionCount(Number(v))}
-            />
-          </CardContent>
-        </Card>
-      ) : null}
+        {/* Every member can open these — the sheets themselves render read-only
+            for non-admins. */}
+        <SettingsGroup title="Feature Settings">
+          <DisclosureRow
+            icon={MessageSquare}
+            label="Questions"
+            description="Add question packs and adjust ammount"
+            onPress={() => questionSheet.current?.present()}
+          />
+          <DisclosureRow
+            icon={Camera}
+            label="Rallies"
+            description="How many run and the break between."
+            onPress={() => rallySheet.current?.present()}
+          />
+          <DisclosureRow
+            icon={Radio}
+            label="Jukebox"
+            description="When it starts and which themes."
+            onPress={() => jukeboxSheet.current?.present()}
+          />
+        </SettingsGroup>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Members ({members.length})</CardTitle>
-        </CardHeader>
-        <CardContent className="gap-3">
+        <SettingsGroup title={`Members (${members.length})`}>
           {members.map((member) => (
-            <View key={member.user} className="flex-row items-center justify-between gap-3">
+            <SettingsRow key={member.user}>
               <View className="flex-1 flex-row items-center gap-3">
                 <UserAvatar
                   name={member.name}
@@ -234,45 +265,99 @@ function GroupSettingsContent({
                   </Text>
                 </View>
               </View>
-              {userIsAdmin && member.user !== currentUserId ? (
-                <Button size="icon" variant="destructive" onPress={() => confirmKick(member)}>
-                  <Icon as={UserRoundMinus} className="size-4" />
-                </Button>
+              {member.user !== currentUserId ? (
+                <View className="flex-row items-center gap-2">
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    accessibilityLabel={`Report ${member.name}`}
+                    onPress={() =>
+                      reportContent("member", {
+                        targetType: "user",
+                        targetId: member.user,
+                        reportedUser: member.user,
+                        groupId: group._id,
+                        content: member.name,
+                      })
+                    }
+                  >
+                    <Icon as={MessageSquareWarning} className="size-4" />
+                  </Button>
+                  {userIsAdmin ? (
+                    <Button size="icon" variant="destructive" onPress={() => confirmKick(member)}>
+                      <Icon as={UserRoundMinus} className="size-4" />
+                    </Button>
+                  ) : null}
+                </View>
               ) : null}
-            </View>
+            </SettingsRow>
           ))}
-        </CardContent>
-      </Card>
+        </SettingsGroup>
+      </View>
 
-      <Card className="border-destructive">
-        <CardHeader>
-          <CardTitle className="text-destructive">Danger Zone</CardTitle>
-        </CardHeader>
-        <CardContent className="gap-3">
-          <Button variant="destructive" onPress={confirmLeave}>
-            <Icon as={DoorOpen} className="size-4" />
-            <Text>Leave Group</Text>
+      <View className="gap-3">
+        <Button variant="destructive" onPress={confirmLeave}>
+          <Icon as={DoorOpen} className="size-4" />
+          <Text>Leave Group</Text>
+        </Button>
+        {userIsAdmin ? (
+          <Button variant="destructive" onPress={confirmDelete}>
+            <Icon as={Trash} className="size-4" />
+            <Text>Delete Group</Text>
           </Button>
-          {userIsAdmin ? (
-            <Button variant="destructive" onPress={confirmDelete}>
-              <Icon as={Trash} className="size-4" />
-              <Text>Delete Group</Text>
-            </Button>
-          ) : null}
-        </CardContent>
-      </Card>
+        ) : null}
+      </View>
+
+      <QuestionSettingsSheet
+        ref={questionSheet}
+        groupId={group._id}
+        settings={questions.settings}
+        canEdit={userIsAdmin}
+        onSave={(settings) => saveFeature("questions", settings)}
+      />
+      <RallySettingsSheet
+        ref={rallySheet}
+        settings={rallies.settings}
+        canEdit={userIsAdmin}
+        onSave={(settings) => saveFeature("rallies", settings)}
+      />
+      <JukeboxSettingsSheet
+        ref={jukeboxSheet}
+        settings={jukebox.settings}
+        canEdit={userIsAdmin}
+        onSave={(settings) => saveFeature("jukebox", settings)}
+      />
     </View>
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+/** Grouped-list row that opens something — circled icon, label, chevron. */
+function DisclosureRow({
+  icon,
+  label,
+  description,
+  onPress,
+}: {
+  icon: LucideIcon;
+  label: string;
+  description?: string;
+  onPress: () => void;
+}) {
   return (
-    <View className="flex-row items-center justify-between gap-3 border-b border-border py-3">
-      <Text className="text-muted-foreground">{label}</Text>
-      <Text numberOfLines={1} className="flex-1 text-right text-foreground">
-        {value}
-      </Text>
-    </View>
+    <HapticPressable onPress={onPress} className="active:opacity-70">
+      <SettingsRow>
+        <View className="size-8 items-center justify-center rounded-full bg-primary/5">
+          <Icon as={icon} className="size-4 text-primary" />
+        </View>
+        <View className="flex-1 gap-0.5">
+          <Text className="text-foreground">{label}</Text>
+          {description ? (
+            <Text className="text-xs text-muted-foreground">{description}</Text>
+          ) : null}
+        </View>
+        <Icon as={ChevronRight} className="size-4 text-muted-foreground" />
+      </SettingsRow>
+    </HapticPressable>
   );
 }
 
@@ -291,9 +376,10 @@ function formatLastOnline(iso?: string): string {
 function SettingsSkeleton() {
   return (
     <View className="gap-6">
-      <Skeleton className="h-44 w-full rounded-xl" />
-      <Skeleton className="h-28 w-full rounded-xl" />
-      <Skeleton className="h-44 w-full rounded-xl" />
+      <Skeleton className="h-44 w-full rounded-2xl" />
+      <Skeleton className="h-20 w-full rounded-2xl" />
+      <Skeleton className="h-32 w-full rounded-2xl" />
+      <Skeleton className="h-44 w-full rounded-2xl" />
     </View>
   );
 }

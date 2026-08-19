@@ -9,6 +9,7 @@ import { Text } from "@/components/ui/text";
 import { AspectImage } from "@/components/groups/question/aspect-image";
 import { useRallySubmissions, useVoteOnSubmission } from "@/lib/api/rally";
 import { useAuth } from "@/lib/auth/auth-context";
+import { useReportAction } from "@/lib/moderation";
 import { useGroupId } from "@/lib/group-id";
 import type { RallyDTO, RallySubmissionWithUrlDTO } from "@/lib/api/types/rally";
 import { PhotoViewer } from "./photo-viewer";
@@ -23,6 +24,7 @@ export function RallyVote({ rally }: { rally: RallyDTO }) {
   const { user } = useAuth();
   const { data, isPending, isError, refetch } = useRallySubmissions(groupId, rally._id);
   const vote = useVoteOnSubmission(groupId, rally._id);
+  const reportContent = useReportAction();
   const sheetRef = useRef<SheetHandle>(null);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [pending, setPending] = useState<RallySubmissionWithUrlDTO | null>(null);
@@ -123,6 +125,19 @@ export function RallyVote({ rally }: { rally: RallyDTO }) {
         photos={photos}
         openIndex={openIndex}
         onClose={() => setOpenIndex(null)}
+        onReport={(photo) => {
+          const submission = submissions.find((item) => item._id === photo.id);
+          if (!submission || submission.userId === user?.id) return;
+          // The prompt names nobody: entries are anonymous until results, and the
+          // server already knows who submitted this one.
+          reportContent("photo", {
+            targetType: "rallySubmission",
+            targetId: submission._id,
+            reportedUser: submission.userId,
+            groupId,
+            content: `Rally: ${rally.task}`,
+          });
+        }}
         footer={(photo) => {
           const submission = submissions.find((item) => item._id === photo.id);
           if (!submission) return null;

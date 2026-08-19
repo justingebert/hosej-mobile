@@ -15,6 +15,7 @@ import { AspectImage } from "@/components/groups/question/aspect-image";
 import { ChatMessages } from "@/components/chat/chat";
 import { useRallySubmissions } from "@/lib/api/rally";
 import { useGroupId } from "@/lib/group-id";
+import { useReportAction } from "@/lib/moderation";
 import type { RallyDTO } from "@/lib/api/types/rally";
 import { PhotoViewer } from "./photo-viewer";
 import {
@@ -37,6 +38,7 @@ export function RallyResults({ rally }: { rally: RallyDTO }) {
   const groupId = useGroupId();
   const { data, isPending, isError, refetch } = useRallySubmissions(groupId, rally._id);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const reportContent = useReportAction();
 
   if (isPending) return <ResultsSkeleton />;
 
@@ -91,6 +93,17 @@ export function RallyResults({ rally }: { rally: RallyDTO }) {
         photos={photos}
         openIndex={openIndex}
         onClose={() => setOpenIndex(null)}
+        onReport={(photo) => {
+          const submission = ranked.find((item) => item._id === photo.id);
+          if (!submission) return;
+          reportContent("photo", {
+            targetType: "rallySubmission",
+            targetId: submission._id,
+            reportedUser: submission.userId,
+            groupId,
+            content: `Rally: ${rally.task}`,
+          });
+        }}
       />
 
       {rally.chat ? <ChatMessages groupId={groupId} chatId={rally.chat} /> : null}

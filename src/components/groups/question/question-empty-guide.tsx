@@ -4,12 +4,11 @@ import { View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
-import { useGroup } from "@/lib/api/groups";
 import { useActivateNextQuestion } from "@/lib/api/questions";
 
 export function QuestionEmptyGuide({ groupId }: { groupId: string }) {
-  const { data: group } = useGroup(groupId);
-  const isAdmin = group?.userIsAdmin ?? false;
+  // Activation is open to every member, not just the admin — the endpoint only
+  // checks group membership.
   const activate = useActivateNextQuestion(groupId);
 
   return (
@@ -21,9 +20,7 @@ export function QuestionEmptyGuide({ groupId }: { groupId: string }) {
         <View className="items-center gap-2">
           <Text className="text-2xl font-semibold text-foreground">No questions left.</Text>
           <Text className="max-w-[280px] text-center text-sm text-muted-foreground">
-            {isAdmin
-              ? "Activate the next available question, or create a new one."
-              : "Check back later, or create a new one."}
+            Activate the next available question, or create a new one.
           </Text>
         </View>
       </View>
@@ -36,12 +33,15 @@ export function QuestionEmptyGuide({ groupId }: { groupId: string }) {
           </Button>
         </Link>
 
-        {isAdmin ? (
-          <Button variant={"secondary"} size="lg" disabled={activate.isPending} onPress={() => activate.mutate()}>
-            <Icon as={CirclePlay} className="size-5" />
-            <Text>{activate.isPending ? "Activating…" : "Activate next Question"}</Text>
-          </Button>
-        ) : null}
+        <Button
+          variant="secondary"
+          size="lg"
+          disabled={activate.isPending}
+          onPress={() => activate.mutate()}
+        >
+          <Icon as={CirclePlay} className="size-5" />
+          <Text>{activate.isPending ? "Activating…" : "Activate next Question"}</Text>
+        </Button>
       </View>
     </View>
   );

@@ -4,12 +4,11 @@ import { View } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
-import { useGroup } from "@/lib/api/groups";
 import { useActivateRallies } from "@/lib/api/rally";
 
 export function RallyEmptyGuide({ groupId }: { groupId: string }) {
-  const { data: group } = useGroup(groupId);
-  const isAdmin = group?.userIsAdmin ?? false;
+  // Activation is open to every member, not just the admin — the endpoint only
+  // checks group membership.
   const activate = useActivateRallies(groupId);
 
   return (
@@ -21,9 +20,7 @@ export function RallyEmptyGuide({ groupId }: { groupId: string }) {
         <View className="items-center gap-2">
           <Text className="text-2xl font-semibold text-foreground">No active rallies.</Text>
           <Text className="max-w-[280px] text-center text-sm text-muted-foreground">
-            {isAdmin
-              ? "Start the next rally from the pool, or create a new one."
-              : "Check back later, or create one for the pool."}
+            Start the next rally from the pool, or create a new one.
           </Text>
         </View>
       </View>
@@ -36,17 +33,15 @@ export function RallyEmptyGuide({ groupId }: { groupId: string }) {
           </Button>
         </Link>
 
-        {isAdmin ? (
-          <Button
-            variant="secondary"
-            size="lg"
-            disabled={activate.isPending}
-            onPress={() => activate.mutate()}
-          >
-            <Icon as={CirclePlay} className="size-5" />
-            <Text>{activate.isPending ? "Starting…" : "Start Rally now"}</Text>
-          </Button>
-        ) : null}
+        <Button
+          variant="secondary"
+          size="lg"
+          disabled={activate.isPending}
+          onPress={() => activate.mutate()}
+        >
+          <Icon as={CirclePlay} className="size-5" />
+          <Text>{activate.isPending ? "Starting…" : "Start Rally now"}</Text>
+        </Button>
       </View>
     </View>
   );

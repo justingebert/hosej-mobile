@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { FlatList, Modal, useWindowDimensions, View } from "react-native";
 import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { X } from "lucide-react-native";
+import { MoreHorizontal, X } from "lucide-react-native";
 import { HapticPressable } from "@/components/ui/haptic-pressable";
 import { Icon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
@@ -15,18 +15,21 @@ export type ViewerPhoto = { id: string; uri: string };
  * feed you opened it from. Deliberately no pinch-to-zoom.
  *
  * `openIndex` doubles as the open flag: null is closed, a number opens on that
- * photo. `footer` renders a per-photo action (the vote button during voting).
+ * photo. `footer` renders a per-photo action (the vote button during voting);
+ * `onReport` adds the moderation control to the header.
  */
 export function PhotoViewer({
   photos,
   openIndex,
   onClose,
   footer,
+  onReport,
 }: {
   photos: ViewerPhoto[];
   openIndex: number | null;
   onClose: () => void;
   footer?: (photo: ViewerPhoto) => ReactNode;
+  onReport?: (photo: ViewerPhoto) => void;
 }) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -90,15 +93,30 @@ export function PhotoViewer({
             <Icon as={X} className="size-5 text-white" />
           </HapticPressable>
 
-          {photos.length > 1 ? (
-            <View className="rounded-full bg-black/50 px-3 py-1.5">
-              <Text className="text-sm font-semibold text-white">
-                {index + 1} / {photos.length}
-              </Text>
-            </View>
-          ) : (
-            <View className="size-10" />
-          )}
+          <View className="flex-row items-center gap-2">
+            {photos.length > 1 ? (
+              <View className="rounded-full bg-black/50 px-3 py-1.5">
+                <Text className="text-sm font-semibold text-white">
+                  {index + 1} / {photos.length}
+                </Text>
+              </View>
+            ) : null}
+
+            {onReport && current ? (
+              <HapticPressable
+                haptic="light"
+                onPress={() => onReport(current)}
+                hitSlop={12}
+                accessibilityLabel="Report photo"
+                className="size-10 items-center justify-center rounded-full bg-black/50"
+              >
+                <Icon as={MoreHorizontal} className="size-5 text-white" />
+              </HapticPressable>
+            ) : (
+              /* Keeps the close button hard left when there's nothing on the right. */
+              <View className="size-10" />
+            )}
+          </View>
         </View>
 
         {footer && current ? (

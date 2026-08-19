@@ -87,11 +87,32 @@ export interface GroupInviteDTO {
   code: string;
 }
 
-// Body for PUT /api/groups/:groupId. The server shallow-merges `features` by
-// key, so any feature you send must be the complete object for that key.
+// Body for PUT /api/groups/:groupId. The server merges one settings key at a
+// time (`applyFeatureUpdates` does `group.set("features.x.settings.y", value)`)
+// and its Zod schema is `.partial()` at both the feature and the settings
+// level — so send only the keys you're changing. Sending a whole feature writes
+// back stale siblings; see useUpdateGroup.
+export type GroupFeaturesPatch = {
+  [K in keyof GroupFeaturesDTO]?: {
+    settings?: Partial<GroupFeaturesDTO[K]["settings"]>;
+  };
+};
+
 export interface UpdateGroupInput {
   name?: string;
-  features?: Partial<GroupFeaturesDTO>;
+  features?: GroupFeaturesPatch;
+}
+
+// GET /api/groups/:groupId/question-packs — the packs visible to this group
+// (active ones in the group's language, plus any already added), each flagged
+// with whether it's in use. Readable by any member; only an admin can POST.
+export interface GroupQuestionPackDTO {
+  packId: string;
+  name: string;
+  description: string;
+  category: string;
+  questionCount: number;
+  added: boolean;
 }
 
 export interface QuestionPackStatDTO {
